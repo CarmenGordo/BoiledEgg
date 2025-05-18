@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity" minHeight="500.0" minWidth="800.0" prefHeight="500.0" prefWidth="800.0" stylesheets="@../style/Style.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controladores.ControladorHomeAppPage">
+
+    <!-- LEFT MENU -->
+    <left>
+        <VBox fx:id="menu" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="151.0" styleClass="sidebar-menu" VBox.vgrow="ALWAYS">
+            <BorderPane.margin>
+                <Insets bottom="10" left="10" right="10" top="10" />
+            </BorderPane.margin>
+            <children>
+            <VBox alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="379.0" prefWidth="112.0" styleClass="menu" VBox.vgrow="ALWAYS">
+                <BorderPane.margin>
+                <Insets bottom="20" left="20" right="20" top="20" />
+            </BorderPane.margin>
+               <children>
+                  <ImageView fx:id="logoImageView" fitHeight="42.0" fitWidth="97.0" preserveRatio="true" />
+                  <Region prefHeight="16.0" prefWidth="94.0" />
+                  <Button fx:id="btnHome" graphicTextGap="10.0" prefHeight="17.0" prefWidth="88.0" styleClass="btnMenu" text="Home">
+                     <graphic>
+                        <ImageView fx:id="iconHome" fitWidth="24.0" preserveRatio="true" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="btnRecetas" graphicTextGap="10.0" styleClass="btnMenu" text="Recetas">
+                     <graphic>
+                        <ImageView fx:id="iconRecetas" fitWidth="24.0" preserveRatio="true" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="btnEscanear" graphicTextGap="10.0" styleClass="btnMenu" text="Escanear Producto">
+                     <graphic>
+                        <ImageView fx:id="iconEscanear" fitWidth="24.0" preserveRatio="true" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="btnSubirReceta" graphicTextGap="10.0" styleClass="btnMenu" text="Subir Receta">
+                     <graphic>
+                        <ImageView fx:id="iconSubir" fitWidth="24.0" preserveRatio="true" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="btnHistorial" graphicTextGap="10.0" styleClass="btnMenu" text="Historial">
+                     <graphic>
+                        <ImageView fx:id="iconHistorial" fitWidth="24.0" preserveRatio="true" />
+                     </graphic>
+                  </Button>
+                  <Region prefHeight="206.0" prefWidth="94.0" />
+                  <Button fx:id="btnAjustes" graphicTextGap="10.0" styleClass="btnMenu" text="Ajustes">
+                     <graphic>
+                        <ImageView fx:id="iconAjustes" fitWidth="24.0" preserveRatio="true" />
+                     </graphic>
+                  </Button>
+               </children>
+            </VBox>
+            </children>
+        </VBox>
+    </left>
+    <center>
+        <VBox fx:id="aa" maxWidth="Infinity" minWidth="Infinity" prefHeight="480.0" prefWidth="622.0">
+            <BorderPane.margin>
+                <Insets bottom="10" left="0" right="10" top="10" />
+            </BorderPane.margin>
+            <HBox alignment="CENTER_LEFT" layoutX="-3.0" layoutY="10.0" prefHeight="50.0" prefWidth="619.0" spacing="20.0" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" prefHeight="0.0" prefWidth="294.0" spacing="15.0" styleClass="topMenu" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label fx:id="saludoLabel" prefHeight="17.0" prefWidth="137.0" styleClass="saludo-label" text="¡Hola Usuario!" HBox.hgrow="ALWAYS" />
+                        <Region prefHeight="50.0" prefWidth="23.0" HBox.hgrow="ALWAYS" />
+                        <HBox fx:id="cajaBuscar" alignment="CENTER_LEFT" maxHeight="-Infinity" prefHeight="41.0" prefWidth="202.0" spacing="5.0" styleClass="cajaBuscador" HBox.hgrow="ALWAYS">
+                            <children>
+                                <TextField fx:id="inputBuscar" prefHeight="29.0" prefWidth="180.0" promptText="Buscar" styleClass="inputBuscador" HBox.hgrow="ALWAYS" />
+                                <Button fx:id="btnBuscar" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="29.0" prefWidth="26.0" styleClass="btnBuscador">
+                                    <graphic>
+                                        <ImageView fitHeight="25.0" fitWidth="32.0" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../assets/iconos/lupa.png" />
+                                 </image></ImageView>
+                                    </graphic>
+                                </Button>
+                            </children>
+                        </HBox>
+                    </children>
+                </HBox>
+
+                <HBox alignment="CENTER_RIGHT" maxWidth="Infinity" prefHeight="51.0" prefWidth="75.0" spacing="15.0" styleClass="topMenu" HBox.hgrow="ALWAYS">
+                    <Button fx:id="btnFavoritos" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="29.0" prefWidth="50.0" styleClass="btnSinNada">
+                        <graphic>
+                           <SVGPath content="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143Z" scaleX="0.06" scaleY="0.06" styleClass="iconoSvg" />
+                        </graphic>
+                    </Button>
+                   <ToggleButton fx:id="btnTema" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="31.0" prefWidth="27.0" selected="false" styleClass="botonTema">
+                        <graphic>
+                            <SVGPath fx:id="iconoTema" content="M480-360q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Zm0 80q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM80-440q-17 0-28.5-11.5T40-480q0-17 11.5-28.5T80-520h80q17 0 28.5 11.5T200-480q0 17-11.5 28.5T160-440H80Zm720 0q-17 0-28.5-11.5T760-480q0-17 11.5-28.5T800-520h80q17 0 28.5 11.5T920-480q0 17-11.5 28.5T880-440h-80ZM480-760q-17 0-28.5-11.5T440-800v-80q0-17 11.5-28.5T480-920q17 0 28.5 11.5T520-880v80q0 17-11.5 28.5T480-760Zm0 720q-17 0-28.5-11.5T440-80v-80q0-17 11.5-28.5T480-200q17 0 28.5 11.5T520-160v80q0 17-11.5 28.5T480-40ZM226-678l-43-42q-12-11-11.5-28t11.5-29q12-12 29-12t28 12l42 43q11 12 11 28t-11 28q-11 12-27.5 11.5T226-678Zm494 495-42-43q-11-12-11-28.5t11-27.5q11-12 27.5-11.5T734-282l43 42q12 11 11.5 28T777-183q-12 12-29 12t-28-12Zm-42-495q-12-11-11.5-27.5T678-734l42-43q11-12 28-11.5t29 11.5q12 12 12 29t-12 28l-43 42q-12 11-28 11t-28-11ZM183-183q-12-12-12-29t12-28l43-42q12-11 28.5-11t27.5 11q12 11 11.5 27.5T282-226l-42 43q-11 12-28 11.5T183-183Zm297-297Z" scaleX="0.03" scaleY="0.03" styleClass="iconoSvg" />
+                        </graphic>
+                    </ToggleButton>
+                    <ImageView fx:id="btnPerfil" fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                       <image>
+                          <Image url="@../assets/iconos_perfil/huevin.png" />
+                       </image>
+                    </ImageView>
+                </HBox>
+            </HBox>
+            <StackPane fx:id="mainStackPane" maxHeight="Infinity" minHeight="0" VBox.vgrow="ALWAYS">
+                <AnchorPane fx:id="HomePane">
+                    <HBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <VBox fx:id="homeLeftPane" prefHeight="429.0" prefWidth="500.0" styleClass="main-left" />
+                        <VBox fx:id="homeRightPane" prefWidth="300.0" styleClass="main-right" />
+                    </HBox>
+                </AnchorPane>
+                <AnchorPane fx:id="buscadorPane" focusTraversable="false" maxHeight="Infinity" minHeight="0" mouseTransparent="false" prefHeight="410.0" prefWidth="619.0" visible="false" VBox.vgrow="ALWAYS">
+                    <HBox prefWidth="Infinity" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+                        <ScrollPane fx:id="filtrosScroll" fitToHeight="true" fitToWidth="true" maxWidth="300.0" prefHeight="429.0" prefWidth="174.0" HBox.hgrow="ALWAYS">
+                            <VBox fx:id="filtrosVBox" spacing="15.0" style="-fx-padding: 10;">
+                                <VBox prefHeight="58.0" prefWidth="212.0">
+                                    <Label style="-fx-font-weight: bold;" text="Tipo:" />
+                                    <VBox fx:id="vboxTipoFiltrar" prefHeight="47.0" prefWidth="212.0" spacing="5.0" />
+                                </VBox>
+                                <VBox>
+                                    <Label style="-fx-font-weight: bold;" text="Tipo de :" />
+                                    <VBox fx:id="vboxTipoReceta" spacing="5.0" />
+                                </VBox>
+                                <VBox>
+                                    <Label style="-fx-font-weight: bold;" text="Sin alérgenos:" />
+                                    <VBox fx:id="vboxAlergenos" spacing="5.0" />
+                                </VBox>
+                                <VBox>
+                                    <Label style="-fx-font-weight: bold;" text="Valoraciones:" />
+                                    <VBox fx:id="vboxDificultad" spacing="5.0" />
+                                </VBox>
+                                <VBox>
+                                    <Label style="-fx-font-weight: bold;" text="Valoraciones:" />
+                                    <VBox fx:id="vboxValoraciones" spacing="5.0" />
+                                </VBox>
+                                <VBox>
+                                    <Label style="-fx-font-weight: bold;" text="Tipo de cocinado:" />
+                                    <VBox fx:id="vboxTipoCoccion" spacing="5.0" />
+                                </VBox>
+                            </VBox>
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                        </ScrollPane>
+                        <ScrollPane fx:id="busquedasPane" fitToWidth="true" focusTraversable="false" mouseTransparent="false" prefHeight="429.0" prefWidth="448.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                            <FlowPane fx:id="flowRecetas" hgap="15" prefHeight="409.0" prefWidth="430.0" vgap="15">
+                                <children>
+                                   <!-- Aqui van las CardReceta-->
+                                </children></FlowPane>
+                        </ScrollPane>
+                    </HBox>
+                </AnchorPane>
+                
+                <!-- infoCardPane -->
+                <AnchorPane fx:id="infoCardPane" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="419.0" prefWidth="603.0">
+                    <StackPane maxWidth="Infinity">
+                    <!-- Panel Receta -->
+                    <VBox fx:id="infoCardRecetaPane" managed="true" maxHeight="Infinity" maxWidth="611.0" minWidth="-Infinity" prefHeight="369.0" prefWidth="611.0" visible="true">
+                        <ScrollPane fitToHeight="true" fitToWidth="true" VBox.vgrow="ALWAYS">
+                            <VBox maxWidth="Infinity">
+                                <!-- Imagen principal con botones en los extremos -->
+                                <HBox alignment="CENTER" spacing="20.0">
+                                    <Button styleClass="btnSinNada">
+                                        <SVGPath fx:id="svgAnterior" content="" />
+                                    </Button>
+                                    <ImageView fx:id="imagenReceta" fitHeight="200.0" preserveRatio="true" />
+                                    <Button styleClass="btnSinNada">
+                                        <SVGPath fx:id="svgSiguiente" content="" />
+                                    </Button>
+                                </HBox>
+                                <!-- Sección de datos dividida en dos columnas -->
+                                <HBox fillHeight="true" spacing="20.0">
+                                    <!-- Columna 1 -->
+                                    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                        <VBox spacing="5.0">
+                                            <Label text="Tipo:" />
+                                            <HBox fx:id="hboxTiposIconos" spacing="5.0" />
+                                        </VBox>
+                                        <HBox spacing="5.0">
+                                            <Label text="Dificultad:" />
+                                            <Label fx:id="labelDificultad" />
+                                        </HBox>
+                                        <HBox spacing="5.0">
+                                            <Label text="Tipo de cocción:" />
+                                            <Label fx:id="labelTipoCoccion" />
+                                        </HBox>
+                                    </VBox>
+                                    <!-- Columna 2 -->
+                                    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                        <HBox spacing="5.0">
+                                            <Label text="Tiempo:" />
+                                            <Label fx:id="labelTiempo" />
+                                        </HBox>
+                                        <VBox spacing="5.0">
+                                            <Label text="Alérgenos:" />
+                                            <HBox fx:id="hboxAlergenos" spacing="5.0" />
+                                        </VBox>
+                                        <HBox spacing="5.0">
+                                            <Label text="Valoración:" />
+                                            <Label fx:id="labelValoracion" />
+                                        </HBox>
+                                    </VBox>
+                                </HBox>
+                                <!-- Sección de pasos -->
+                                <VBox spacing="5.0">
+                                    <Label text="Pasos:" />
+                                    <Label fx:id="labelPasos" wrapText="true" />
+                                </VBox>
+                                <!-- Sección de ayudas de Huevín -->
+                                <VBox spacing="5.0">
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                        <Label text="Ayudas de Huevín" />
+                                        <ImageView fx:id="imagenHuevin" fitHeight="30.0" preserveRatio="true" />
+                                    </HBox>
+                                    <Label fx:id="labelAyudasHuevin" wrapText="true" />
+                                </VBox>
+                            </VBox>
+                        </ScrollPane>
+                    </VBox>
+                    <!-- Panel Ingrediente (inicialmente oculto) -->
+                    <VBox fx:id="infoCardIngredientePane" managed="false" maxHeight="Infinity" maxWidth="Infinity" visible="false">
+                        <!-- Aquí se puede añadir contenido del ingrediente más adelante -->
+                    </VBox>
+                </StackPane>
+                </AnchorPane>
+            <VBox.margin>
+               <Insets top="10.0" />
+            </VBox.margin>
+            </StackPane>
+        </VBox>
+    </center>
+
+</BorderPane>

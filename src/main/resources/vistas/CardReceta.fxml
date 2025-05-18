@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="card" alignment="CENTER" maxWidth="200" spacing="8" styleClass="card" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
+
+    <javafx.scene.image.ImageView fx:id="imgCard" fitHeight="110.0" fitWidth="180.0" preserveRatio="true" />
+    <Label fx:id="lblNombreCard" prefHeight="17.0" prefWidth="158.0" styleClass="titulo-receta" text="Nombre receta" />
+
+    <HBox alignment="CENTER" prefHeight="56.0" prefWidth="180.0" spacing="10">
+        <VBox alignment="CENTER_LEFT">
+            <Label fx:id="lblTipoCard" prefHeight="15.0" prefWidth="73.0" styleClass="lblTipoCard" text="Tipo:" />
+            <HBox fx:id="tipoIconosCard" prefHeight="38.0" prefWidth="73.0" spacing="5" />
+        </VBox>
+        <VBox alignment="CENTER_LEFT" prefHeight="56.0" prefWidth="84.0">
+            <Label fx:id="lblAlergenosCard" styleClass="lblAlergenosCard" text="Alergenos:" />
+            <HBox fx:id="alergenosIconosCard" prefHeight="52.0" prefWidth="84.0" spacing="5" />
+        </VBox>
+    </HBox>
+</VBox>
