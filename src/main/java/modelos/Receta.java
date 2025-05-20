@@ -7,7 +7,7 @@ package modelos;
 public class Receta {
     private int id_receta;
     private String nombre_receta;
-    private String descripcion_receta;
+    private String consejos_receta;
     private String pasos_receta;
     private String imagen_receta;
     private int tiempo_preparacion_receta;
@@ -20,10 +20,10 @@ public class Receta {
     public Receta() {
     }
 
-    public Receta(int id_receta, String nombre_receta, String descripcion_receta, String pasos_receta, String imagen_receta, int tiempo_preparacion_receta, String dificultad_receta, int autor_id, String tipo_receta, String tipo_coccion_receta, int publicada_por_restaurante) {
+    public Receta(int id_receta, String nombre_receta, String consejos_receta, String pasos_receta, String imagen_receta, int tiempo_preparacion_receta, String dificultad_receta, int autor_id, String tipo_receta, String tipo_coccion_receta, int publicada_por_restaurante) {
         this.id_receta = id_receta;
         this.nombre_receta = nombre_receta;
-        this.descripcion_receta = descripcion_receta;
+        this.consejos_receta = consejos_receta;
         this.pasos_receta = pasos_receta;
         this.imagen_receta = imagen_receta;
         this.tiempo_preparacion_receta = tiempo_preparacion_receta;
@@ -50,12 +50,12 @@ public class Receta {
         this.nombre_receta = nombre_receta;
     }
 
-    public String getDescripcion_receta() {
-        return descripcion_receta;
+    public String getConsejos_receta() {
+        return consejos_receta;
     }
 
-    public void setDescripcion_receta(String descripcion_receta) {
-        this.descripcion_receta = descripcion_receta;
+    public void setConsejos_receta(String consejos_receta) {
+        this.consejos_receta = consejos_receta;
     }
 
     public String getPasos_receta() {

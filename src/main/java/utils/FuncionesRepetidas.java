@@ -25,18 +25,24 @@ import modelos.IconoPerfil;
 import modelos.Restaurante;
 import modelos.Usuario;
 import java.util.Base64;
+import java.util.Date;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import modelos.Alergeno;
 import modelos.Ingrediente;
 import modelos.Receta;
+import modelos.RecetaIngrediente;
+import modelos.RestauranteReceta;
+import modelos.Valoracion;
 
 /**
  *
@@ -135,8 +141,50 @@ public class FuncionesRepetidas {
     }
     
     
+    public static ImageView crearIconoDesdeRuta(String rutaImagen) {
+        try {
+            Image img = new Image(FuncionesRepetidas.class.getResourceAsStream(rutaImagen));
+            ImageView icono = new ImageView(img);
+            icono.setFitHeight(30);
+            icono.setFitWidth(30);
+            return icono;
+        } catch (Exception e) {
+            System.out.println("Error cargando imagen: " + rutaImagen);
+            return null;
+        }
+    }
     
-    // Funciones con Select:
+    // Funciones con Select / Listas:
+    public static ObservableList<Usuario> obtenerListaUsuarios() {
+        ObservableList<Usuario> listaUsuarios = FXCollections.observableArrayList();
+
+        String sql = "SELECT * FROM Usuario";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Usuario usuario = new Usuario(
+                        rs.getInt("id_usuario"),
+                        rs.getString("nombre_usuario"),
+                        rs.getString("email_usuario"),
+                        rs.getString("contraseña_usuario"),
+                        rs.getInt("nivel_usuario"),
+                        rs.getInt("puntos_usuario"),
+                        rs.getInt("icono_perfil_id") 
+                    );
+                listaUsuarios.add(usuario);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return listaUsuarios;
+    }
+
+    
     public static Usuario obtenerUsuarioPorNombre(String nombre) {
         String query = "SELECT * FROM Usuario WHERE nombre_usuario = ?";
 
@@ -189,7 +237,9 @@ public class FuncionesRepetidas {
                             rs.getString("nombre_restaurante"),
                             rs.getString("email_restaurante"),
                             rs.getString("contraseña_restaurante"),
+                            rs.getString("imagen_restaurante"),
                             rs.getString("ciudad_restaurante"),
+                            rs.getString("direccion_restaurante"),
                             rs.getString("tipo_restaurante"),
                             rs.getString("url_restaurante"),
                             rs.getInt("usuario_id")
@@ -248,7 +298,7 @@ public class FuncionesRepetidas {
                     Receta receta = new Receta(
                         rs.getInt("id_receta"),
                         rs.getString("nombre_receta"),
-                        rs.getString("descripcion_receta"),
+                        rs.getString("consejos_receta"),
                         rs.getString("pasos_receta"),
                         rs.getString("imagen_receta"),
                         rs.getInt("tiempo_preparacion_receta"),
@@ -269,6 +319,169 @@ public class FuncionesRepetidas {
         return recetas;
     }
     
+    public static double obtenerValoracionMedia(int recetaId) {
+        String query = "SELECT AVG(puntuacion_valoracion) as media FROM Valoracion " +
+                        "WHERE tipo_objeto = 'Receta' AND id_objeto = ?";
+        double media = 0.0;
+
+        try (Connection conexion = iniciarConexion();
+             PreparedStatement ps = conexion.prepareStatement(query)) {
+
+            ps.setInt(1, recetaId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    media = rs.getDouble("media");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error obteniendo valoración de receta" + recetaId + ": " + e.getMessage());
+        }
+
+        return media;
+    }
+    
+    public static double obtenerValoracionMediaRestaurante(int restauranteId) {
+        String query = "SELECT AVG(puntuacion_valoracion) as media FROM Valoracion " +
+                       "WHERE tipo_objeto = 'Restaurante' AND id_objeto = ?";
+        double media = 0.0;
+
+        try (Connection conexion = iniciarConexion();
+             PreparedStatement ps = conexion.prepareStatement(query)) {
+
+            ps.setInt(1, restauranteId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    media = rs.getDouble("media");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error obteniendo valoración de restaurante " + restauranteId + ": " + e.getMessage());
+        }
+
+        return media;
+    }
+    
+    public static ObservableList<Valoracion> obtenerListaValoraciones(String tipoObjeto, int idObjeto) {
+        ObservableList<Valoracion> lista = FXCollections.observableArrayList();
+
+        try (Connection conn = iniciarConexion()) {
+            String sql = "SELECT * FROM Valoracion WHERE tipo_objeto = ? AND id_objeto = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, tipoObjeto);
+            stmt.setInt(2, idObjeto);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Valoracion val = new Valoracion();
+                val.setId_valoracion(rs.getInt("id_valoracion"));
+                val.setTipo_objeto(Valoracion.TipoObjeto.fromString(rs.getString("tipo_objeto")));
+                val.setId_objeto(rs.getInt("id_objeto"));
+                val.setUsuario_id(rs.getInt("usuario_id"));
+                val.setPuntuacion_valoracion(rs.getInt("puntuacion_valoracion"));
+                val.setComentario_valoracion(rs.getString("comentario_valoracion"));
+                val.setFecha_valoracion(rs.getDate("fecha_valoracion"));
+                lista.add(val);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+    }
+    
+    public static boolean insertarValoracion(Valoracion val) {
+        try (Connection conn = iniciarConexion()){
+            String insertSql = "INSERT INTO Valoracion (tipo_objeto, id_objeto, usuario_id, puntuacion_valoracion, comentario_valoracion, fecha_valoracion) VALUES (?, ?, ?, ?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(insertSql);
+            stmt.setString(1, val.getTipo_objeto().getValor());
+            stmt.setInt(2, val.getId_objeto());
+            stmt.setInt(3, val.getUsuario_id());
+            stmt.setInt(4, val.getPuntuacion_valoracion());
+            stmt.setString(5, val.getComentario_valoracion());
+            stmt.setDate(6, new java.sql.Date(val.getFecha_valoracion().getTime()));
+
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public static boolean actualizarValoracion(HBox contenedor, Valoracion nuevaVal) {
+        Valoracion actual = obtenerValoracionUsuarioEnObjeto(
+            nuevaVal.getUsuario_id(),
+            nuevaVal.getId_objeto(),
+            nuevaVal.getTipo_objeto()
+        );
+
+        if (actual == null) {
+            return false;
+        }
+
+        boolean cambioPuntuacion = actual.getPuntuacion_valoracion() != nuevaVal.getPuntuacion_valoracion();
+        boolean cambioComentario = (actual.getComentario_valoracion() == null && nuevaVal.getComentario_valoracion() != null)
+            || (actual.getComentario_valoracion() != null && !actual.getComentario_valoracion().equals(nuevaVal.getComentario_valoracion()));
+
+        if (!cambioPuntuacion && !cambioComentario) {
+            //naada cambia
+            return true;
+        }
+
+        try (Connection conn = iniciarConexion()) {
+            String updateSql = "UPDATE Valoracion SET puntuacion_valoracion = ?, comentario_valoracion = ?, fecha_valoracion = ? WHERE id_valoracion = ?";
+            PreparedStatement stmt = conn.prepareStatement(updateSql);
+            stmt.setInt(1, nuevaVal.getPuntuacion_valoracion());
+            stmt.setString(2, nuevaVal.getComentario_valoracion());
+            stmt.setDate(3, new java.sql.Date(nuevaVal.getFecha_valoracion().getTime()));
+            stmt.setInt(4, actual.getId_valoracion());
+
+            boolean actualizado = stmt.executeUpdate() > 0;
+
+            if (actualizado && cambioPuntuacion) {
+                actualizarEstrellas(contenedor, nuevaVal.getPuntuacion_valoracion()); // Actualiza fill visualmente
+            }
+
+            return actualizado;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    
+    public static Valoracion obtenerValoracionUsuarioEnObjeto(int usuarioId, int objetoId, Valoracion.TipoObjeto tipoObjeto) {
+        try (Connection conn =  iniciarConexion()){
+            String sql = "SELECT * FROM Valoracion WHERE usuario_id = ? AND id_objeto = ? AND tipo_objeto = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, usuarioId);
+            stmt.setInt(2, objetoId);
+            stmt.setString(3, tipoObjeto.getValor());
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Valoracion val = new Valoracion();
+                val.setId_valoracion(rs.getInt("id_valoracion"));
+                val.setTipo_objeto(tipoObjeto);
+                val.setId_objeto(objetoId);
+                val.setUsuario_id(usuarioId);
+                val.setPuntuacion_valoracion(rs.getInt("puntuacion_valoracion"));
+                val.setComentario_valoracion(rs.getString("comentario_valoracion"));
+                val.setFecha_valoracion(rs.getDate("fecha_valoracion"));
+                return val;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+
+    
     public static ObservableList<Alergeno> obtenerListaAlergenos() {
         ObservableList<Alergeno> lista = FXCollections.observableArrayList();
 
@@ -282,7 +495,7 @@ public class FuncionesRepetidas {
                 Alergeno a = new Alergeno(
                     rs.getInt("id_alergeno"),
                     rs.getString("nombre_alergeno"),
-                    rs.getString("icono_alergeno"),
+                    rs.getString("imagen_alergeno"),
                     rs.getString("tipo_alergeno")   
                 );
                 lista.add(a);
@@ -295,8 +508,7 @@ public class FuncionesRepetidas {
         return lista;
     }
     
-    public static ObservableList<Alergeno> obtenerAlergenosReceta(int recetaId) {
-        //de RecetaAlergeno
+    public static ObservableList<Alergeno> obtenerRecetaAlergenos(int recetaId) {
         ObservableList<Alergeno> listaAlergenos = FXCollections.observableArrayList();
 
         String query = "SELECT Alergeno.* FROM Alergeno "
@@ -354,6 +566,103 @@ public class FuncionesRepetidas {
 
         return listaIngredientes;
     }
+    
+    public static ObservableList<Ingrediente> obtenerRecetaIngredientes(int recetaId, Map<Integer, String> cantidadesPorIngrediente) {
+        ObservableList<Ingrediente> listaIngredientes = FXCollections.observableArrayList();
+
+        String query = "SELECT Ingrediente.*, RecetaIngrediente.cantidad_ingrediente AS cantidad " +
+                       "FROM Ingrediente " +
+                       "JOIN RecetaIngrediente ON Ingrediente.id_ingrediente = RecetaIngrediente.id_ingrediente " +
+                       "WHERE RecetaIngrediente.id_receta = ?";
+
+        try (Connection conexion = iniciarConexion();
+             PreparedStatement ps = conexion.prepareStatement(query)) {
+
+            ps.setInt(1, recetaId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Ingrediente ingrediente = new Ingrediente(
+                        rs.getInt("id_ingrediente"),
+                        rs.getString("nombre_ingrediente"),
+                        rs.getString("imagen_ingrediente"),
+                        rs.getString("tipo_ingrediente"),
+                        rs.getInt("alergeno_ingrediente"),
+                        rs.getString("tipo_alergeno_ingrediente")
+                    );
+
+                    String cantidad = rs.getString("cantidad");
+                    listaIngredientes.add(ingrediente);
+
+                    if (cantidad != null) {
+                        cantidadesPorIngrediente.put(ingrediente.getId_ingrediente(), cantidad);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error obteniendo ingredientes de la receta " + recetaId + ": " + e.getMessage());
+        }
+
+        return listaIngredientes;
+    }
+    
+    public static ObservableList<Restaurante> obtenerListaRestaurantes() {
+        ObservableList<Restaurante> lista = FXCollections.observableArrayList();
+
+        String query = "SELECT * FROM Restaurante";
+
+        try (Connection con = iniciarConexion();
+             PreparedStatement ps = con.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Restaurante restau = new Restaurante(
+                    rs.getInt("id_restaurante"),
+                    rs.getString("nombre_restaurante"),
+                    rs.getString("email_restaurante"),
+                    rs.getString("contraseña_restaurante"),
+                    rs.getString("imagen_restaurante"),
+                    rs.getString("ciudad_restaurante"),
+                     rs.getString("direccion_restaurante"),
+                    rs.getString("tipo_restaurante"),
+                    rs.getString("url_restaurante"),
+                    rs.getInt("usuario_id")
+                );
+                lista.add(restau);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+    }
+
+    public static ObservableList<RestauranteReceta> obtenerRestauranteReceta() {
+        ObservableList<RestauranteReceta> lista = FXCollections.observableArrayList();
+
+        String query = "SELECT * FROM RestauranteReceta";
+
+        try (Connection con = iniciarConexion();
+             PreparedStatement ps = con.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                RestauranteReceta relacion = new RestauranteReceta(
+                    rs.getInt("id_restaurante"),
+                    rs.getInt("id_receta")
+                );
+                lista.add(relacion);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+    }
+
+
 
     
     
@@ -438,9 +747,9 @@ public class FuncionesRepetidas {
     // Crear Card:
     public static VBox crearCardReceta(Receta receta) {
         try {
-            List<Alergeno> alergenos = obtenerAlergenosReceta(receta.getId_receta());
+            List<Alergeno> alergenos = obtenerRecetaAlergenos(receta.getId_receta());
             
-            FXMLLoader loader = new FXMLLoader(FuncionesRepetidas.class.getResource("/vistas/CardReceta.fxml"));
+            FXMLLoader loader = new FXMLLoader(FuncionesRepetidas.class.getResource("/vistas/Card.fxml"));
             VBox card = loader.load();
 
             // card.lookup("#...) sirve para busrcar por el id en el fxml enlazadp
@@ -452,8 +761,16 @@ public class FuncionesRepetidas {
             HBox alergenosIconosCard = (HBox) card.lookup("#alergenosIconosCard");
 
             nombre.setText(receta.getNombre_receta());
-            //Image image = new Image(receta.getImagen_receta());
-            //img.setImage(image);
+            
+            String rutaImagen = receta.getImagen_receta();
+            if (rutaImagen == null || rutaImagen.isEmpty()) {
+                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
+            } else if(FuncionesRepetidas.class.getResource(rutaImagen) == null){
+                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
+            } else {
+                img.setImage(new Image(FuncionesRepetidas.class.getResource(rutaImagen).toExternalForm()));
+            }
+        
             tipo.setText("Tipo: " + receta.getTipo_receta());
 
             for (Alergeno alergeno : alergenos) {
@@ -472,6 +789,197 @@ public class FuncionesRepetidas {
         }
     }
     
+    public static HBox crearCardValoraciones(Valoracion val) {
+        try {            
+            FXMLLoader loader = new FXMLLoader(FuncionesRepetidas.class.getResource("/vistas/CardValoracion.fxml"));
+            HBox card = loader.load(); 
+
+            ImageView imgCardValora = (ImageView) card.lookup("#imgCardValora");
+            Label lblNombreCardValora = (Label) card.lookup("#lblNombreCardValora");
+            Label lblPuntuacionCardValora = (Label) card.lookup("#lblPuntuacionCardValora");
+            Label lblFechaCardValora = (Label) card.lookup("#lblFechaCardValora");
+            Label lblComentarioCardValora = (Label) card.lookup("#lblComentarioCardValora");
+
+            Usuario usuarioVal = null;
+            ObservableList<Usuario> listaUsuarios = FuncionesRepetidas.obtenerListaUsuarios();
+
+            for (Usuario usuario : listaUsuarios) {
+                if (usuario.getId_usuario() == val.getUsuario_id()) {
+                    usuarioVal = usuario;
+                    break;
+                }
+            }
+
+            if (usuarioVal != null) {
+                String rutaImagenUsuario = obtenerRutaIconoUsuario(usuarioVal.getIcono_perfil_id());
+                URL urlImg = FuncionesRepetidas.class.getResource(rutaImagenUsuario);
+                if (urlImg != null && imgCardValora != null) {
+                    imgCardValora.setImage(new Image(urlImg.toExternalForm()));
+                }
+
+                if (lblNombreCardValora != null) {
+                    lblNombreCardValora.setText(usuarioVal.getNombre_usuario());
+                }
+            }
+            
+            String estrellas = "★".repeat(val.getPuntuacion_valoracion());
+            lblPuntuacionCardValora.setText(val.getPuntuacion_valoracion() + " " + estrellas);
+            lblFechaCardValora.setText(val.getFecha_valoracion().toString());
+
+            String comentario = val.getComentario_valoracion();
+            if (comentario != null && !comentario.isEmpty()) {
+                lblComentarioCardValora.setText(comentario);
+            } else {
+                lblComentarioCardValora.setVisible(false);
+            }
+
+            return card;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public static VBox crearCardIngrediente(Ingrediente ingre) {
+        try {            
+            FXMLLoader loader = new FXMLLoader(FuncionesRepetidas.class.getResource("/vistas/Card.fxml"));
+            VBox card = loader.load();
+
+            ImageView img = (ImageView) card.lookup("#imgCard");
+            Label nombre = (Label) card.lookup("#lblNombreCard");
+            Label tipo = (Label) card.lookup("#lblTipoCard");
+            HBox tipoIconos = (HBox) card.lookup("#tipoIconosCard");
+            Label alergenosLabel = (Label) card.lookup("#lblAlergenosCard");
+            HBox alergenosIconosCard = (HBox) card.lookup("#alergenosIconosCard");
+
+            nombre.setText(ingre.getNombre_ingrediente());
+            String rutaImagen = ingre.getImagen_ingrediente();
+            if (rutaImagen == null || rutaImagen.isEmpty()) {
+                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
+            } else if(FuncionesRepetidas.class.getResource(rutaImagen) == null){
+                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
+            } else {
+                img.setImage(new Image(FuncionesRepetidas.class.getResource(rutaImagen).toExternalForm()));
+            }
+          
+            Label tipoLbl = new Label(ingre.getTipo_ingrediente());
+            tipoIconos.getChildren().add(tipoLbl);
+
+            ObservableList<Alergeno> alergenos = obtenerListaAlergenos();
+            boolean encontrado = false;
+
+            for (Alergeno alergeno : alergenos) {
+                if (alergeno.getNombre_alergeno().equalsIgnoreCase(ingre.getTipo_alergeno_ingrediente())) {
+                    String rutaAlergenoIcono = alergeno.getImagen_alergeno();
+                    URL urlAlergeno = FuncionesRepetidas.class.getResource(rutaAlergenoIcono);
+                    if (urlAlergeno != null) {
+                        ImageView alergenoIcono = new ImageView(new Image(urlAlergeno.toExternalForm()));
+                        alergenoIcono.setFitWidth(20);
+                        alergenoIcono.setFitHeight(20);
+                        alergenosIconosCard.getChildren().add(alergenoIcono);
+                        encontrado = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!encontrado) {
+                Label noTiene = new Label("-");
+                alergenosIconosCard.getChildren().add(noTiene);
+            }
+
+            return card;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public static VBox crearCardRestaurante(Restaurante restau) {
+        try {            
+            FXMLLoader loader = new FXMLLoader(FuncionesRepetidas.class.getResource("/vistas/Card.fxml"));
+            VBox card = loader.load();
+
+            ImageView img = (ImageView) card.lookup("#imgCard");
+            Label nombre = (Label) card.lookup("#lblNombreCard");
+            Label tipo = (Label) card.lookup("#lblTipoCard");
+            HBox tipoIconos = (HBox) card.lookup("#tipoIconosCard");
+            Label alergenosLabel = (Label) card.lookup("#lblAlergenosCard");
+            HBox alergenosIconosCard = (HBox) card.lookup("#alergenosIconosCard");
+
+            nombre.setText(restau.getNombre_restaurante());
+            
+            String rutaImagen = restau.getImagen_restaurante();
+            if (rutaImagen == null || rutaImagen.isEmpty()) {
+                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
+            } else if(FuncionesRepetidas.class.getResource(rutaImagen) == null){
+                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
+            } else {
+                img.setImage(new Image(FuncionesRepetidas.class.getResource(rutaImagen).toExternalForm()));
+            }
+        
+            tipo.setText("Tipo: " + restau.getTipo_restaurante());
+            alergenosLabel.setVisible(false);
+            alergenosIconosCard.setVisible(false);
+            return card;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public static HBox crearCardValoracion(){
+        return null;
+    }
+    
+    
+    public static int puntuacionSeleccionada = 0;
+    public static void crearBotonesValoracion(HBox contenedor) {
+        contenedor.getChildren().clear();
+        String svgPath = "m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143Z";
+
+        for (int i = 1; i <= 5; i++) {
+            int valor = i;
+            Button btn = new Button();
+            btn.setMinSize(40, 40);
+            btn.setMaxSize(40, 40);
+            btn.getStyleClass().add("btnSinNada");
+
+            SVGPath estrella = new SVGPath();
+            estrella.setContent(svgPath);
+            estrella.setScaleX(0.06);
+            estrella.setScaleY(0.06);
+            estrella.getStyleClass().add("iconoSvg");
+            //estrella.setPickOnBounds(false);
+
+            btn.setGraphic(estrella);
+            btn.setOnAction(e -> {
+                puntuacionSeleccionada = valor;
+                actualizarEstrellas(contenedor, valor);
+                System.out.println("Puntuación seleccionada: " + valor);
+            });
+
+            contenedor.getChildren().add(btn);
+        }
+    }
+    
+    public static void actualizarEstrellas(HBox contenedor, int hasta) {
+        for (int i = 0; i < contenedor.getChildren().size(); i++) {
+            Button btn = (Button) contenedor.getChildren().get(i);
+            SVGPath svg = (SVGPath) btn.getGraphic();
+            if (i < hasta) {
+                svg.getStyleClass().add("fill");
+            } else {
+                svg.getStyleClass().remove("fill");
+            }
+        }
+    }
+    
+   
+
     
     
     

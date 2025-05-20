@@ -26,17 +26,20 @@ import javafx.stage.Stage;
 import modelos.Usuario;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -45,9 +48,14 @@ import modelos.Alergeno;
 import modelos.IconoPerfil;
 import modelos.Ingrediente;
 import modelos.Receta;
+import modelos.RecetaIngrediente;
+import modelos.Restaurante;
+import modelos.RestauranteReceta;
 import utils.FuncionesRepetidas;
 import static utils.FuncionesRepetidas.obtenerListaRecetas;
 import utils.ObservableListas;
+import modelos.Valoracion;
+import static utils.FuncionesRepetidas.actualizarValoracion;
 
 /**
  *
@@ -66,8 +74,17 @@ public class ControladorHomeAppPage implements Initializable {
     @FXML private HBox cajaBuscar;
     @FXML private TextField inputBuscar;
     @FXML public FlowPane flowRecetas;
-     @FXML public ScrollPane filtrosScroll, busquedasPane;
+    @FXML public ScrollPane filtrosScroll, busquedasPane;
         
+    // FXML de infoCardPane:
+    @FXML private ImageView infoCardRecetaImagen, infoCardIngreImagen, infoCardRestauImagen;
+    @FXML private Label infoCardRecetaNombre, infoCardRecetaDificultad, infoCardRecetaCocion, infoCardRecetaTiempo, infoCardRecetaValoracion, infoCardRecetaPasos, infoCardRecetaConsejos, infoCardIngreNombre, infoCardIngreTipo, infoCardRestauNombre, infoCardRestauTipo, infoCardRestauUrl, infoCardRestauCiudad, infoCardRestauDireccion;
+    @FXML private HBox infoCardRecetaCajaTipo, infoCardRecetaCajaAlergenos, infoCardIngreCajaAlergenos, infoCardRecetaRestaurantes, infoCardRecetaValoracionCaja, infoCardRecetaTodasValoracionCaja, infoCardIngreRecetas, infoCardRestauRecetas;
+    @FXML private VBox infoCardRecetaIngredientes, infoCardRecetaPane, infoCardIngredientePane, infoCardRestaurantePane;
+    @FXML private Button btnAtrasInfoCard, btnAñadirFav, btnAñadirValoracionReceta;
+    @FXML private TextField inputAñadirValoracionReceta;
+
+
     
     private Stage stage;
     public Connection conexion;
@@ -77,7 +94,9 @@ public class ControladorHomeAppPage implements Initializable {
     public String rutaTemaClaro = "/style/Style.css";
     public String rutaTemaOscuro = "/style/StyleOscuro.css";
     IconoPerfil iconoUsuario = null;
-
+    public Receta infoCardRecetaSelec;
+    public Ingrediente infoCardIngredienteSelec;
+    public Restaurante infoCardRestauranteSelec;
 
 
         
@@ -138,6 +157,12 @@ public class ControladorHomeAppPage implements Initializable {
             actualizarCards();
         });
         
+        
+        inputAñadirValoracionReceta.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                btnAñadirValoracionReceta();
+            }
+        });
         
     }
     
@@ -237,7 +262,7 @@ public class ControladorHomeAppPage implements Initializable {
     }
 
     public boolean recetaNoTieneAlergenos(Receta receta, List<String> alergenosFiltro) {
-        List<Alergeno> alergReceta = FuncionesRepetidas.obtenerAlergenosReceta(receta.getId_receta());
+        List<Alergeno> alergReceta = FuncionesRepetidas.obtenerRecetaAlergenos(receta.getId_receta());
         for (Alergeno a : alergReceta) {
             if (alergenosFiltro.contains(a.getNombre_alergeno())) {
                 return false;
@@ -250,37 +275,43 @@ public class ControladorHomeAppPage implements Initializable {
         flowRecetas.getChildren().clear();
 
         String textoBuscar = inputBuscar.getText().toLowerCase();
-        String tipoSeleccionado = getTipoSeleccionado(); // "Receta", "Ingrediente", o "" si ninguno
+        String tipoSeleccionado = getTipoSeleccionado();
         List<String> alergenosSeleccionados = getChecksSeleccionados(vboxAlergenos);
         List<String> dificultadSeleccionados = getChecksSeleccionados(vboxDificultad);
-        List<String> tiposRecetaSeleccionados = getChecksSeleccionados(vboxTipoReceta);
+        List<String> tiposDietaSeleccionados = getChecksSeleccionados(vboxTipoReceta);
         List<String> tiposCoccionSeleccionados = getChecksSeleccionados(vboxTipoCoccion);
+        List<String> valoracionesSeleccionadas = getChecksSeleccionados(vboxValoraciones);
 
         boolean buscarRecetas = tipoSeleccionado.equals("Receta") || tipoSeleccionado.isEmpty();
         boolean buscarIngredientes = tipoSeleccionado.equals("Ingrediente") || tipoSeleccionado.isEmpty();
+        boolean buscarRestaurantes = tipoSeleccionado.equals("Restaurante") || tipoSeleccionado.isEmpty();
 
         // Filtrar recetas
         if (buscarRecetas) {
             for (Receta receta : FuncionesRepetidas.obtenerListaRecetas()) {
                 boolean coincideTexto = receta.getNombre_receta().toLowerCase().contains(textoBuscar);
                 boolean pasaAlergenos = recetaNoTieneAlergenos(receta, alergenosSeleccionados);
-                boolean pasaDificultadReceta = dificultadSeleccionados.isEmpty() || dificultadSeleccionados.contains(receta.getDificultad_receta());
-                boolean pasaTipoReceta = tiposRecetaSeleccionados.isEmpty() || tiposRecetaSeleccionados.contains(receta.getTipo_receta());
+                boolean pasaDificultad = dificultadSeleccionados.isEmpty() || dificultadSeleccionados.contains(receta.getDificultad_receta());
+                boolean pasaTipoReceta = tiposDietaSeleccionados.isEmpty() || tiposDietaSeleccionados.contains(receta.getTipo_receta());
                 boolean pasaTipoCoccion = tiposCoccionSeleccionados.isEmpty() || tiposCoccionSeleccionados.contains(receta.getTipo_coccion_receta());
 
-                if (coincideTexto && pasaAlergenos && pasaDificultadReceta && pasaTipoReceta && pasaTipoCoccion) {
+                double mediaValoracion = FuncionesRepetidas.obtenerValoracionMedia(receta.getId_receta());
+                boolean pasaValoracion = valoracionesSeleccionadas.isEmpty()
+                        || valoracionesSeleccionadas.contains(String.valueOf(Math.round(mediaValoracion)));
+
+                if (coincideTexto && pasaAlergenos && pasaDificultad && pasaTipoReceta && pasaTipoCoccion && pasaValoracion) {
                     VBox card = FuncionesRepetidas.crearCardReceta(receta);
                     if (card != null) {
-
                         card.setOnMouseClicked(event -> {
                             buscadorPane.setVisible(false);
                             infoCardPane.setVisible(true);
+                            infoCardRecetaPane.setVisible(true);
+                            infoCardIngredientePane.setVisible(false);
+                            infoCardRestaurantePane.setVisible(false);
 
-                            System.out.println("ID: " + receta.getId_receta());
-                            System.out.println("Tipo: Receta. nombre: "+receta.getNombre_receta());
-                           
+                            infoCardRecetaSelec = receta;
+                            mostrarInfoCardReceta();
                         });
-
                         flowRecetas.getChildren().add(card);
                     }
                 }
@@ -289,22 +320,411 @@ public class ControladorHomeAppPage implements Initializable {
 
         // Filtrar ingredientes
         if (buscarIngredientes) {
-            for (Ingrediente ing : FuncionesRepetidas.obtenerListaIngredientes()) {
-                // Los ingredientes no deben filtrar por tipo_receta ni tipo_coccion_receta
-                if (ing.getNombre_ingrediente().toLowerCase().contains(textoBuscar)) {
-                    //VBox card = FuncionesRepetidas.crearCardIngrediente(ing);
-                    //if (card != null) flowRecetas.getChildren().add(card);
+
+            for (Ingrediente ingre : FuncionesRepetidas.obtenerListaIngredientes()) {
+                boolean coincideTexto = ingre.getNombre_ingrediente().toLowerCase().contains(textoBuscar);
+                boolean noValoracion = valoracionesSeleccionadas.isEmpty();
+                boolean noTipoReceta = tiposDietaSeleccionados.isEmpty();
+                boolean noDificultad = dificultadSeleccionados.isEmpty();
+                boolean noTipoCoccion = tiposCoccionSeleccionados.isEmpty();
+                boolean pasaAlergenos = true;
+
+                if (!alergenosSeleccionados.isEmpty()) {
+                    for (String alergNombre : alergenosSeleccionados) {
+                        String tipoAlergeno = ingre.getTipo_alergeno_ingrediente();
+
+                        if (tipoAlergeno != null && !tipoAlergeno.isEmpty() && tipoAlergeno.equalsIgnoreCase(alergNombre)) {
+                            pasaAlergenos = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (alergenosSeleccionados.isEmpty()) {
+                    pasaAlergenos = true;
+                }
+
+                if (coincideTexto && pasaAlergenos && noTipoReceta && noValoracion && noDificultad && noTipoCoccion) {
+                    VBox card = FuncionesRepetidas.crearCardIngrediente(ingre);
+                    if (card != null) {
+                        card.setOnMouseClicked(event -> {
+                            buscadorPane.setVisible(false);
+                            infoCardPane.setVisible(true);
+                            infoCardIngredientePane.setVisible(true);
+                            infoCardRecetaPane.setVisible(false);
+                            infoCardRestaurantePane.setVisible(false);
+
+                            infoCardIngredienteSelec = ingre;
+                            mostrarInfoCardIngrediente();
+                        });
+                        flowRecetas.getChildren().add(card);
+                    }
+                }
+            }
+        }
+
+        
+        // Filtar por restau
+        if (buscarRestaurantes) {
+            for (Restaurante restaurante : FuncionesRepetidas.obtenerListaRestaurantes()) {
+                boolean noTipoCoccion = tiposCoccionSeleccionados.isEmpty();
+                boolean noDificultad = dificultadSeleccionados.isEmpty();
+                boolean noAlergenos = alergenosSeleccionados.isEmpty();
+                boolean noDieta = tiposDietaSeleccionados.isEmpty();
+                boolean coincideTexto = restaurante.getNombre_restaurante().toLowerCase().contains(textoBuscar);
+                double mediaValoracion = FuncionesRepetidas.obtenerValoracionMediaRestaurante(restaurante.getId_restaurante());
+                boolean pasaValoracion = valoracionesSeleccionadas.isEmpty()
+                        || valoracionesSeleccionadas.contains(String.valueOf(Math.round(mediaValoracion)));
+
+                if (coincideTexto && pasaValoracion && noDieta && noTipoCoccion && noDificultad && noAlergenos) {
+                    VBox card = FuncionesRepetidas.crearCardRestaurante(restaurante);
+                    if (card != null) {
+                        card.setOnMouseClicked(event -> {
+                            buscadorPane.setVisible(false);
+                            infoCardPane.setVisible(true);
+                            infoCardRestaurantePane.setVisible(true);
+                            infoCardRecetaPane.setVisible(false);
+                            infoCardIngredientePane.setVisible(false);
+
+                            infoCardRestauranteSelec = restaurante;
+                            mostrarInfoCardRestaurante();
+                        });
+                        flowRecetas.getChildren().add(card);
+                    }
                 }
             }
         }
     }
     
     
+    // INFO CARD RECETA:
+    public void mostrarInfoCardReceta() {
+        if (infoCardRecetaSelec == null) return;
+
+        String rutaImagen = infoCardRecetaSelec.getImagen_receta();
+        if (rutaImagen == null || rutaImagen.isEmpty()) {
+            infoCardRecetaImagen.setImage(new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png")));
+        } else {
+            URL urlImagenReceta = getClass().getResource(rutaImagen);
+            if (urlImagenReceta == null) {
+                infoCardRecetaImagen.setImage(new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png")));
+
+            } else {
+                infoCardRecetaImagen.setImage(new Image(urlImagenReceta.toExternalForm()));
+            }
+        }
+   
+        infoCardRecetaNombre.setText(infoCardRecetaSelec.getNombre_receta());
+
+        infoCardRecetaCajaTipo.getChildren().clear();
+        ImageView imgTipo = FuncionesRepetidas.crearIconoDesdeRuta(infoCardRecetaSelec.getTipo_receta());
+        if (imgTipo != null) {
+            infoCardRecetaCajaTipo.getChildren().add(imgTipo);
+        }
+
+        infoCardRecetaDificultad.setText(infoCardRecetaSelec.getDificultad_receta());
+        infoCardRecetaCocion.setText(infoCardRecetaSelec.getTipo_coccion_receta());
+        infoCardRecetaTiempo.setText(Integer.toString(infoCardRecetaSelec.getTiempo_preparacion_receta())+" min.");
+
+
+        infoCardRecetaCajaAlergenos.getChildren().clear();
+        ObservableList<Alergeno> alergenos = FuncionesRepetidas.obtenerRecetaAlergenos(infoCardRecetaSelec.getId_receta());
+        for (Alergeno alergeno : alergenos) {
+            ImageView icono = FuncionesRepetidas.crearIconoDesdeRuta(alergeno.getImagen_alergeno());
+            icono.setFitHeight(40);
+            icono.setFitWidth(40);
+            if (icono != null) {
+                infoCardRecetaCajaAlergenos.getChildren().add(icono);
+            }
+        }
+
+        double valoracion = FuncionesRepetidas.obtenerValoracionMedia(infoCardRecetaSelec.getId_receta());
+        infoCardRecetaValoracion.setText(String.format("%.1f ★", valoracion));
+
+        infoCardRecetaIngredientes.getChildren().clear();
+        Map<Integer, String> cantidadesPorIngrediente = new HashMap<>();
+                ObservableList<Ingrediente> ingredientes = FuncionesRepetidas.obtenerRecetaIngredientes(
+            infoCardRecetaSelec.getId_receta(), cantidadesPorIngrediente
+        );
+
+        for (Ingrediente ingrediente : ingredientes) {
+            String cantidad = cantidadesPorIngrediente.get(ingrediente.getId_ingrediente());
+
+            HBox hboxIngrediente = new HBox(5);
+            hboxIngrediente.setAlignment(Pos.CENTER_LEFT);
+            
+            ImageView imgIng = FuncionesRepetidas.crearIconoDesdeRuta(ingrediente.getImagen_ingrediente());
+            if (imgIng != null) {
+                imgIng.setFitHeight(40);
+                imgIng.setFitWidth(40);
+                hboxIngrediente.getChildren().add(imgIng);
+            }
+
+            Label label = new Label((cantidad != null ? cantidad + " " : "") + ingrediente.getNombre_ingrediente());
+            hboxIngrediente.getChildren().add(label);
+
+            infoCardRecetaIngredientes.getChildren().add(hboxIngrediente);
+        }
+        
+        infoCardRecetaRestaurantes.getChildren().clear();
+        
+        ObservableList<RestauranteReceta> relaciones = FuncionesRepetidas.obtenerRestauranteReceta();
+        ObservableList<Restaurante> todosRestaurantes = FuncionesRepetidas.obtenerListaRestaurantes();
+
+        boolean encontrado = false;
+
+        for (RestauranteReceta relacion : relaciones) {
+            if (relacion.getId_receta() == infoCardRecetaSelec.getId_receta()) {
+                Restaurante restau = todosRestaurantes.stream()
+                    .filter(r -> r.getId_restaurante() == relacion.getId_restaurante())
+                    .findFirst()
+                    .orElse(null);
+
+                if (restau != null) {
+                    VBox card = FuncionesRepetidas.crearCardRestaurante(restau);
+                    if (card != null) {
+                        infoCardRecetaRestaurantes.getChildren().add(card);
+                        encontrado = true;
+                        card.setOnMouseClicked(event -> {
+                            buscadorPane.setVisible(false);
+                            infoCardPane.setVisible(true);
+                            infoCardIngredientePane.setVisible(false);
+                            infoCardRecetaPane.setVisible(false);
+                            infoCardRestaurantePane.setVisible(true);
+                            
+                            infoCardRestauranteSelec = restau; 
+                            mostrarInfoCardRestaurante(); 
+                        });
+                    }
+                }
+            }
+        }
+
+        if (!encontrado) {
+            Label noRestaurantes = new Label("No hay restaurantes asociados");
+            infoCardRecetaRestaurantes.setAlignment(Pos.CENTER);
+            infoCardRecetaRestaurantes.getChildren().add(noRestaurantes);
+        }
+        
+        boolean valEcontrado = false;
+        Valoracion valoracionUsuario = FuncionesRepetidas.obtenerValoracionUsuarioEnObjeto(
+            usuario.getId_usuario(),
+            infoCardRecetaSelec.getId_receta(),
+            Valoracion.TipoObjeto.RECETA
+        );
+
+        FuncionesRepetidas.crearBotonesValoracion(infoCardRecetaValoracionCaja);
+        if (valoracionUsuario != null) {
+            FuncionesRepetidas.puntuacionSeleccionada = valoracionUsuario.getPuntuacion_valoracion();
+            FuncionesRepetidas.actualizarEstrellas(infoCardRecetaValoracionCaja, valoracionUsuario.getPuntuacion_valoracion());
+
+        } else {
+            FuncionesRepetidas.puntuacionSeleccionada = 0;
+            inputAñadirValoracionReceta.clear();
+        }
+        
+        ObservableList<Valoracion> listaValoraciones = FuncionesRepetidas.obtenerListaValoraciones(
+            Valoracion.TipoObjeto.RECETA.getValor(),
+            infoCardRecetaSelec.getId_receta()
+        );
+
+        infoCardRecetaTodasValoracionCaja.getChildren().clear();
+
+        for (Valoracion val : listaValoraciones) {
+            valEcontrado = true;
+            
+            infoCardRecetaTodasValoracionCaja.getChildren().add(FuncionesRepetidas.crearCardValoraciones(val));
+        } 
+        
+        if (!valEcontrado) {
+            Label noHay = new Label("Esta receta aún no tiene valorariones");
+            infoCardRecetaTodasValoracionCaja.setAlignment(Pos.CENTER);
+            infoCardRecetaTodasValoracionCaja.getChildren().add(noHay);
+        }
+    }
     
-    
+    @FXML private void btnAñadirValoracionReceta() {
+       
+        String comentario = inputAñadirValoracionReceta.getText();
+        int puntuacion = FuncionesRepetidas.puntuacionSeleccionada;
+
+        if (puntuacion == 0) {
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error", "Selecciona una puntuación, para mandar el comentario");
+            return;
+        }
+
+        Valoracion val = new Valoracion();
+        val.setTipo_objeto(Valoracion.TipoObjeto.RECETA);
+        val.setId_objeto(infoCardRecetaSelec.getId_receta());
+        val.setUsuario_id(usuario.getId_usuario());
+        val.setPuntuacion_valoracion(puntuacion);
+        val.setComentario_valoracion(comentario);
+        val.setFecha_valoracion(new Date());
+
+        boolean existe = (FuncionesRepetidas.obtenerValoracionUsuarioEnObjeto(usuario.getId_usuario(), infoCardRecetaSelec.getId_receta(), Valoracion.TipoObjeto.RECETA) != null);
+        boolean resultado;
+
+        if (existe) {
+            resultado = FuncionesRepetidas.actualizarValoracion(infoCardRecetaValoracionCaja, val);
+
+        } else {
+            resultado = FuncionesRepetidas.insertarValoracion(val);
+        }
+
+        if (resultado) {
+            mostrarInfoCardReceta();
+        } else {
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo guardar la valoración.");
+        }
+        inputAñadirValoracionReceta.clear();
+    }
 
     
+    public void mostrarInfoCardIngrediente() {
+        if (infoCardIngredienteSelec == null) return;
+
+        String rutaImagen = infoCardIngredienteSelec.getImagen_ingrediente();
+        if (rutaImagen == null || rutaImagen.isEmpty()) {
+            infoCardIngreImagen.setImage(new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png")));
+        } else {
+            URL urlImagenReceta = getClass().getResource(rutaImagen);
+            if (urlImagenReceta == null) {
+                infoCardIngreImagen.setImage(new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png")));
+
+            } else {
+                infoCardIngreImagen.setImage(new Image(urlImagenReceta.toExternalForm()));
+            }
+        }
+   
+        infoCardIngreNombre.setText(infoCardIngredienteSelec.getNombre_ingrediente());
+        infoCardIngreTipo.setText(infoCardIngredienteSelec.getTipo_ingrediente());
+
+        infoCardIngreCajaAlergenos.getChildren().clear();
+        ObservableList<Alergeno> alergenos = FuncionesRepetidas.obtenerListaAlergenos();
+        boolean encontrado = false;
+
+        String tipoAlergeno = infoCardIngredienteSelec.getTipo_alergeno_ingrediente();
+
+        if (tipoAlergeno != null && !tipoAlergeno.isEmpty()) {
+            for (Alergeno alergeno : alergenos) {
+                if (alergeno.getNombre_alergeno().equalsIgnoreCase(tipoAlergeno)) {
+                    String rutaIcono = alergeno.getImagen_alergeno();
+                    URL urlAlergeno = FuncionesRepetidas.class.getResource(rutaIcono);
+                    if (urlAlergeno != null) {
+                        ImageView alergenoIcono = new ImageView(new Image(urlAlergeno.toExternalForm()));
+                        alergenoIcono.setFitWidth(40);
+                        alergenoIcono.setFitHeight(40);
+                        infoCardIngreCajaAlergenos.getChildren().add(alergenoIcono);
+                        encontrado = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!encontrado) {
+            Label noTiene = new Label("-");
+            infoCardIngreCajaAlergenos.getChildren().add(noTiene);
+        }
+        
+        infoCardIngreRecetas.getChildren().clear();
+
+        ObservableList<Receta> recetas = FuncionesRepetidas.obtenerListaRecetas();
+        int idIngrediente = infoCardIngredienteSelec.getId_ingrediente();
+        Map<Integer, String> cantidadesPorIngrediente = new HashMap<>();
+
+        for (Receta receta : recetas) {
+            ObservableList<Ingrediente> ingredientes = FuncionesRepetidas.obtenerRecetaIngredientes(receta.getId_receta(), cantidadesPorIngrediente);
+
+            for (Ingrediente ingrediente : ingredientes) {
+                if (ingrediente.getId_ingrediente() == idIngrediente) {
+                    VBox card = FuncionesRepetidas.crearCardReceta(receta);
+                    if (card != null) {
+                        card.setOnMouseClicked(event -> {
+                            buscadorPane.setVisible(false);
+                            infoCardPane.setVisible(true);
+                            infoCardRecetaPane.setVisible(true);
+                            infoCardIngredientePane.setVisible(false);
+                            infoCardRestaurantePane.setVisible(false);
+
+                            infoCardRecetaSelec = receta;
+                            mostrarInfoCardReceta(); 
+                  
+                        });
+
+                        infoCardIngreRecetas.getChildren().add(card);
+                    }
+                    break;
+                }
+            }
+        }
+    }
     
+    public void mostrarInfoCardRestaurante() {
+        if (infoCardRestauranteSelec == null) return;
+
+        String rutaImagen = infoCardRestauranteSelec.getImagen_restaurante();
+        if (rutaImagen == null || rutaImagen.isEmpty()) {
+            infoCardRestauImagen.setImage(new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png")));
+        } else {
+            URL urlImagenReceta = getClass().getResource(rutaImagen);
+            if (urlImagenReceta == null) {
+                infoCardRestauImagen.setImage(new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png")));
+
+            } else {
+                infoCardRestauImagen.setImage(new Image(urlImagenReceta.toExternalForm()));
+            }
+        }
+   
+        infoCardRestauNombre.setText(infoCardRestauranteSelec.getNombre_restaurante());
+        infoCardRestauTipo.setText(infoCardRestauranteSelec.getTipo_restaurante());
+        infoCardRestauUrl.setText(infoCardRestauranteSelec.getUrl_restaurante() == null || infoCardRestauranteSelec.getUrl_restaurante().isEmpty() ? "-" : infoCardRestauranteSelec.getUrl_restaurante());
+        infoCardRestauCiudad.setText(infoCardRestauranteSelec.getCiudad_restaurante() == null || infoCardRestauranteSelec.getCiudad_restaurante().isEmpty() ? "-" : infoCardRestauranteSelec.getCiudad_restaurante());
+        infoCardRestauDireccion.setText(infoCardRestauranteSelec.getDireccion_restaurante() == null || infoCardRestauranteSelec.getDireccion_restaurante().isEmpty() ? "-" : infoCardRestauranteSelec.getDireccion_restaurante());
+        
+ 
+        infoCardRestauRecetas.getChildren().clear();
+        
+        ObservableList<RestauranteReceta> relaciones = FuncionesRepetidas.obtenerRestauranteReceta();
+        ObservableList<Receta> recetas = FuncionesRepetidas.obtenerListaRecetas();
+        boolean encontrado = false;
+
+        for (RestauranteReceta relacion : relaciones) {
+            if (relacion.getId_restaurante()== infoCardRestauranteSelec.getId_restaurante()) {
+                Receta receta = recetas.stream()
+                    .filter(r -> r.getId_receta() == relacion.getId_receta())
+                    .findFirst()
+                    .orElse(null);
+
+                if (receta != null) {
+                    VBox card = FuncionesRepetidas.crearCardReceta(receta);
+                    if (card != null) {
+                        infoCardRestauRecetas.getChildren().add(card);
+                        encontrado = true;
+
+                        card.setOnMouseClicked(event -> {
+                            buscadorPane.setVisible(false);
+                            infoCardPane.setVisible(true);
+                            infoCardIngredientePane.setVisible(false);
+                            infoCardRecetaPane.setVisible(true);
+                            infoCardRestaurantePane.setVisible(false);
+
+                            infoCardRecetaSelec = receta;
+                            mostrarInfoCardReceta();
+                        });
+                    }
+                }
+            }
+        }
+
+        if (!encontrado) {
+            Label noRecetas = new Label("Este restaurante aún no ha incluido su carta");
+            infoCardRestauRecetas.setAlignment(Pos.CENTER);
+            infoCardRestauRecetas.getChildren().add(noRecetas);
+        }
+    }
+    
+
     
     
     

@@ -15,7 +15,7 @@ public class ObservableListas {
     
     
     public static ObservableList<String> listaTiposRestaurantes = ordenar(
-        FXCollections.observableArrayList("Italiano", "Francés", "Español", "Japonés", "Chino", "Mexicano", "Indio", "Tailandés", "Vietnamita", "Coreano", "Griego", "Turco", "Libanés", "Peruano", "Brasileño", "Argentino", "Estadounidense (American)", "Vegetariano", "Vegano", "De marisco/pescado", "De fusión", "De autor/alta cocina", "Étnico (otros)"
+        FXCollections.observableArrayList("Italiano", "Francés", "Mediterráneo", "Japonés", "Chino", "Mexicano", "Indio", "Tailandés", "Vietnamita", "Coreano", "Griego", "Turco", "Libanés", "Peruano", "Brasileño", "Argentino", "Estadounidense (American)", "Vegetariano", "Vegano", "De marisco/pescado", "De fusión", "De autor/alta cocina", "Étnico (otros)"
     ));
     
     public static ObservableList<String> listaCiudades = ordenar(
@@ -23,13 +23,13 @@ public class ObservableListas {
     ));
 
     public static ObservableList<String> listaTiposRecetas = ordenar(
-        FXCollections.observableArrayList("Vegetariana", "Vegana", "Keto", "Sin Gluten", "Carnívora", "Postre", "Entrante", "Bebida")
+        FXCollections.observableArrayList("Vegetariana", "Vegana", "Keto", "Sin glúten", "Carnívora", "Mediterránea", "Postre", "Entrante", "Bebida")
     );
     
     public static ObservableList<String> listaDificultadRecetas = FXCollections.observableArrayList("Fácil", "Media", "Dificil", "Experto");
 
     public static ObservableList<String> listaAlergenos = ordenar(
-        FXCollections.observableArrayList("Glúten", "Leche de vaca", "Soja", "Frutos de cáscara", "Huevo", "Pescado", "Marísco", "Sésamo", "Apio", "Cacahuetes", "Moluscos", "Mostaza")
+        FXCollections.observableArrayList("Glúten", "Lácteo", "Soja", "Frutos de cáscara", "Huevo", "Pescado", "Marísco", "Sésamo", "Apio", "Cacahuetes", "Moluscos", "Mostaza")
     );
 
     public static ObservableList<Integer> listaValoraciones = FXCollections.observableArrayList(1, 2, 3, 4, 5);
@@ -40,7 +40,7 @@ public class ObservableListas {
 
     // Filtros:
     public static ObservableList<String> listaFiltrar = ordenar(
-        FXCollections.observableArrayList("Ingrediente", "Receta")
+        FXCollections.observableArrayList("Ingrediente", "Receta", "Restaurante")
     );
     
     public static ObservableList<Receta> listaRecetas = FXCollections.observableArrayList(FuncionesRepetidas.obtenerListaRecetas());

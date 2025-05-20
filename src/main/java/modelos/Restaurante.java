@@ -9,7 +9,9 @@ public class Restaurante {
     public String nombre_restaurante;
     public String email_restaurante;
     public String contraseña_restaurante;
+    public String imagen_restaurante;
     public String ciudad_restaurante;
+    public String direccion_restaurante;
     public String tipo_restaurante;
     public String url_restaurante;
     public int usuario_id;
@@ -17,13 +19,14 @@ public class Restaurante {
     public Restaurante() {
     }
 
-    
-    public Restaurante(int id_restaurante, String nombre_restaurante, String email_restaurante, String contraseña_restaurante, String ciudad_restaurante, String tipo_restaurante, String url_restaurante, int usuario_id) {
+    public Restaurante(int id_restaurante, String nombre_restaurante, String email_restaurante, String contraseña_restaurante, String imagen_restaurante, String ciudad_restaurante, String direccion_restaurante, String tipo_restaurante, String url_restaurante, int usuario_id) {
         this.id_restaurante = id_restaurante;
         this.nombre_restaurante = nombre_restaurante;
         this.email_restaurante = email_restaurante;
         this.contraseña_restaurante = contraseña_restaurante;
+        this.imagen_restaurante = imagen_restaurante;
         this.ciudad_restaurante = ciudad_restaurante;
+        this.direccion_restaurante = direccion_restaurante;
         this.tipo_restaurante = tipo_restaurante;
         this.url_restaurante = url_restaurante;
         this.usuario_id = usuario_id;
@@ -61,13 +64,28 @@ public class Restaurante {
         this.contraseña_restaurante = contraseña_restaurante;
     }
 
-    
+    public String getImagen_restaurante() {
+        return imagen_restaurante;
+    }
+
+    public void setImagen_restaurante(String imagen_restaurante) {
+        this.imagen_restaurante = imagen_restaurante;
+    }
+
     public String getCiudad_restaurante() {
         return ciudad_restaurante;
     }
 
     public void setCiudad_restaurante(String ciudad_restaurante) {
         this.ciudad_restaurante = ciudad_restaurante;
+    }
+
+    public String getDireccion_restaurante() {
+        return direccion_restaurante;
+    }
+
+    public void setDireccion_restaurante(String direccion_restaurante) {
+        this.direccion_restaurante = direccion_restaurante;
     }
 
     public String getTipo_restaurante() {
@@ -93,6 +111,6 @@ public class Restaurante {
     public void setUsuario_id(int usuario_id) {
         this.usuario_id = usuario_id;
     }
-    
-    
+
+
 }

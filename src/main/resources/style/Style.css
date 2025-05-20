@@ -135,6 +135,9 @@
     -fx-padding: 6px;
 }
 
+.fill {
+    -fx-fill: gold;
+}
 
 
 .card {
