@@ -10,7 +10,7 @@ public class Valoracion {
     private int id_valoracion;
     private TipoObjeto tipo_objeto;
     private int id_objeto;
-    private int usuario_id;
+    private int id_usuario;
     private int puntuacion_valoracion;
     private String comentario_valoracion;
     private Date fecha_valoracion;
@@ -18,11 +18,11 @@ public class Valoracion {
     public Valoracion() {
     }
 
-    public Valoracion(int id_valoracion, TipoObjeto tipo_objeto, int id_objeto, int usuario_id, int puntuacion_valoracion, String comentario_valoracion, Date fecha_valoracion) {
+    public Valoracion(int id_valoracion, TipoObjeto tipo_objeto, int id_objeto, int id_usuario, int puntuacion_valoracion, String comentario_valoracion, Date fecha_valoracion) {
         this.id_valoracion = id_valoracion;
         this.tipo_objeto = tipo_objeto;
         this.id_objeto = id_objeto;
-        this.usuario_id = usuario_id;
+        this.id_usuario = id_usuario;
         this.puntuacion_valoracion = puntuacion_valoracion;
         this.comentario_valoracion = comentario_valoracion;
         this.fecha_valoracion = fecha_valoracion;
@@ -52,12 +52,12 @@ public class Valoracion {
         this.id_objeto = id_objeto;
     }
 
-    public int getUsuario_id() {
-        return usuario_id;
+    public int getId_usuario() {
+        return id_usuario;
     }
 
-    public void setUsuario_id(int usuario_id) {
-        this.usuario_id = usuario_id;
+    public void setId_usuario(int id_usuario) {
+        this.id_usuario = id_usuario;
     }
 
     public int getPuntuacion_valoracion() {

@@ -12,7 +12,7 @@ public class Receta {
     private String imagen_receta;
     private int tiempo_preparacion_receta;
     private String dificultad_receta;
-    private int autor_id;
+    private int id_autor;
     private String tipo_receta;
     private String tipo_coccion_receta;
     private int publicada_por_restaurante;
@@ -20,7 +20,7 @@ public class Receta {
     public Receta() {
     }
 
-    public Receta(int id_receta, String nombre_receta, String consejos_receta, String pasos_receta, String imagen_receta, int tiempo_preparacion_receta, String dificultad_receta, int autor_id, String tipo_receta, String tipo_coccion_receta, int publicada_por_restaurante) {
+    public Receta(int id_receta, String nombre_receta, String consejos_receta, String pasos_receta, String imagen_receta, int tiempo_preparacion_receta, String dificultad_receta, int id_autor, String tipo_receta, String tipo_coccion_receta, int publicada_por_restaurante) {
         this.id_receta = id_receta;
         this.nombre_receta = nombre_receta;
         this.consejos_receta = consejos_receta;
@@ -28,7 +28,7 @@ public class Receta {
         this.imagen_receta = imagen_receta;
         this.tiempo_preparacion_receta = tiempo_preparacion_receta;
         this.dificultad_receta = dificultad_receta;
-        this.autor_id = autor_id;
+        this.id_autor = id_autor;
         this.tipo_receta = tipo_receta;
         this.tipo_coccion_receta = tipo_coccion_receta;
         this.publicada_por_restaurante = publicada_por_restaurante;
@@ -90,12 +90,12 @@ public class Receta {
         this.dificultad_receta = dificultad_receta;
     }
 
-    public int getAutor_id() {
-        return autor_id;
+    public int getId_autor() {
+        return id_autor;
     }
 
-    public void setAutor_id(int autor_id) {
-        this.autor_id = autor_id;
+    public void setId_autor(int id_autor) {
+        this.id_autor = id_autor;
     }
 
     public String getTipo_receta() {

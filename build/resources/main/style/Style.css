@@ -7,6 +7,7 @@
     verde: #bed600;
     azul: #4bbde8;
     morado: #7e89ee;
+    grisClaro: #888;
     grisOscuro: #333;
     negro: 000;
     sombraRelive: inset 2px 2px 4px #f58e04;
@@ -135,8 +136,20 @@
     -fx-padding: 6px;
 }
 
-.fill {
+.fillEstrella {
     -fx-fill: gold;
+}
+
+.svgSoloBordes{
+    -fx-fill: transparent;
+    -fx-stroke: grisClaro;
+    -fx-stroke-width: 2px;
+}
+
+.fillFav{
+    -fx-stroke: rosa;
+    -fx-stroke-width: 2px;
+    -fx-fill: rosa;
 }
 
 

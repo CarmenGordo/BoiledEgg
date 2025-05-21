@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.util.Collections;
 import javafx.collections.transformation.FilteredList;
+import modelos.Favoritos;
 import modelos.Ingrediente;
 import modelos.Receta;
 
@@ -45,6 +46,9 @@ public class ObservableListas {
     
     public static ObservableList<Receta> listaRecetas = FXCollections.observableArrayList(FuncionesRepetidas.obtenerListaRecetas());
     public static FilteredList<Receta> listaFiltradaRecetas = new FilteredList<>(listaRecetas, p -> true);
+    
+    public static ObservableList<Favoritos> listaFavoritos = FXCollections.observableArrayList();
+    //listaFavoritos.setAll(FuncionesRepetidas.obtenerFavoritosUsuario(idUsuario));
 
     public static ObservableList<Ingrediente> listaIngredientes = FXCollections.observableArrayList(FuncionesRepetidas.obtenerListaIngredientes());
     public static FilteredList<Ingrediente> listaFiltradaIngredientes = new FilteredList<>(listaIngredientes, p -> true);

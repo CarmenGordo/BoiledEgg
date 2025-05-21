@@ -45,6 +45,13 @@ dependencies {
     implementation 'net.sf.jasperreports:jasperreports:7.0.1'
     implementation 'net.sf.jasperreports:jasperreports-pdf:7.0.0' //Exportar PDF
     implementation 'net.sf.jasperreports:jasperreports-charts:7.0.1' //Charts
+
+    // para leer los codigos de barras
+    implementation 'com.google.zxing:core:3.5.2'
+    implementation 'com.google.zxing:javase:3.5.2'
+
+    // para poder poner la cam
+implementation 'com.github.sarxos:webcam-capture:0.3.12'
 }
 
 mainClassName = 'vistas.Main'

@@ -1,0 +1,13 @@
+<html>
+<body>
+    <h1>hola</h1>
+    <video id="video" autoplay></video>
+    
+    
+    <script>
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => document.getElementById("video").srcObject = stream)
+            .catch(error => console.log("Error al acceder a la cámara: ", error));
+    </script>
+</body>
+</html>

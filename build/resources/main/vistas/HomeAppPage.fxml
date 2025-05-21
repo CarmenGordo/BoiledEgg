@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -32,38 +33,53 @@
             </BorderPane.margin>
                <children>
                   <ImageView fx:id="logoImageView" fitHeight="42.0" fitWidth="97.0" preserveRatio="true" />
-                  <Region prefHeight="16.0" prefWidth="94.0" />
-                  <Button fx:id="btnHome" graphicTextGap="10.0" prefHeight="17.0" prefWidth="88.0" styleClass="btnMenu" text="Home">
-                     <graphic>
-                        <ImageView fx:id="iconHome" fitWidth="24.0" preserveRatio="true" />
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnRecetas" graphicTextGap="10.0" styleClass="btnMenu" text="Recetas">
-                     <graphic>
-                        <ImageView fx:id="iconRecetas" fitWidth="24.0" preserveRatio="true" />
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnEscanear" graphicTextGap="10.0" styleClass="btnMenu" text="Escanear Producto">
-                     <graphic>
-                        <ImageView fx:id="iconEscanear" fitWidth="24.0" preserveRatio="true" />
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnSubirReceta" graphicTextGap="10.0" styleClass="btnMenu" text="Subir Receta">
-                     <graphic>
-                        <ImageView fx:id="iconSubir" fitWidth="24.0" preserveRatio="true" />
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnHistorial" graphicTextGap="10.0" styleClass="btnMenu" text="Historial">
-                     <graphic>
-                        <ImageView fx:id="iconHistorial" fitWidth="24.0" preserveRatio="true" />
-                     </graphic>
-                  </Button>
+                  <Region minHeight="-Infinity" prefHeight="108.0" prefWidth="133.0" VBox.vgrow="ALWAYS" />
+                  <HBox fx:id="btnHome" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="151.0">
+                     <children>
+                        <SVGPath content="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h240v-560H200v560Zm320 0h240v-280H520v280Zm0-360h240v-200H520v200Z" scaleX="0.03" scaleY="0.03" translateX="-20.0" />
+                        <Label maxWidth="-Infinity" minWidth="-Infinity" prefHeight="17.0" prefWidth="43.0" text="Home" translateX="-360.0" />
+                     </children>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </HBox>
+                  <HBox fx:id="btnEscanear" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="151.0">
+                     <children>
+                        <SVGPath content="M240-120q-60 0-95.5-46.5T124-270l72-272q-33-21-54.5-57T120-680q0-66 47-113t113-47h320q45 0 68 38t3 78l-80 160q-11 20-29.5 32T520-520h-81l-11 40h12q17 0 28.5 11.5T480-440v80q0 17-11.5 28.5T440-320h-54l-30 112q-11 39-43 63.5T240-120Zm0-80q14 0 24-8t14-21l78-291h-83l-72 270q-5 19 7 34.5t32 15.5Zm40-400h240l80-160H280q-33 0-56.5 23.5T200-680q0 33 23.5 56.5T280-600Zm597-213-90 41q-11 5-22.5.5T748-787q-5-11-1-22.5t15-16.5l90-41q11-5 23-.5t17 15.5q5 11 .5 22.5T877-813ZM763-533q-11-5-16-17t0-23q5-12 17-16t24 1l90 42q11 5 15 16.5t-1 22.5q-5 11-16.5 15.5T853-492l-90-41Zm127-117H790q-13 0-21.5-8.5T760-680q0-13 8.5-21.5T790-710h100q13 0 21.5 8.5T920-680q0 13-8.5 21.5T890-650Zm-490-30Zm-85 160Z" scaleX="0.03" scaleY="0.03" translateX="-3.0" />
+                        <Label maxWidth="-Infinity" minWidth="-Infinity" prefHeight="17.0" prefWidth="71.0" text="Escanear " translateX="-384.0" wrapText="true" />
+                     </children>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </HBox>
+                  <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="151.0">
+                     <children>
+                        <SVGPath content="M400-400q17 0 28.5-11.5T440-440v-120q0-17-11.5-28.5T400-600q-17 0-28.5 11.5T360-560v120q0 17 11.5 28.5T400-400Zm-200-60q-46-23-73-66.5T100-621q0-75 51.5-127T278-800q12 0 24.5 2t24.5 5q25-41 65-64t88-23q48 0 88 23t65 64q12-3 24-5t25-2q75 0 126.5 52T860-621q0 51-27 94.5T760-460v220H200v-220Zm360 60q17 0 28.5-11.5T600-440v-120q0-17-11.5-28.5T560-600q-17 0-28.5 11.5T520-560v120q0 17 11.5 28.5T560-400Zm-280 80h400v-189l44-22q26-13 41-36.5t15-52.5q0-42-28.5-71T682-720q-11 0-20 2t-19 5l-47 13-31-52q-14-23-36.5-35.5T480-800q-26 0-48.5 12.5T395-752l-31 52-48-13q-10-2-19.5-4.5T277-720q-41 0-69 29t-28 71q0 29 15 52.5t41 36.5l44 22v189Zm-80 80h80v80h400v-80h80v80q0 33-23.5 56.5T680-80H280q-33 0-56.5-23.5T200-160v-80Zm280-80Z" scaleX="0.03" scaleY="0.03" />
+                        <Label maxWidth="-Infinity" minWidth="-Infinity" prefHeight="17.0" prefWidth="85.0" text="Subir receta" translateX="-356.0" wrapText="true" />
+                     </children>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </HBox>
+                  <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="151.0">
+                     <children>
+                        <SVGPath content="M240-120q-60 0-95.5-46.5T124-270l72-272q-33-21-54.5-57T120-680q0-66 47-113t113-47h320q45 0 68 38t3 78l-80 160q-11 20-29.5 32T520-520h-81l-11 40h12q17 0 28.5 11.5T480-440v80q0 17-11.5 28.5T440-320h-54l-30 112q-11 39-43 63.5T240-120Zm0-80q14 0 24-8t14-21l78-291h-83l-72 270q-5 19 7 34.5t32 15.5Zm40-400h240l80-160H280q-33 0-56.5 23.5T200-680q0 33 23.5 56.5T280-600Zm597-213-90 41q-11 5-22.5.5T748-787q-5-11-1-22.5t15-16.5l90-41q11-5 23-.5t17 15.5q5 11 .5 22.5T877-813ZM763-533q-11-5-16-17t0-23q5-12 17-16t24 1l90 42q11 5 15 16.5t-1 22.5q-5 11-16.5 15.5T853-492l-90-41Zm127-117H790q-13 0-21.5-8.5T760-680q0-13 8.5-21.5T790-710h100q13 0 21.5 8.5T920-680q0 13-8.5 21.5T890-650Zm-490-30Zm-85 160Z" scaleX="0.03" scaleY="0.03" translateX="-20.0" />
+                        <Label maxWidth="-Infinity" minWidth="-Infinity" prefHeight="17.0" prefWidth="43.0" text="Home" translateX="-400.0" />
+                     </children>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </HBox>
                   <Region prefHeight="206.0" prefWidth="94.0" VBox.vgrow="ALWAYS" />
-                  <Button fx:id="btnAjustes" graphicTextGap="10.0" styleClass="btnMenu" text="Ajustes">
-                     <graphic>
-                        <ImageView fx:id="iconAjustes" fitWidth="24.0" preserveRatio="true" />
-                     </graphic>
-                  </Button>
+                  <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="151.0">
+                     <children>
+                        <SVGPath content="M433-80q-27 0-46.5-18T363-142l-9-66q-13-5-24.5-12T307-235l-62 26q-25 11-50 2t-39-32l-47-82q-14-23-8-49t27-43l53-40q-1-7-1-13.5v-27q0-6.5 1-13.5l-53-40q-21-17-27-43t8-49l47-82q14-23 39-32t50 2l62 26q11-8 23-15t24-12l9-66q4-26 23.5-44t46.5-18h94q27 0 46.5 18t23.5 44l9 66q13 5 24.5 12t22.5 15l62-26q25-11 50-2t39 32l47 82q14 23 8 49t-27 43l-53 40q1 7 1 13.5v27q0 6.5-2 13.5l53 40q21 17 27 43t-8 49l-48 82q-14 23-39 32t-50-2l-60-26q-11 8-23 15t-24 12l-9 66q-4 26-23.5 44T527-80h-94Zm7-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z" scaleX="0.03" scaleY="0.03" />
+                        <Label maxWidth="-Infinity" minWidth="-Infinity" prefHeight="17.0" prefWidth="87.0" text="Ajustes" translateX="-360.0" />
+                     </children>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </HBox>
                </children>
             </VBox>
             </children>
@@ -114,9 +130,12 @@
                 </HBox>
             </HBox>
             <StackPane fx:id="mainStackPane" maxHeight="Infinity" minHeight="0" VBox.vgrow="ALWAYS">
-                <AnchorPane fx:id="HomePane">
+                <AnchorPane fx:id="homePane" visible="false">
                     <HBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                        <VBox fx:id="homeLeftPane" prefHeight="429.0" prefWidth="500.0" styleClass="main-left" />
+                        <VBox fx:id="homeLeftPane" prefHeight="429.0" prefWidth="500.0" styleClass="main-left">
+                     <children>
+                        <Label text="homePane" />
+                     </children></VBox>
                         <VBox fx:id="homeRightPane" prefWidth="300.0" styleClass="main-right" />
                     </HBox>
                 </AnchorPane>
@@ -162,9 +181,9 @@
                     </HBox>
                 </AnchorPane>
                 <!-- infoCardPane -->
-                <AnchorPane fx:id="infoCardPane" maxWidth="Infinity" minWidth="-Infinity" prefHeight="419.0" prefWidth="603.0">
+                <AnchorPane fx:id="infoCardPane" maxWidth="Infinity" minWidth="-Infinity" prefHeight="419.0" prefWidth="603.0" visible="false">
                     <children>
-                        <StackPane fx:id="bb" maxWidth="Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <StackPane fx:id="aa" maxWidth="Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                             <children>
                                 <VBox fx:id="infoCardRecetaPane" managed="true" maxHeight="Infinity" maxWidth="Infinity" prefHeight="369.0" prefWidth="611.0" visible="false">
                                     <children>
@@ -184,7 +203,7 @@
                                                                 <Region prefHeight="200.0" prefWidth="156.0" HBox.hgrow="ALWAYS" />
                                                                 <Button fx:id="btnAñadirFavReceta" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="40.0" styleClass="btnSinNada">
                                                                     <graphic>
-                                                                        <SVGPath content="M480-147q-14 0-28.5-5T426-168l-69-63q-106-97-191.5-192.5T80-634q0-94 63-157t157-63q53 0 100 22.5t80 61.5q33-39 80-61.5T660-854q94 0 157 63t63 157q0 115-85 211T602-230l-68 62q-11 11-25.5 16t-28.5 5Zm-38-543q-29-41-62-62.5T300-774q-60 0-100 40t-40 100q0 52 37 110.5T285.5-410q51.5 55 106 103t88.5 79q34-31 88.5-79t106-103Q726-465 763-523.5T800-634q0-60-40-100t-100-40q-47 0-80 21.5T518-690q-7 10-17 15t-21 5q-11 0-21-5t-17-15Zm38 189Z" scaleX="0.03" scaleY="0.03" />
+                                                                        <SVGPath fx:id="svgAñadirFavReceta" content="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" scaleX="1.0" scaleY="1" />
                                                                     </graphic>
                                                                 </Button>
                                                             </children>
@@ -306,7 +325,7 @@
                                     </children>
                                 </VBox>
                                 <!-- Panel Ingrediente -->
-                                <VBox fx:id="infoCardIngredientePane" managed="true" maxHeight="Infinity" maxWidth="Infinity" prefHeight="369.0" prefWidth="611.0" visible="false">
+                                <VBox fx:id="infoCardIngredientePane" managed="true" maxHeight="Infinity" maxWidth="Infinity" prefHeight="369.0" prefWidth="611.0">
                                     <children>
                                         <ScrollPane fitToHeight="true" fitToWidth="true" VBox.vgrow="ALWAYS">
                                             <content>
@@ -324,7 +343,7 @@
                                                                 <Region prefHeight="200.0" prefWidth="156.0" HBox.hgrow="ALWAYS" />
                                                                 <Button fx:id="btnAñadirFavIngre" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="40.0" styleClass="btnSinNada">
                                                                     <graphic>
-                                                                        <SVGPath content="M480-147q-14 0-28.5-5T426-168l-69-63q-106-97-191.5-192.5T80-634q0-94 63-157t157-63q53 0 100 22.5t80 61.5q33-39 80-61.5T660-854q94 0 157 63t63 157q0 115-85 211T602-230l-68 62q-11 11-25.5 16t-28.5 5Zm-38-543q-29-41-62-62.5T300-774q-60 0-100 40t-40 100q0 52 37 110.5T285.5-410q51.5 55 106 103t88.5 79q34-31 88.5-79t106-103Q726-465 763-523.5T800-634q0-60-40-100t-100-40q-47 0-80 21.5T518-690q-7 10-17 15t-21 5q-11 0-21-5t-17-15Zm38 189Z" scaleX="0.03" scaleY="0.03" />
+                                                                        <SVGPath fx:id="svgAñadirFavIngre" content="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" scaleX="1.0" scaleY="1" />
                                                                     </graphic>
                                                                 </Button>
                                                             </children>
@@ -368,7 +387,7 @@
                                     </children>
                                 </VBox>
                                 <!-- Panel Ingrediente -->
-                                <VBox fx:id="infoCardRestaurantePane" managed="true" maxHeight="Infinity" maxWidth="Infinity" prefHeight="369.0" prefWidth="611.0">
+                                <VBox fx:id="infoCardRestaurantePane" managed="true" maxHeight="Infinity" maxWidth="Infinity" prefHeight="369.0" prefWidth="611.0" visible="false">
                                     <children>
                                         <ScrollPane fitToHeight="true" fitToWidth="true" VBox.vgrow="ALWAYS">
                                             <content>
@@ -386,7 +405,11 @@
                                                                 <Region prefHeight="200.0" prefWidth="156.0" HBox.hgrow="ALWAYS" />
                                                                 <Button fx:id="btnAñadirFavRestau" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="40.0" styleClass="btnSinNada">
                                                                     <graphic>
-                                                                        <SVGPath content="M480-147q-14 0-28.5-5T426-168l-69-63q-106-97-191.5-192.5T80-634q0-94 63-157t157-63q53 0 100 22.5t80 61.5q33-39 80-61.5T660-854q94 0 157 63t63 157q0 115-85 211T602-230l-68 62q-11 11-25.5 16t-28.5 5Zm-38-543q-29-41-62-62.5T300-774q-60 0-100 40t-40 100q0 52 37 110.5T285.5-410q51.5 55 106 103t88.5 79q34-31 88.5-79t106-103Q726-465 763-523.5T800-634q0-60-40-100t-100-40q-47 0-80 21.5T518-690q-7 10-17 15t-21 5q-11 0-21-5t-17-15Zm38 189Z" scaleX="0.01" scaleY="0.003" />
+                                                                        <SVGPath fx:id="svgAñadirFavRestau" content="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" scaleX="1.0" scaleY="1.0">
+                                                         <styleClass>
+                                                            <String fx:value="btnBuscador" />
+                                                            <String fx:value="svgSoloBordes" />
+                                                         </styleClass></SVGPath>
                                                                     </graphic>
                                                                 </Button>
                                                             </children>
@@ -469,6 +492,154 @@
                         </StackPane>
                     </children>
                 </AnchorPane>
+            <AnchorPane fx:id="escanearPane">
+               <children>
+                  <StackPane fx:id="bb" maxWidth="Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                            <VBox fx:id="inicioEscanearPane" prefHeight="429.0" prefWidth="500.0" styleClass="main-left" visible="false">
+                               <children>
+                                  <Label text="Acciones:" />
+                                  <HBox prefHeight="38.0" prefWidth="329.0" VBox.vgrow="NEVER">
+                                     <children>
+                                    <HBox fx:id="btnCamaraCodigoEscanearPane" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="195.0">
+                                       <children>
+                                          <SVGPath content="M240-120q-60 0-95.5-46.5T124-270l72-272q-33-21-54.5-57T120-680q0-66 47-113t113-47h320q45 0 68 38t3 78l-80 160q-11 20-29.5 32T520-520h-81l-11 40h12q17 0 28.5 11.5T480-440v80q0 17-11.5 28.5T440-320h-54l-30 112q-11 39-43 63.5T240-120Zm0-80q14 0 24-8t14-21l78-291h-83l-72 270q-5 19 7 34.5t32 15.5Zm40-400h240l80-160H280q-33 0-56.5 23.5T200-680q0 33 23.5 56.5T280-600Zm597-213-90 41q-11 5-22.5.5T748-787q-5-11-1-22.5t15-16.5l90-41q11-5 23-.5t17 15.5q5 11 .5 22.5T877-813ZM763-533q-11-5-16-17t0-23q5-12 17-16t24 1l90 42q11 5 15 16.5t-1 22.5q-5 11-16.5 15.5T853-492l-90-41Zm127-117H790q-13 0-21.5-8.5T760-680q0-13 8.5-21.5T790-710h100q13 0 21.5 8.5T920-680q0 13-8.5 21.5T890-650Zm-490-30Zm-85 160Z" scaleX="0.03" scaleY="0.03" />
+                                          <Label maxWidth="-Infinity" minWidth="-Infinity" prefHeight="17.0" prefWidth="149.0" text="Escanear código de barras" translateX="-384.0" wrapText="true" />
+                                       </children>
+                                    </HBox>
+                                    <HBox fx:id="btnSubirCodigoEscanearPane" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="195.0">
+                                       <children>
+                                          <SVGPath content="M440-440ZM120-120q-33 0-56.5-23.5T40-200v-480q0-33 23.5-56.5T120-760h126l50-54q11-12 26.5-19t32.5-7h165q17 0 28.5 11.5T560-800q0 17-11.5 28.5T520-760H355l-73 80H120v480h640v-320q0-17 11.5-28.5T800-560q17 0 28.5 11.5T840-520v320q0 33-23.5 56.5T760-120H120Zm640-640h-40q-17 0-28.5-11.5T680-800q0-17 11.5-28.5T720-840h40v-40q0-17 11.5-28.5T800-920q17 0 28.5 11.5T840-880v40h40q17 0 28.5 11.5T920-800q0 17-11.5 28.5T880-760h-40v40q0 17-11.5 28.5T800-680q-17 0-28.5-11.5T760-720v-40ZM440-260q75 0 127.5-52.5T620-440q0-75-52.5-127.5T440-620q-75 0-127.5 52.5T260-440q0 75 52.5 127.5T440-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29Z" scaleX="0.03" scaleY="0.03" />
+                                          <Label maxWidth="-Infinity" minWidth="-Infinity" prefHeight="17.0" prefWidth="149.0" text="Subir imagen con código" translateX="-420.0" wrapText="true" />
+                                       </children>
+                                    </HBox>
+                                     </children>
+                                  </HBox>
+                                  <VBox prefHeight="169.0" prefWidth="329.0" VBox.vgrow="ALWAYS">
+                                     <children>
+                                        <Label text="Últimos ingredientes leidos:" />
+                                        <HBox prefHeight="164.0" prefWidth="329.0" />
+                                     </children>
+                                  </VBox>
+                                  <VBox prefHeight="200.0" prefWidth="100.0" VBox.vgrow="ALWAYS">
+                                     <children>
+                                        <Label text="Recetas con los ingredientes escaneados:" />
+                                     </children>
+                                  </VBox>
+                               </children>
+                            </VBox>
+                        <HBox fx:id="infoCodigoEscanearPane" maxWidth="Infinity">
+                           <children>
+                              <VBox prefHeight="419.0" prefWidth="384.0">
+                                 <children>
+                                    <StackPane prefHeight="609.0" prefWidth="336.0">
+                                       <children>
+                                          <VBox fx:id="camaraCodigoEscanearPane" alignment="TOP_CENTER" prefHeight="438.0" prefWidth="336.0">
+                                             <children>
+                                                <HBox prefHeight="57.0" prefWidth="336.0">
+                                                   <children>
+                                                      <Button mnemonicParsing="false" styleClass="btnSinNada">
+                                                         <graphic>
+                                                            <SVGPath content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" scaleX="1.2" scaleY="1.2" />
+                                                         </graphic>
+                                                      </Button>
+                                                      <Region maxWidth="-Infinity" prefHeight="57.0" prefWidth="106.0" HBox.hgrow="ALWAYS" />
+                                                      <Label text="Escanear códigooo" />
+                                                      <Button onAction="#escanearConCamara" text="Escanear con cámara" />
+                                                   </children>
+                                                </HBox>
+                                                <ImageView fx:id="cameraImageView" fitHeight="253.0" fitWidth="308.0" />
+                                             </children>
+                                          </VBox>
+                                          <VBox fx:id="subirCodigoEscanearPane" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" visible="false">
+                                             <children>
+                                                <HBox prefHeight="57.0" prefWidth="336.0">
+                                                   <children>
+                                                      <Button mnemonicParsing="false" styleClass="btnSinNada">
+                                                         <graphic>
+                                                            <SVGPath content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" scaleX="1.2" scaleY="1.2" />
+                                                         </graphic>
+                                                      </Button>
+                                                      <Region maxWidth="-Infinity" prefHeight="57.0" prefWidth="106.0" HBox.hgrow="ALWAYS" />
+                                                      <Label text="Subir una imagen" />
+                                                   </children>
+                                                </HBox>
+                                                <ImageView fx:id="imgSubirCodigoEscanearPane" fitHeight="178.0" fitWidth="193.0" pickOnBounds="true" preserveRatio="true" />
+                                                <HBox fx:id="btnSubidaCodigoEscanearPane" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="195.0">
+                                                   <children>
+                                                      <SVGPath content="M440-440ZM120-120q-33 0-56.5-23.5T40-200v-480q0-33 23.5-56.5T120-760h126l50-54q11-12 26.5-19t32.5-7h165q17 0 28.5 11.5T560-800q0 17-11.5 28.5T520-760H355l-73 80H120v480h640v-320q0-17 11.5-28.5T800-560q17 0 28.5 11.5T840-520v320q0 33-23.5 56.5T760-120H120Zm640-640h-40q-17 0-28.5-11.5T680-800q0-17 11.5-28.5T720-840h40v-40q0-17 11.5-28.5T800-920q17 0 28.5 11.5T840-880v40h40q17 0 28.5 11.5T920-800q0 17-11.5 28.5T880-760h-40v40q0 17-11.5 28.5T800-680q-17 0-28.5-11.5T760-720v-40ZM440-260q75 0 127.5-52.5T620-440q0-75-52.5-127.5T440-620q-75 0-127.5 52.5T260-440q0 75 52.5 127.5T440-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29Z" scaleX="0.03" scaleY="0.03" />
+                                                      <Label maxWidth="-Infinity" minWidth="-Infinity" prefHeight="17.0" prefWidth="149.0" text="Subir imagen con código" translateX="-420.0" wrapText="true" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </StackPane>
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="infoCardCodigoEscanearPane" prefHeight="419.0" prefWidth="334.0">
+                                 <children>
+                                    <ScrollPane fx:id="scrollPaneInfoCardCodigo" fitToWidth="true" prefHeight="414.0" prefWidth="266.0">
+                                      <content>
+                                        <AnchorPane prefHeight="400.0" prefWidth="250.0">
+                                             <children>
+                                                <VBox alignment="TOP_CENTER" prefHeight="401.0" prefWidth="249.0">
+                                                   <children>
+                                                      <ImageView fx:id="imgInfoCardCodigo" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                                                         <VBox.margin>
+                                                            <Insets bottom="10.0" top="10.0" />
+                                                         </VBox.margin>
+                                                      </ImageView>
+                                                      <Label fx:id="nombreInfoCardCodigo" text="Nombre de ingrediente encontrado">
+                                                         <VBox.margin>
+                                                            <Insets bottom="10.0" />
+                                                         </VBox.margin>
+                                                      </Label>
+                                                      <HBox alignment="CENTER" prefHeight="33.0" prefWidth="249.0" VBox.vgrow="ALWAYS">
+                                                         <children>
+                                                            <Label text="Codigo de barras:" />
+                                                            <Label fx:id="codigoInfoCardCodigo" text="codsigo barras" wrapText="true" HBox.hgrow="ALWAYS" />
+                                                         </children>
+                                                         <VBox.margin>
+                                                            <Insets bottom="10.0" />
+                                                         </VBox.margin>
+                                                      </HBox>
+                                                      <HBox prefHeight="164.0" prefWidth="249.0" VBox.vgrow="ALWAYS">
+                                                         <children>
+                                                            <VBox prefHeight="164.0" prefWidth="138.0">
+                                                               <children>
+                                                                  <Label text="Tienda:" />
+                                                                  <Label fx:id="tiendaInfoCardCodigo" text="tienda" />
+                                                                  <Label text="Pais de origen:" />
+                                                                  <Label fx:id="origenInfoCardCodigo" text="origen" />
+                                                               </children>
+                                                            </VBox>
+                                                            <VBox prefHeight="164.0" prefWidth="124.0">
+                                                               <children>
+                                                                  <Label text="Marca:" />
+                                                                  <Label fx:id="marcaInfoCardCodigo" text="marca" />
+                                                               </children>
+                                                            </VBox>
+                                                         </children>
+                                                         <VBox.margin>
+                                                            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                         </VBox.margin>
+                                                      </HBox>
+                                                      <Button mnemonicParsing="false" text="Saber mas " />
+                                                   </children></VBox>
+                                             </children>
+                                          </AnchorPane>
+                                      </content>
+                                    </ScrollPane>
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding></VBox>
+                           </children></HBox>
+                     </children>
+                  </StackPane>
+               </children>
+            </AnchorPane>
             <VBox.margin>
                <Insets top="10.0" />
             </VBox.margin>

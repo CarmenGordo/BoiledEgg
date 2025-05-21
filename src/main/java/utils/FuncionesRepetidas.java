@@ -26,9 +26,11 @@ import modelos.Restaurante;
 import modelos.Usuario;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Set;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
@@ -38,6 +40,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import modelos.Alergeno;
+import modelos.Codigo;
+import modelos.Favoritos;
 import modelos.Ingrediente;
 import modelos.Receta;
 import modelos.RecetaIngrediente;
@@ -242,7 +246,7 @@ public class FuncionesRepetidas {
                             rs.getString("direccion_restaurante"),
                             rs.getString("tipo_restaurante"),
                             rs.getString("url_restaurante"),
-                            rs.getInt("usuario_id")
+                            rs.getInt("id_usuario")
                     );
                 }
             }
@@ -303,7 +307,7 @@ public class FuncionesRepetidas {
                         rs.getString("imagen_receta"),
                         rs.getInt("tiempo_preparacion_receta"),
                         rs.getString("dificultad_receta"),
-                        rs.getInt("autor_id"),
+                        rs.getInt("id_autor"),
                         rs.getString("tipo_receta"),
                         rs.getString("tipo_coccion_receta"),
                         rs.getInt("publicada_por_restaurante")
@@ -378,7 +382,7 @@ public class FuncionesRepetidas {
                 val.setId_valoracion(rs.getInt("id_valoracion"));
                 val.setTipo_objeto(Valoracion.TipoObjeto.fromString(rs.getString("tipo_objeto")));
                 val.setId_objeto(rs.getInt("id_objeto"));
-                val.setUsuario_id(rs.getInt("usuario_id"));
+                val.setId_usuario(rs.getInt("id_usuario"));
                 val.setPuntuacion_valoracion(rs.getInt("puntuacion_valoracion"));
                 val.setComentario_valoracion(rs.getString("comentario_valoracion"));
                 val.setFecha_valoracion(rs.getDate("fecha_valoracion"));
@@ -394,11 +398,11 @@ public class FuncionesRepetidas {
     
     public static boolean insertarValoracion(Valoracion val) {
         try (Connection conn = iniciarConexion()){
-            String insertSql = "INSERT INTO Valoracion (tipo_objeto, id_objeto, usuario_id, puntuacion_valoracion, comentario_valoracion, fecha_valoracion) VALUES (?, ?, ?, ?, ?, ?)";
+            String insertSql = "INSERT INTO Valoracion (tipo_objeto, id_objeto, id_usuario, puntuacion_valoracion, comentario_valoracion, fecha_valoracion) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(insertSql);
             stmt.setString(1, val.getTipo_objeto().getValor());
             stmt.setInt(2, val.getId_objeto());
-            stmt.setInt(3, val.getUsuario_id());
+            stmt.setInt(3, val.getId_usuario());
             stmt.setInt(4, val.getPuntuacion_valoracion());
             stmt.setString(5, val.getComentario_valoracion());
             stmt.setDate(6, new java.sql.Date(val.getFecha_valoracion().getTime()));
@@ -412,7 +416,7 @@ public class FuncionesRepetidas {
     
     public static boolean actualizarValoracion(HBox contenedor, Valoracion nuevaVal) {
         Valoracion actual = obtenerValoracionUsuarioEnObjeto(
-            nuevaVal.getUsuario_id(),
+            nuevaVal.getId_usuario(),
             nuevaVal.getId_objeto(),
             nuevaVal.getTipo_objeto()
         );
@@ -451,12 +455,11 @@ public class FuncionesRepetidas {
         }
     }
 
-    
-    public static Valoracion obtenerValoracionUsuarioEnObjeto(int usuarioId, int objetoId, Valoracion.TipoObjeto tipoObjeto) {
+    public static Valoracion obtenerValoracionUsuarioEnObjeto(int idUsuario, int objetoId, Valoracion.TipoObjeto tipoObjeto) {
         try (Connection conn =  iniciarConexion()){
-            String sql = "SELECT * FROM Valoracion WHERE usuario_id = ? AND id_objeto = ? AND tipo_objeto = ?";
+            String sql = "SELECT * FROM Valoracion WHERE id_usuario = ? AND id_objeto = ? AND tipo_objeto = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, usuarioId);
+            stmt.setInt(1, idUsuario);
             stmt.setInt(2, objetoId);
             stmt.setString(3, tipoObjeto.getValor());
 
@@ -466,7 +469,7 @@ public class FuncionesRepetidas {
                 val.setId_valoracion(rs.getInt("id_valoracion"));
                 val.setTipo_objeto(tipoObjeto);
                 val.setId_objeto(objetoId);
-                val.setUsuario_id(usuarioId);
+                val.setId_usuario(idUsuario);
                 val.setPuntuacion_valoracion(rs.getInt("puntuacion_valoracion"));
                 val.setComentario_valoracion(rs.getString("comentario_valoracion"));
                 val.setFecha_valoracion(rs.getDate("fecha_valoracion"));
@@ -478,6 +481,75 @@ public class FuncionesRepetidas {
 
         return null;
     }
+    
+    public static ObservableList<Favoritos> obtenerFavoritosUsuario(int idUsuario) {
+        ObservableList<Favoritos> lista = FXCollections.observableArrayList();
+
+        String sql = "SELECT * FROM Favoritos WHERE id_usuario = ?";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idUsuario);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Favoritos.TipoObjeto tipo = Favoritos.TipoObjeto.fromString(rs.getString("tipo_objeto"));
+
+                Favoritos favorito = new Favoritos(
+                    rs.getInt("id_favorito"),
+                    tipo,
+                    rs.getInt("id_objeto"),
+                    rs.getInt("id_usuario"),
+                    rs.getDate("fecha_favorito")
+                );
+
+                lista.add(favorito);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al obtener favoritos del usuario: " + e.getMessage());
+        }
+
+        return lista;
+    }
+
+    public static boolean insertarFavorito(Favoritos favorito){
+         String insertSql = "INSERT INTO Favoritos (tipo_objeto, id_objeto, id_usuario, fecha_favorito) VALUES (?, ?, ?, ?)";
+        
+        try (Connection conn = iniciarConexion()){
+            PreparedStatement stmt = conn.prepareStatement(insertSql);
+            stmt.setString(1, favorito.getTipo_objeto().getValor());
+            stmt.setInt(2, favorito.getId_objeto());
+            stmt.setInt(3, favorito.getId_usuario());
+            stmt.setDate(4, new java.sql.Date(favorito.getFecha_favorito().getTime()));
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error al insertar favorito: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    public static boolean eliminarFavorito(int idUsuario, int idObjeto, Favoritos.TipoObjeto tipoObjeto) {
+        String sql = "DELETE FROM Favoritos WHERE id_usuario = ? AND id_objeto = ? AND tipo_objeto = ?";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idUsuario);
+            stmt.setInt(2, idObjeto);
+            stmt.setString(3, tipoObjeto.getValor());
+
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar favorito: " + e.getMessage());
+            return false;
+        }
+    }
+    
 
 
 
@@ -626,7 +698,7 @@ public class FuncionesRepetidas {
                      rs.getString("direccion_restaurante"),
                     rs.getString("tipo_restaurante"),
                     rs.getString("url_restaurante"),
-                    rs.getInt("usuario_id")
+                    rs.getInt("id_usuario")
                 );
                 lista.add(restau);
             }
@@ -662,8 +734,40 @@ public class FuncionesRepetidas {
         return lista;
     }
 
+    
+    public static ObservableList<Codigo> obtenerCodigoDeImagen(String cod) {
+        ObservableList<Codigo> lista = FXCollections.observableArrayList();
 
+        String query = "SELECT Codigo.*, Ingrediente.nombre_ingrediente FROM Codigo " +
+                   "JOIN Ingrediente ON Codigo.id_ingrediente = Ingrediente.id_ingrediente " +
+                   "WHERE Codigo.codigo_barras = ?";
 
+        try (Connection con = iniciarConexion();
+             PreparedStatement ps = con.prepareStatement(query)) {
+
+            ps.setString(1, cod);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Codigo codigo = new Codigo(
+                        rs.getInt("id_codigo"),
+                        rs.getString("codigo_barras"),
+                        rs.getInt("id_ingrediente"),
+                        rs.getString("nombre_tienda"),
+                        rs.getString("nombre_marca"),
+                        rs.getString("pais_origen"),
+                        rs.getString("descripcion_opcional")
+                    );
+                    lista.add(codigo);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+    }
     
     
     // recoger el icono/img 
@@ -745,7 +849,7 @@ public class FuncionesRepetidas {
     
     
     // Crear Card:
-    public static VBox crearCardReceta(Receta receta) {
+    public static VBox crearCardReceta(Usuario usuario, Receta receta) {
         try {
             List<Alergeno> alergenos = obtenerRecetaAlergenos(receta.getId_receta());
             
@@ -754,6 +858,50 @@ public class FuncionesRepetidas {
 
             // card.lookup("#...) sirve para busrcar por el id en el fxml enlazadp
             ImageView img = (ImageView) card.lookup("#imgCard");
+            
+            Button btnAñadirCardFav = (Button) card.lookup("#btnAñadirCardFav");
+            if (btnAñadirCardFav != null) {
+                Node graphic = btnAñadirCardFav.getGraphic();
+                
+                if (graphic instanceof SVGPath) {
+                    SVGPath svgAñadirCardFav = (SVGPath) graphic;
+                    svgAñadirCardFav.getStyleClass().add("svgSoloBordes");
+                    ponerHoverFavorito(btnAñadirCardFav, svgAñadirCardFav);
+                    System.out.println("----SVGPath encontrado dentro del btn");
+                    
+                    boolean esFavorito = esFavorito(usuario.getId_usuario(), receta.getId_receta(), Favoritos.TipoObjeto.RECETA);
+                    if (esFavorito) {
+                        svgAñadirCardFav.getStyleClass().remove("svgSinBordes");
+                        svgAñadirCardFav.getStyleClass().add("fillFav");
+                    } else {
+                        svgAñadirCardFav.getStyleClass().remove("fillFav");
+                        svgAñadirCardFav.getStyleClass().add("svgSinBordes");
+                    }
+
+                    btnAñadirCardFav.setOnMouseClicked(event -> {
+                        boolean esFavoritoActualizado = esFavorito(usuario.getId_usuario(), receta.getId_receta(), Favoritos.TipoObjeto.RECETA);
+
+                        if (esFavoritoActualizado) {
+                            if (FuncionesRepetidas.eliminarFavorito(usuario.getId_usuario(),receta.getId_receta(), Favoritos.TipoObjeto.RECETA)) {
+                                svgAñadirCardFav.getStyleClass().remove("fillFav");
+                                svgAñadirCardFav.getStyleClass().add("svgSinBordes");
+                            }
+                        } else {
+                            if (FuncionesRepetidas.insertarFavorito(new Favoritos(0, Favoritos.TipoObjeto.RECETA, receta.getId_receta(), usuario.getId_usuario(), new java.util.Date()))) {
+                                svgAñadirCardFav.getStyleClass().remove("svgSinBordes");
+                                svgAñadirCardFav.getStyleClass().add("fillFav");
+                            }
+                        }
+                    });
+              
+                } else {
+                    System.err.println("---- no es un SVGPath: " + graphic);
+                }
+            } else {
+                System.err.println("---- no svgAñadirCardFav");
+            }
+
+            
             Label nombre = (Label) card.lookup("#lblNombreCard");
             Label tipo = (Label) card.lookup("#lblTipoCard");
             HBox tipoIconos = (HBox) card.lookup("#tipoIconosCard");
@@ -804,7 +952,7 @@ public class FuncionesRepetidas {
             ObservableList<Usuario> listaUsuarios = FuncionesRepetidas.obtenerListaUsuarios();
 
             for (Usuario usuario : listaUsuarios) {
-                if (usuario.getId_usuario() == val.getUsuario_id()) {
+                if (usuario.getId_usuario() == val.getId_usuario()) {
                     usuarioVal = usuario;
                     break;
                 }
@@ -841,12 +989,56 @@ public class FuncionesRepetidas {
         }
     }
     
-    public static VBox crearCardIngrediente(Ingrediente ingre) {
+    public static VBox crearCardIngrediente(Usuario usuario, Ingrediente ingre) {
         try {            
             FXMLLoader loader = new FXMLLoader(FuncionesRepetidas.class.getResource("/vistas/Card.fxml"));
             VBox card = loader.load();
 
             ImageView img = (ImageView) card.lookup("#imgCard");
+            
+            Button btnAñadirCardFav = (Button) card.lookup("#btnAñadirCardFav");
+            if (btnAñadirCardFav != null) {
+                Node graphic = btnAñadirCardFav.getGraphic();
+                
+                if (graphic instanceof SVGPath) {
+                    SVGPath svgAñadirCardFav = (SVGPath) graphic;
+                    svgAñadirCardFav.getStyleClass().add("svgSoloBordes");
+                    ponerHoverFavorito(btnAñadirCardFav, svgAñadirCardFav);
+                    System.out.println("----SVGPath encontrado dentro del btn");
+                    
+                    boolean esFavorito = esFavorito(usuario.getId_usuario(), ingre.getId_ingrediente(), Favoritos.TipoObjeto.INGREDIENTE);
+                    if (esFavorito) {
+                        svgAñadirCardFav.getStyleClass().remove("svgSinBordes");
+                        svgAñadirCardFav.getStyleClass().add("fillFav");
+                    } else {
+                        svgAñadirCardFav.getStyleClass().remove("fillFav");
+                        svgAñadirCardFav.getStyleClass().add("svgSinBordes");
+                    }
+
+                    btnAñadirCardFav.setOnMouseClicked(event -> {
+                        boolean esFavoritoActualizado = esFavorito(usuario.getId_usuario(), ingre.getId_ingrediente(), Favoritos.TipoObjeto.INGREDIENTE);
+
+                        if (esFavoritoActualizado) {
+                            if (FuncionesRepetidas.eliminarFavorito(usuario.getId_usuario(), ingre.getId_ingrediente(), Favoritos.TipoObjeto.INGREDIENTE)) {
+                                svgAñadirCardFav.getStyleClass().remove("fillFav");
+                                svgAñadirCardFav.getStyleClass().add("svgSinBordes");
+                            }
+                        } else {
+                            if (FuncionesRepetidas.insertarFavorito(new Favoritos(0, Favoritos.TipoObjeto.INGREDIENTE, ingre.getId_ingrediente(), usuario.getId_usuario(), new java.util.Date()))) {
+                                svgAñadirCardFav.getStyleClass().remove("svgSinBordes");
+                                svgAñadirCardFav.getStyleClass().add("fillFav");
+                            }
+                        }
+                    });
+              
+                } else {
+                    System.err.println("---- no es un SVGPath: " + graphic);
+                }
+            } else {
+                System.err.println("---- no svgAñadirCardFav");
+            }
+            
+            
             Label nombre = (Label) card.lookup("#lblNombreCard");
             Label tipo = (Label) card.lookup("#lblTipoCard");
             HBox tipoIconos = (HBox) card.lookup("#tipoIconosCard");
@@ -897,18 +1089,63 @@ public class FuncionesRepetidas {
         }
     }
     
-    public static VBox crearCardRestaurante(Restaurante restau) {
+    public static VBox crearCardRestaurante(Usuario usuario,Restaurante restau) {
         try {            
             FXMLLoader loader = new FXMLLoader(FuncionesRepetidas.class.getResource("/vistas/Card.fxml"));
             VBox card = loader.load();
 
             ImageView img = (ImageView) card.lookup("#imgCard");
+            
+            Button btnAñadirCardFav = (Button) card.lookup("#btnAñadirCardFav");
+            if (btnAñadirCardFav != null) {
+                Node graphic = btnAñadirCardFav.getGraphic();
+                
+                if (graphic instanceof SVGPath) {
+                    SVGPath svgAñadirCardFav = (SVGPath) graphic;
+                    svgAñadirCardFav.getStyleClass().add("svgSoloBordes");
+                    ponerHoverFavorito(btnAñadirCardFav, svgAñadirCardFav);
+                    System.out.println("----SVGPath encontrado dentro del btn");
+                    
+                    boolean esFavorito = esFavorito(usuario.getId_usuario(), restau.getId_restaurante(), Favoritos.TipoObjeto.RESTAURANTE);
+                    if (esFavorito) {
+                        svgAñadirCardFav.getStyleClass().remove("svgSinBordes");
+                        svgAñadirCardFav.getStyleClass().add("fillFav");
+                    } else {
+                        svgAñadirCardFav.getStyleClass().remove("fillFav");
+                        svgAñadirCardFav.getStyleClass().add("svgSinBordes");
+                    }
+
+                    btnAñadirCardFav.setOnMouseClicked(event -> {
+                        boolean esFavoritoActualizado = esFavorito(usuario.getId_usuario(), restau.getId_restaurante(), Favoritos.TipoObjeto.RESTAURANTE);
+
+                        if (esFavoritoActualizado) {
+                            if (FuncionesRepetidas.eliminarFavorito(usuario.getId_usuario(), restau.getId_restaurante(), Favoritos.TipoObjeto.RESTAURANTE)) {
+                                svgAñadirCardFav.getStyleClass().remove("fillFav");
+                                svgAñadirCardFav.getStyleClass().add("svgSinBordes");
+                            }
+                        } else {
+                            if (FuncionesRepetidas.insertarFavorito(new Favoritos(0, Favoritos.TipoObjeto.RESTAURANTE, restau.getId_restaurante(), usuario.getId_usuario(), new java.util.Date()))) {
+                                svgAñadirCardFav.getStyleClass().remove("svgSinBordes");
+                                svgAñadirCardFav.getStyleClass().add("fillFav");
+                            }
+                        }
+                    });
+              
+                } else {
+                    System.err.println("---- no es un SVGPath: " + graphic);
+                }
+            } else {
+                System.err.println("---- no svgAñadirCardFav");
+            }
+
+            
             Label nombre = (Label) card.lookup("#lblNombreCard");
             Label tipo = (Label) card.lookup("#lblTipoCard");
             HBox tipoIconos = (HBox) card.lookup("#tipoIconosCard");
             Label alergenosLabel = (Label) card.lookup("#lblAlergenosCard");
             HBox alergenosIconosCard = (HBox) card.lookup("#alergenosIconosCard");
-
+            
+            
             nombre.setText(restau.getNombre_restaurante());
             
             String rutaImagen = restau.getImagen_restaurante();
@@ -930,10 +1167,9 @@ public class FuncionesRepetidas {
             return null;
         }
     }
+
     
-    public static HBox crearCardValoracion(){
-        return null;
-    }
+    
     
     
     public static int puntuacionSeleccionada = 0;
@@ -971,14 +1207,56 @@ public class FuncionesRepetidas {
             Button btn = (Button) contenedor.getChildren().get(i);
             SVGPath svg = (SVGPath) btn.getGraphic();
             if (i < hasta) {
-                svg.getStyleClass().add("fill");
+                svg.getStyleClass().add("fillEstrella");
             } else {
-                svg.getStyleClass().remove("fill");
+                svg.getStyleClass().remove("fillEstrella");
             }
         }
     }
-    
+
+    public static void ponerHoverFavorito(Button boton, SVGPath iconoSVG) {
+        boton.setOnMouseEntered(event -> {
+            iconoSVG.getStyleClass().remove("svgSoloBordes");
+            iconoSVG.getStyleClass().add("fillFav");
+        });
+
+        boton.setOnMouseExited(event -> {
+            iconoSVG.getStyleClass().remove("fillFav");
+            iconoSVG.getStyleClass().add("svgSoloBordes");
+        });
+    }
    
+    public static boolean esFavorito(int idUsuario, int idObjeto, Favoritos.TipoObjeto tipoObjeto) {
+        ObservableList<Favoritos> lista = obtenerFavoritosUsuario(idUsuario);
+        for (Favoritos f : lista) {
+            if (f.getTipo_objeto() == tipoObjeto && f.getId_objeto() == idObjeto) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static void actualizarEstadoFavoritos(Usuario usu, Object objeto, Favoritos.TipoObjeto tipoObjeto, SVGPath svg) {
+        int idObjeto = 0;
+        if (tipoObjeto == Favoritos.TipoObjeto.RECETA && objeto instanceof Receta) {
+            idObjeto = ((Receta) objeto).getId_receta();
+        } else if (tipoObjeto == Favoritos.TipoObjeto.INGREDIENTE && objeto instanceof Ingrediente) {
+            idObjeto = ((Ingrediente) objeto).getId_ingrediente();
+        } else if (tipoObjeto == Favoritos.TipoObjeto.RESTAURANTE && objeto instanceof Restaurante) {
+            idObjeto = ((Restaurante) objeto).getId_restaurante();
+        }
+
+        boolean esFavorita = FuncionesRepetidas.esFavorito(usu.getId_usuario(), idObjeto, tipoObjeto);
+
+        if (esFavorita) {
+            if (!svg.getStyleClass().contains("fillFav")) {
+                svg.getStyleClass().add("fillFav");
+            }
+        } else {
+            svg.getStyleClass().remove("fillFav");
+        }
+    }
+
 
     
     

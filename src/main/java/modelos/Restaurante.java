@@ -14,12 +14,12 @@ public class Restaurante {
     public String direccion_restaurante;
     public String tipo_restaurante;
     public String url_restaurante;
-    public int usuario_id;
+    public int id_usuario;
 
     public Restaurante() {
     }
 
-    public Restaurante(int id_restaurante, String nombre_restaurante, String email_restaurante, String contraseña_restaurante, String imagen_restaurante, String ciudad_restaurante, String direccion_restaurante, String tipo_restaurante, String url_restaurante, int usuario_id) {
+    public Restaurante(int id_restaurante, String nombre_restaurante, String email_restaurante, String contraseña_restaurante, String imagen_restaurante, String ciudad_restaurante, String direccion_restaurante, String tipo_restaurante, String url_restaurante, int id_usuario) {
         this.id_restaurante = id_restaurante;
         this.nombre_restaurante = nombre_restaurante;
         this.email_restaurante = email_restaurante;
@@ -29,7 +29,7 @@ public class Restaurante {
         this.direccion_restaurante = direccion_restaurante;
         this.tipo_restaurante = tipo_restaurante;
         this.url_restaurante = url_restaurante;
-        this.usuario_id = usuario_id;
+        this.id_usuario = id_usuario;
     }
 
     public int getId_restaurante() {
@@ -104,12 +104,12 @@ public class Restaurante {
         this.url_restaurante = url_restaurante;
     }
 
-    public int getUsuario_id() {
-        return usuario_id;
+    public int getId_usuario() {
+        return id_usuario;
     }
 
-    public void setUsuario_id(int usuario_id) {
-        this.usuario_id = usuario_id;
+    public void setId_usuario(int id_usuario) {
+        this.id_usuario = id_usuario;
     }
 
 

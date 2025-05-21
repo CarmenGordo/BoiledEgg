@@ -1,10 +1,13 @@
 package controladores;
 
+import com.github.sarxos.webcam.Webcam;
 import conexion.ConexionBD;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.io.File;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -44,7 +47,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import modelos.Alergeno;
+import modelos.Favoritos;
 import modelos.IconoPerfil;
 import modelos.Ingrediente;
 import modelos.Receta;
@@ -56,6 +61,21 @@ import static utils.FuncionesRepetidas.obtenerListaRecetas;
 import utils.ObservableListas;
 import modelos.Valoracion;
 import static utils.FuncionesRepetidas.actualizarValoracion;
+import com.google.zxing.*;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.Result;
+import java.io.ByteArrayInputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javafx.embed.swing.SwingFXUtils;
+import javax.imageio.ImageIO;
+import modelos.Codigo;
+import javafx.scene.layout.Pane;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 
 /**
  *
@@ -69,9 +89,9 @@ public class ControladorHomeAppPage implements Initializable {
     @FXML private SVGPath iconoTema;
     @FXML private ImageView btnPerfil;
     @FXML private VBox vboxTipoFiltrar, vboxTipoReceta, vboxAlergenos, vboxDificultad, vboxValoraciones, vboxTipoCoccion;
-    @FXML private AnchorPane HomePane,buscadorPane, infoCardPane;
+    @FXML private AnchorPane homePane,buscadorPane, infoCardPane, escanearPane;
     @FXML private Button btnBuscar;
-    @FXML private HBox cajaBuscar;
+    @FXML private HBox btnHome, btnEscanear, cajaBuscar;
     @FXML private TextField inputBuscar;
     @FXML public FlowPane flowRecetas;
     @FXML public ScrollPane filtrosScroll, busquedasPane;
@@ -81,11 +101,19 @@ public class ControladorHomeAppPage implements Initializable {
     @FXML private Label infoCardRecetaNombre, infoCardRecetaDificultad, infoCardRecetaCocion, infoCardRecetaTiempo, infoCardRecetaValoracion, infoCardRecetaPasos, infoCardRecetaConsejos, infoCardIngreNombre, infoCardIngreTipo, infoCardRestauNombre, infoCardRestauTipo, infoCardRestauUrl, infoCardRestauCiudad, infoCardRestauDireccion;
     @FXML private HBox infoCardRecetaCajaTipo, infoCardRecetaCajaAlergenos, infoCardIngreCajaAlergenos, infoCardRecetaRestaurantes, infoCardRecetaValoracionCaja, infoCardRecetaTodasValoracionCaja, infoCardIngreRecetas, infoCardRestauRecetas;
     @FXML private VBox infoCardRecetaIngredientes, infoCardRecetaPane, infoCardIngredientePane, infoCardRestaurantePane;
-    @FXML private Button btnAtrasInfoCard, btnAñadirFav, btnAñadirValoracionReceta;
+    @FXML private Button btnAñadirFavReceta, btnAñadirValoracionReceta, btnAñadirFavIngre, btnAñadirFavRestau, btnAtrasInfoCardReceta,  btnAtrasInfoCardIngre, btnAtrasInfoCardRestau;
     @FXML private TextField inputAñadirValoracionReceta;
-
+    @FXML private SVGPath svgAñadirFavReceta, svgAñadirFavIngre, svgAñadirFavRestau;
 
     
+    // FXML de escanearPane:
+    @FXML private HBox btnCamaraCodigoEscanearPane, btnSubirCodigoEscanearPane, infoCodigoEscanearPane, btnSubidaCodigoEscanearPane;
+    @FXML private VBox codigoEscanearPane, inicioEscanearPane, camaraCodigoEscanearPane, subirCodigoEscanearPane, infoCardCodigoEscanearPane;
+    @FXML private ImageView imgInfoCardCodigo, imgSubirCodigoEscanearPane;
+    @FXML private Label nombreInfoCardCodigo, codigoInfoCardCodigo, tiendaInfoCardCodigo, marcaInfoCardCodigo, origenInfoCardCodigo;
+    @FXML private ScrollPane scrollPaneInfoCardCodigo;
+            
+            
     private Stage stage;
     public Connection conexion;
     public Statement st;
@@ -97,15 +125,24 @@ public class ControladorHomeAppPage implements Initializable {
     public Receta infoCardRecetaSelec;
     public Ingrediente infoCardIngredienteSelec;
     public Restaurante infoCardRestauranteSelec;
-
+    
+    
+    
+    @FXML
+    private ImageView cameraImageView;
+    private Webcam webcam;
+        private ExecutorService executor = Executors.newSingleThreadExecutor();
 
         
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         
         // Por defecto:
-        buscadorPane.setVisible(false);
-        infoCardPane.setVisible(false);
+        mostrarPane(homePane);
+        infoCodigoEscanearPane.setVisible(false);
+        camaraCodigoEscanearPane.setVisible(false);
+        subirCodigoEscanearPane.setVisible(false);
+        inicioEscanearPane.setVisible(true);
 
 
         try {
@@ -141,6 +178,13 @@ public class ControladorHomeAppPage implements Initializable {
             }
         });
         
+        // Botones menu:ç
+        btnEscanear.setOnMouseClicked(event -> {
+            mostrarPane(escanearPane);
+            inicioEscanearPane.setVisible(true);
+            infoCodigoEscanearPane.setVisible(false);
+        });
+        btnHome.setOnMouseClicked(event -> mostrarPane(homePane));   
         
         //Filtros: 
         cargarFiltrosTipo(ObservableListas.listaFiltrar);
@@ -157,16 +201,73 @@ public class ControladorHomeAppPage implements Initializable {
             actualizarCards();
         });
         
-        
+        //Botones CardInfo:
         inputAñadirValoracionReceta.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
                 btnAñadirValoracionReceta();
             }
         });
         
+        
+        svgAñadirFavReceta.getStyleClass().add("svgSoloBordes");
+        svgAñadirFavIngre.getStyleClass().add("svgSoloBordes");
+        svgAñadirFavRestau.getStyleClass().add("svgSoloBordes");
+
+        btnAtrasInfoCardReceta.setOnMouseClicked(event -> {
+            volverBuscador();
+            actualizarCards();
+        });
+        btnAtrasInfoCardIngre.setOnMouseClicked(event -> {
+            volverBuscador();
+            actualizarCards();
+        });
+        btnAtrasInfoCardRestau.setOnMouseClicked(event -> {
+            volverBuscador();
+            actualizarCards();
+        });
+
+        FuncionesRepetidas.ponerHoverFavorito(btnAñadirFavReceta, svgAñadirFavReceta);
+        FuncionesRepetidas.ponerHoverFavorito(btnAñadirFavIngre, svgAñadirFavIngre);
+        FuncionesRepetidas.ponerHoverFavorito(btnAñadirFavRestau, svgAñadirFavRestau);
+        
+        
+        // EscanearPane: 
+        btnCamaraCodigoEscanearPane.setOnMouseClicked(event-> {
+            inicioEscanearPane.setVisible(false);
+            infoCodigoEscanearPane.setVisible(true);
+            camaraCodigoEscanearPane.setVisible(true);
+            subirCodigoEscanearPane.setVisible(false);
+        });
+        
+        btnSubirCodigoEscanearPane.setOnMouseClicked(event-> {
+            inicioEscanearPane.setVisible(false);
+            infoCodigoEscanearPane.setVisible(true);
+            camaraCodigoEscanearPane.setVisible(false);
+            subirCodigoEscanearPane.setVisible(true);
+        });
+        
+        
+        btnSubidaCodigoEscanearPane.setOnMouseClicked(event -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Selecciona imagen con código de barras");
+            fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg")
+            );
+            File imagenArchivo = fileChooser.showOpenDialog(null);
+
+            if (imagenArchivo != null) {
+                Image fxImage = new Image(imagenArchivo.toURI().toString());
+                imgSubirCodigoEscanearPane.setImage(fxImage);
+
+                String codigo = leerCodigoBarrasDesdeImagen(imagenArchivo);
+                if (codigo != null) {
+                    mostrarInfoCardCodigo(codigo);
+                    System.out.println("codigo:" + codigo);
+                }
+            }
+        });
     }
     
-
     
     private void aplicarTemaClaro() {
         iconoTema.setContent("M480-360q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Zm0 80q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM80-440q-17 0-28.5-11.5T40-480q0-17 11.5-28.5T80-520h80q17 0 28.5 11.5T200-480q0 17-11.5 28.5T160-440H80Zm720 0q-17 0-28.5-11.5T760-480q0-17 11.5-28.5T800-520h80q17 0 28.5 11.5T920-480q0 17-11.5 28.5T880-440h-80ZM480-760q-17 0-28.5-11.5T440-800v-80q0-17 11.5-28.5T480-920q17 0 28.5 11.5T520-880v80q0 17-11.5 28.5T480-760Zm0 720q-17 0-28.5-11.5T440-80v-80q0-17 11.5-28.5T480-200q17 0 28.5 11.5T520-160v80q0 17-11.5 28.5T480-40ZM226-678l-43-42q-12-11-11.5-28t11.5-29q12-12 29-12t28 12l42 43q11 12 11 28t-11 28q-11 12-27.5 11.5T226-678Zm494 495-42-43q-11-12-11-28.5t11-27.5q11-12 27.5-11.5T734-282l43 42q12 11 11.5 28T777-183q-12 12-29 12t-28-12Zm-42-495q-12-11-11.5-27.5T678-734l42-43q11-12 28-11.5t29 11.5q12 12 12 29t-12 28l-43 42q-12 11-28 11t-28-11ZM183-183q-12-12-12-29t12-28l43-42q12-11 28.5-11t27.5 11q12 11 11.5 27.5T282-226l-42 43q-11 12-28 11.5T183-183Zm297-297Z");
@@ -234,11 +335,19 @@ public class ControladorHomeAppPage implements Initializable {
    
    // Cambiar a BuscadorPAne:
     public void verBuscadorPane() {
-        HomePane.setVisible(false);
-        buscadorPane.setVisible(true);
-        infoCardPane.setVisible(false);
+        mostrarPane(buscadorPane);
         actualizarCards();
     }
+    
+    public void mostrarPane(AnchorPane paneMostrar) {
+        homePane.setVisible(false);
+        buscadorPane.setVisible(false);
+        infoCardPane.setVisible(false);
+        escanearPane.setVisible(false);
+        
+        
+        paneMostrar.setVisible(true);
+    } 
       
     // Para saber si es Receta o Ingre
     public String getTipoSeleccionado() {
@@ -300,11 +409,10 @@ public class ControladorHomeAppPage implements Initializable {
                         || valoracionesSeleccionadas.contains(String.valueOf(Math.round(mediaValoracion)));
 
                 if (coincideTexto && pasaAlergenos && pasaDificultad && pasaTipoReceta && pasaTipoCoccion && pasaValoracion) {
-                    VBox card = FuncionesRepetidas.crearCardReceta(receta);
+                    VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
                     if (card != null) {
                         card.setOnMouseClicked(event -> {
-                            buscadorPane.setVisible(false);
-                            infoCardPane.setVisible(true);
+                            mostrarPane(infoCardPane);
                             infoCardRecetaPane.setVisible(true);
                             infoCardIngredientePane.setVisible(false);
                             infoCardRestaurantePane.setVisible(false);
@@ -345,11 +453,10 @@ public class ControladorHomeAppPage implements Initializable {
                 }
 
                 if (coincideTexto && pasaAlergenos && noTipoReceta && noValoracion && noDificultad && noTipoCoccion) {
-                    VBox card = FuncionesRepetidas.crearCardIngrediente(ingre);
+                    VBox card = FuncionesRepetidas.crearCardIngrediente(usuario, ingre);
                     if (card != null) {
                         card.setOnMouseClicked(event -> {
-                            buscadorPane.setVisible(false);
-                            infoCardPane.setVisible(true);
+                            mostrarPane(infoCardPane);
                             infoCardIngredientePane.setVisible(true);
                             infoCardRecetaPane.setVisible(false);
                             infoCardRestaurantePane.setVisible(false);
@@ -377,11 +484,10 @@ public class ControladorHomeAppPage implements Initializable {
                         || valoracionesSeleccionadas.contains(String.valueOf(Math.round(mediaValoracion)));
 
                 if (coincideTexto && pasaValoracion && noDieta && noTipoCoccion && noDificultad && noAlergenos) {
-                    VBox card = FuncionesRepetidas.crearCardRestaurante(restaurante);
+                    VBox card = FuncionesRepetidas.crearCardRestaurante(usuario, restaurante);
                     if (card != null) {
                         card.setOnMouseClicked(event -> {
-                            buscadorPane.setVisible(false);
-                            infoCardPane.setVisible(true);
+                            mostrarPane(infoCardPane);
                             infoCardRestaurantePane.setVisible(true);
                             infoCardRecetaPane.setVisible(false);
                             infoCardIngredientePane.setVisible(false);
@@ -397,7 +503,7 @@ public class ControladorHomeAppPage implements Initializable {
     }
     
     
-    // INFO CARD RECETA:
+    // INFO CARD :
     public void mostrarInfoCardReceta() {
         if (infoCardRecetaSelec == null) return;
 
@@ -481,13 +587,12 @@ public class ControladorHomeAppPage implements Initializable {
                     .orElse(null);
 
                 if (restau != null) {
-                    VBox card = FuncionesRepetidas.crearCardRestaurante(restau);
+                    VBox card = FuncionesRepetidas.crearCardRestaurante(usuario, restau);
                     if (card != null) {
                         infoCardRecetaRestaurantes.getChildren().add(card);
                         encontrado = true;
                         card.setOnMouseClicked(event -> {
-                            buscadorPane.setVisible(false);
-                            infoCardPane.setVisible(true);
+                            mostrarPane(infoCardPane);
                             infoCardIngredientePane.setVisible(false);
                             infoCardRecetaPane.setVisible(false);
                             infoCardRestaurantePane.setVisible(true);
@@ -529,7 +634,6 @@ public class ControladorHomeAppPage implements Initializable {
         );
 
         infoCardRecetaTodasValoracionCaja.getChildren().clear();
-
         for (Valoracion val : listaValoraciones) {
             valEcontrado = true;
             
@@ -541,6 +645,24 @@ public class ControladorHomeAppPage implements Initializable {
             infoCardRecetaTodasValoracionCaja.setAlignment(Pos.CENTER);
             infoCardRecetaTodasValoracionCaja.getChildren().add(noHay);
         }
+        
+        //fav
+        FuncionesRepetidas.actualizarEstadoFavoritos(usuario, infoCardRecetaSelec, Favoritos.TipoObjeto.RECETA, svgAñadirFavReceta);
+        btnAñadirFavReceta.setOnMouseClicked(event -> {
+            boolean esFavorito = FuncionesRepetidas.esFavorito(usuario.getId_usuario(), infoCardRecetaSelec.getId_receta(), Favoritos.TipoObjeto.RECETA);
+
+            if (esFavorito) {
+                if (FuncionesRepetidas.eliminarFavorito(usuario.getId_usuario(),infoCardRecetaSelec.getId_receta(), Favoritos.TipoObjeto.RECETA)) {
+                    svgAñadirFavReceta.getStyleClass().remove("fillFav");
+                }
+            } else {
+                
+                if (FuncionesRepetidas.insertarFavorito(new Favoritos(0, Favoritos.TipoObjeto.RECETA, infoCardRecetaSelec.getId_receta(), usuario.getId_usuario(), new java.util.Date()))) {
+                    svgAñadirFavReceta.getStyleClass().remove("svgSinBordes");
+                    svgAñadirFavReceta.getStyleClass().add("fillFav");
+                }
+            }
+        });
     }
     
     @FXML private void btnAñadirValoracionReceta() {
@@ -556,7 +678,7 @@ public class ControladorHomeAppPage implements Initializable {
         Valoracion val = new Valoracion();
         val.setTipo_objeto(Valoracion.TipoObjeto.RECETA);
         val.setId_objeto(infoCardRecetaSelec.getId_receta());
-        val.setUsuario_id(usuario.getId_usuario());
+        val.setId_usuario(usuario.getId_usuario());
         val.setPuntuacion_valoracion(puntuacion);
         val.setComentario_valoracion(comentario);
         val.setFecha_valoracion(new Date());
@@ -638,11 +760,10 @@ public class ControladorHomeAppPage implements Initializable {
 
             for (Ingrediente ingrediente : ingredientes) {
                 if (ingrediente.getId_ingrediente() == idIngrediente) {
-                    VBox card = FuncionesRepetidas.crearCardReceta(receta);
+                    VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
                     if (card != null) {
                         card.setOnMouseClicked(event -> {
-                            buscadorPane.setVisible(false);
-                            infoCardPane.setVisible(true);
+                            mostrarPane(infoCardPane);
                             infoCardRecetaPane.setVisible(true);
                             infoCardIngredientePane.setVisible(false);
                             infoCardRestaurantePane.setVisible(false);
@@ -658,6 +779,24 @@ public class ControladorHomeAppPage implements Initializable {
                 }
             }
         }
+        
+        //fav
+        FuncionesRepetidas.actualizarEstadoFavoritos(usuario, infoCardIngredienteSelec, Favoritos.TipoObjeto.INGREDIENTE, svgAñadirFavIngre);
+        btnAñadirFavIngre.setOnMouseClicked(event -> {
+            boolean esFavorito = FuncionesRepetidas.esFavorito(usuario.getId_usuario(), infoCardIngredienteSelec.getId_ingrediente(), Favoritos.TipoObjeto.INGREDIENTE);
+
+            if (esFavorito) {
+                if (FuncionesRepetidas.eliminarFavorito(usuario.getId_usuario(),infoCardIngredienteSelec.getId_ingrediente(), Favoritos.TipoObjeto.INGREDIENTE)) {
+                    svgAñadirFavIngre.getStyleClass().remove("fillFav");
+                }
+            } else {
+                
+                if (FuncionesRepetidas.insertarFavorito(new Favoritos(0, Favoritos.TipoObjeto.INGREDIENTE, infoCardIngredienteSelec.getId_ingrediente(), usuario.getId_usuario(), new java.util.Date()))) {
+                    svgAñadirFavIngre.getStyleClass().remove("svgSinBordes");
+                    svgAñadirFavIngre.getStyleClass().add("fillFav");
+                }
+            }
+        });
     }
     
     public void mostrarInfoCardRestaurante() {
@@ -697,14 +836,13 @@ public class ControladorHomeAppPage implements Initializable {
                     .orElse(null);
 
                 if (receta != null) {
-                    VBox card = FuncionesRepetidas.crearCardReceta(receta);
+                    VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
                     if (card != null) {
                         infoCardRestauRecetas.getChildren().add(card);
                         encontrado = true;
 
                         card.setOnMouseClicked(event -> {
-                            buscadorPane.setVisible(false);
-                            infoCardPane.setVisible(true);
+                            mostrarPane(infoCardPane);
                             infoCardIngredientePane.setVisible(false);
                             infoCardRecetaPane.setVisible(true);
                             infoCardRestaurantePane.setVisible(false);
@@ -722,15 +860,141 @@ public class ControladorHomeAppPage implements Initializable {
             infoCardRestauRecetas.setAlignment(Pos.CENTER);
             infoCardRestauRecetas.getChildren().add(noRecetas);
         }
+        
+        //fav
+        FuncionesRepetidas.actualizarEstadoFavoritos(usuario, infoCardRestauranteSelec, Favoritos.TipoObjeto.RESTAURANTE, svgAñadirFavRestau);
+        btnAñadirFavRestau.setOnMouseClicked(event -> {
+            boolean esFavorito = FuncionesRepetidas.esFavorito(usuario.getId_usuario(), infoCardRestauranteSelec.getId_restaurante(), Favoritos.TipoObjeto.RESTAURANTE);
+
+            if (esFavorito) {
+                if (FuncionesRepetidas.eliminarFavorito(usuario.getId_usuario(),infoCardRestauranteSelec.getId_restaurante(), Favoritos.TipoObjeto.RESTAURANTE)) {
+                    svgAñadirFavRestau.getStyleClass().remove("fillFav");
+                }
+            } else {
+                
+                if (FuncionesRepetidas.insertarFavorito(new Favoritos(0, Favoritos.TipoObjeto.RESTAURANTE, infoCardRestauranteSelec.getId_restaurante(), usuario.getId_usuario(), new java.util.Date()))) {
+                    svgAñadirFavRestau.getStyleClass().remove("svgSinBordes");
+                    svgAñadirFavRestau.getStyleClass().add("fillFav");
+                }
+            }
+        });
+    }
+    
+    public void volverBuscador(){
+        mostrarPane(buscadorPane);
+        infoCardIngredientePane.setVisible(false);
+        infoCardRecetaPane.setVisible(false);
+        infoCardRestaurantePane.setVisible(false);
+    }
+    
+    
+    // ESCANEAR PANE:
+    public String leerCodigoBarrasDesdeImagen(File imagenArchivo) {
+        try {
+            BufferedImage bufferedImage = ImageIO.read(imagenArchivo);
+            LuminanceSource fuente = new BufferedImageLuminanceSource(bufferedImage);
+            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(fuente));
+
+            Result resultado = new MultiFormatReader().decode(bitmap);
+            return resultado.getText(); 
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public void mostrarInfoCardCodigo(String codigoLeido) {
+        ObservableList<Codigo> listaCodigos = FuncionesRepetidas.obtenerCodigoDeImagen(codigoLeido);
+
+        infoCardCodigoEscanearPane.getChildren().clear();
+
+        if (listaCodigos.isEmpty()) {
+            Label noEncontrado = new Label("No se ha encontrado ninguna referencia");
+            infoCardCodigoEscanearPane.getChildren().add(noEncontrado);
+        } else {
+            Codigo cod = listaCodigos.get(0);
+
+            codigoInfoCardCodigo.setText(cod.getCodigo_barras());
+            tiendaInfoCardCodigo.setText(cod.getNombre_tienda());
+            marcaInfoCardCodigo.setText(cod.getNombre_marca());
+            origenInfoCardCodigo.setText(cod.getPais_origen());
+
+            ObservableList<Ingrediente> listaIngredientes = FuncionesRepetidas.obtenerListaIngredientes();
+            String rutaImagen = null;
+            String nombreIngrediente = "Ingrediente desconocido";
+
+            for (Ingrediente ing : listaIngredientes) {
+                if (ing.getId_ingrediente() == cod.getId_ingrediente()) {
+                    rutaImagen = ing.getImagen_ingrediente();
+                    nombreIngrediente = ing.getNombre_ingrediente();
+                    break;
+                }
+            }
+
+            nombreInfoCardCodigo.setText(nombreIngrediente);
+
+            if (rutaImagen != null) {
+                Image img = new Image(getClass().getResourceAsStream(rutaImagen));
+                imgInfoCardCodigo.setImage(img);
+            }
+
+            infoCardCodigoEscanearPane.getChildren().add(scrollPaneInfoCardCodigo);
+        }
     }
     
 
-    
-    
-    
-    
-    
-    
+
+
+
+ @FXML
+    public void escanearConCamara() {
+        System.out.println("Botón presionado");
+        Platform.runLater(() -> {
+            webcam = Webcam.getDefault();
+            webcam.open();
+
+            executor.submit(() -> {
+                while (webcam.isOpen()) {
+                    BufferedImage imagen = webcam.getImage();
+                    String codigo = escanearCodigo(imagen);
+
+                    Platform.runLater(() -> actualizarUI(imagen, codigo));
+
+                    if (codigo != null) {
+                        webcam.close();
+                    }
+
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        });
+    }
+
+    private String escanearCodigo(BufferedImage imagen) {
+        try {
+            LuminanceSource source = new BufferedImageLuminanceSource(imagen);
+            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+            Result resultado = new MultiFormatReader().decode(bitmap);
+            return resultado.getText();
+        } catch (NotFoundException e) {
+            return null;
+        }
+    }
+
+    private void actualizarUI(BufferedImage imagen, String codigo) {
+        Image fxImage = SwingFXUtils.toFXImage(imagen, null);
+        cameraImageView.setImage(fxImage);
+        if (codigo != null) {
+            System.out.println("Código detectado: " + codigo);
+        }
+    }
+
+
+   
    
 
     
