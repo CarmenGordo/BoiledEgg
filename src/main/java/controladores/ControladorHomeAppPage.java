@@ -68,14 +68,29 @@ import com.google.zxing.BinaryBitmap;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.Result;
 import java.io.ByteArrayInputStream;
+import java.util.Base64;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javax.imageio.ImageIO;
 import modelos.Codigo;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
+import modelos.UsuarioCodigo;
 
 /**
  *
@@ -89,9 +104,9 @@ public class ControladorHomeAppPage implements Initializable {
     @FXML private SVGPath iconoTema;
     @FXML private ImageView btnPerfil;
     @FXML private VBox vboxTipoFiltrar, vboxTipoReceta, vboxAlergenos, vboxDificultad, vboxValoraciones, vboxTipoCoccion;
-    @FXML private AnchorPane homePane,buscadorPane, infoCardPane, escanearPane;
+    @FXML private AnchorPane homePane, buscadorPane, infoCardPane, escanearPane, subirRecetaPane, perfilPane;
     @FXML private Button btnBuscar;
-    @FXML private HBox btnHome, btnEscanear, cajaBuscar;
+    @FXML private HBox btnHome, btnEscanear, btnSubirReceta, cajaBuscar ;
     @FXML private TextField inputBuscar;
     @FXML public FlowPane flowRecetas;
     @FXML public ScrollPane filtrosScroll, busquedasPane;
@@ -107,12 +122,28 @@ public class ControladorHomeAppPage implements Initializable {
 
     
     // FXML de escanearPane:
-    @FXML private HBox btnCamaraCodigoEscanearPane, btnSubirCodigoEscanearPane, infoCodigoEscanearPane, btnSubidaCodigoEscanearPane;
+    @FXML private HBox btnCamaraCodigoEscanearPane, btnSubirCodigoEscanearPane, todosCodigosInfoCodigo, infoCodigoEscanearPane, recomendarRecetasInfoCodigo, btnSubidaCodigoEscanearPane;
     @FXML private VBox codigoEscanearPane, inicioEscanearPane, camaraCodigoEscanearPane, subirCodigoEscanearPane, infoCardCodigoEscanearPane;
     @FXML private ImageView imgInfoCardCodigo, imgSubirCodigoEscanearPane;
     @FXML private Label nombreInfoCardCodigo, codigoInfoCardCodigo, tiendaInfoCardCodigo, marcaInfoCardCodigo, origenInfoCardCodigo;
     @FXML private ScrollPane scrollPaneInfoCardCodigo;
+    @FXML private Button saberMasInfoCardCodigoEscanearPane;
+    
+    
+    // FXML de subirRecetaPane:
+    @FXML private ImageView imgSubirReceta;
+    @FXML private Button btnImportarSubirReceta, btnSubirRecetaVal, btnCancelar;
+    @FXML private TextField nombreSubirReceta, buscadorIngredientesSubirReceta, tiempoSubirReceta;
+    @FXML private HBox listaIngredientesSubirReceta;
+    @FXML private VBox ingredientesSeleccionadosSubirReceta;
+    @FXML private Label lblNombreSubirReceta, lblTipoSubirReceta, lblDificultadSubirReceta, lblTipoCoccionSubirReceta, lblTiempoSubirReceta, lblPasosSubirReceta, etiqImgSubirReceta, etiqNombreSubirReceta, etiqTipoSubirReceta, etiqDificultadSubirReceta, etiqIngredientesSubirReceta, etiqAlergenosSubirReceta, etiqTipoCoccionSubirReceta, etiqTiempoSubirReceta, etiqPasosSubirReceta;
+    @FXML private ComboBox tipoSubirReceta, dificultadSubirReceta, tipoCoccionSubirReceta;
+    @FXML private ListView alergenosSubirReceta, alergenosSeleccionadosSubirReceta;
+    @FXML private TextArea pasosSubirReceta;
             
+    
+    
+    
             
     private Stage stage;
     public Connection conexion;
@@ -125,14 +156,14 @@ public class ControladorHomeAppPage implements Initializable {
     public Receta infoCardRecetaSelec;
     public Ingrediente infoCardIngredienteSelec;
     public Restaurante infoCardRestauranteSelec;
+    public String ultimoCodigoEscaneado = null;
+    public ObservableList<Ingrediente> ingredientesSeleccionadosList = FXCollections.observableArrayList();
+    public ObservableList<Ingrediente> todosLosIngredientes;
+    private String imagenBase64; // este es de SubirRecetaPane
+    ImageView iconoOk = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream("assets/iconos/icono_ok.png")));
+    ImageView iconoError = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream("assets/iconos/icono_error.png")));
     
     
-    
-    @FXML
-    private ImageView cameraImageView;
-    private Webcam webcam;
-        private ExecutorService executor = Executors.newSingleThreadExecutor();
-
         
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -142,7 +173,9 @@ public class ControladorHomeAppPage implements Initializable {
         infoCodigoEscanearPane.setVisible(false);
         camaraCodigoEscanearPane.setVisible(false);
         subirCodigoEscanearPane.setVisible(false);
-        inicioEscanearPane.setVisible(true);
+        inicioEscanearPane.setVisible(false);
+        subirRecetaPane.setVisible(false);
+        perfilPane.setVisible(false);
 
 
         try {
@@ -232,7 +265,20 @@ public class ControladorHomeAppPage implements Initializable {
         
         
         // EscanearPane: 
+        tipoSubirReceta.setItems(ObservableListas.listaTiposRecetas);
+        dificultadSubirReceta.setItems(ObservableListas.listaDificultadRecetas);
+        tipoCoccionSubirReceta.setItems(ObservableListas.listaTiposCoccion);
+        
+        nombreSubirReceta.textProperty().addListener((obs, oldVal, newVal) -> rellenarInfoSubirReceta());
+        tipoSubirReceta.valueProperty().addListener((obs, oldVal, newVal) -> rellenarInfoSubirReceta());
+        dificultadSubirReceta.valueProperty().addListener((obs, oldVal, newVal) -> rellenarInfoSubirReceta());
+        tipoCoccionSubirReceta.valueProperty().addListener((obs, oldVal, newVal) -> rellenarInfoSubirReceta());
+        tiempoSubirReceta.textProperty().addListener((obs, oldVal, newVal) -> rellenarInfoSubirReceta());
+        pasosSubirReceta.textProperty().addListener((obs, oldVal, newVal) -> rellenarInfoSubirReceta());
+        rellenarInfoSubirReceta();
+    
         btnCamaraCodigoEscanearPane.setOnMouseClicked(event-> {
+            
             inicioEscanearPane.setVisible(false);
             infoCodigoEscanearPane.setVisible(true);
             camaraCodigoEscanearPane.setVisible(true);
@@ -261,11 +307,53 @@ public class ControladorHomeAppPage implements Initializable {
 
                 String codigo = leerCodigoBarrasDesdeImagen(imagenArchivo);
                 if (codigo != null) {
+                    ultimoCodigoEscaneado = codigo;
                     mostrarInfoCardCodigo(codigo);
+                    infoCardCodigoEscanearPane.setVisible(true);
                     System.out.println("codigo:" + codigo);
                 }
             }
         });
+        
+        btnSubirReceta.setOnMouseClicked(event -> {
+            mostrarPane(subirRecetaPane);
+        });
+        
+        // SubirRecetaPAne:
+        configurarArrastrarImgSubirReceta();
+        btnImportarSubirReceta.setOnAction(event -> importarImgSubirReceta());
+        
+        todosLosIngredientes = FuncionesRepetidas.obtenerListaIngredientes();
+        cargarIngredientesAleatorios();
+        
+        buscadorIngredientesSubirReceta.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.isEmpty()) {
+                if (ingredientesSeleccionadosList.isEmpty()) {
+                    cargarIngredientesAleatorios();
+                } else {
+                    mostrarIngredientesSeleccionados();
+                }
+            } else {
+                buscarIngredientes(newValue);
+            }
+        });
+        
+        btnCancelar.setOnAction(event -> limpiarSubirRecetaPane());
+        //btnSubirRecetaVal
+        
+        // Tooltips
+        iconoOk.setFitHeight(16);
+        iconoOk.setFitWidth(16);
+        iconoError.setFitHeight(16);
+        iconoError.setFitWidth(16);
+        ponerTooltips();
+        
+        // Validadores
+        configurarValidacionesSubirReceta();
+        
+        
+        btnPerfil.setOnMouseClicked(event -> { mostrarPane(perfilPane); });
+     
     }
     
     
@@ -303,6 +391,8 @@ public class ControladorHomeAppPage implements Initializable {
         } else {
             System.err.println("No se pudo cargar el icono desde: " + rutaIcono);
         }
+        
+        actualizarListaIngredientesEscaneados(usuario);
     }
    
    
@@ -344,7 +434,7 @@ public class ControladorHomeAppPage implements Initializable {
         buscadorPane.setVisible(false);
         infoCardPane.setVisible(false);
         escanearPane.setVisible(false);
-        
+        subirRecetaPane.setVisible(false);
         
         paneMostrar.setVisible(true);
     } 
@@ -395,7 +485,6 @@ public class ControladorHomeAppPage implements Initializable {
         boolean buscarIngredientes = tipoSeleccionado.equals("Ingrediente") || tipoSeleccionado.isEmpty();
         boolean buscarRestaurantes = tipoSeleccionado.equals("Restaurante") || tipoSeleccionado.isEmpty();
 
-        // Filtrar recetas
         if (buscarRecetas) {
             for (Receta receta : FuncionesRepetidas.obtenerListaRecetas()) {
                 boolean coincideTexto = receta.getNombre_receta().toLowerCase().contains(textoBuscar);
@@ -426,7 +515,7 @@ public class ControladorHomeAppPage implements Initializable {
             }
         }
 
-        // Filtrar ingredientes
+
         if (buscarIngredientes) {
 
             for (Ingrediente ingre : FuncionesRepetidas.obtenerListaIngredientes()) {
@@ -471,7 +560,6 @@ public class ControladorHomeAppPage implements Initializable {
         }
 
         
-        // Filtar por restau
         if (buscarRestaurantes) {
             for (Restaurante restaurante : FuncionesRepetidas.obtenerListaRestaurantes()) {
                 boolean noTipoCoccion = tiposCoccionSeleccionados.isEmpty();
@@ -505,21 +593,12 @@ public class ControladorHomeAppPage implements Initializable {
     
     // INFO CARD :
     public void mostrarInfoCardReceta() {
+
         if (infoCardRecetaSelec == null) return;
 
         String rutaImagen = infoCardRecetaSelec.getImagen_receta();
-        if (rutaImagen == null || rutaImagen.isEmpty()) {
-            infoCardRecetaImagen.setImage(new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png")));
-        } else {
-            URL urlImagenReceta = getClass().getResource(rutaImagen);
-            if (urlImagenReceta == null) {
-                infoCardRecetaImagen.setImage(new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png")));
+        infoCardRecetaImagen.setImage(FuncionesRepetidas.cargarImagenReceta(rutaImagen));
 
-            } else {
-                infoCardRecetaImagen.setImage(new Image(urlImagenReceta.toExternalForm()));
-            }
-        }
-   
         infoCardRecetaNombre.setText(infoCardRecetaSelec.getNombre_receta());
 
         infoCardRecetaCajaTipo.getChildren().clear();
@@ -665,7 +744,7 @@ public class ControladorHomeAppPage implements Initializable {
         });
     }
     
-    @FXML private void btnAñadirValoracionReceta() {
+    @FXML public void btnAñadirValoracionReceta() {
        
         String comentario = inputAñadirValoracionReceta.getText();
         int puntuacion = FuncionesRepetidas.puntuacionSeleccionada;
@@ -889,6 +968,102 @@ public class ControladorHomeAppPage implements Initializable {
     
     
     // ESCANEAR PANE:
+    public void actualizarListaIngredientesEscaneados(Usuario usuario) {
+        todosCodigosInfoCodigo.getChildren().clear();
+        recomendarRecetasInfoCodigo.getChildren().clear();
+
+        ObservableList<UsuarioCodigo> listaUsuarioCodigo = FuncionesRepetidas.obtenerListaUsuarioCodigo(usuario);
+
+        if (listaUsuarioCodigo.isEmpty()) {
+            Label noEscaneados = new Label("Aún no has escaneado ningún código");
+            todosCodigosInfoCodigo.getChildren().add(noEscaneados);
+            todosCodigosInfoCodigo.setAlignment(Pos.CENTER); 
+            
+            mostrarRecetasAleatorias(usuario);
+        } else {
+            for (UsuarioCodigo uc : listaUsuarioCodigo) {
+
+                ObservableList<Codigo> listaCodigos = FuncionesRepetidas.obtenerCodigoDeImagen(ultimoCodigoEscaneado);
+                if (!listaCodigos.isEmpty()) {
+                    Codigo codigo = listaCodigos.get(0);
+                    ObservableList<Ingrediente> listaIngredientes = FuncionesRepetidas.obtenerListaIngredientes();
+
+                    for (Ingrediente ing : listaIngredientes) {
+                        if (ing.getId_ingrediente() == codigo.getId_ingrediente()) {
+                            VBox card = FuncionesRepetidas.crearCardIngrediente(usuario, ing);
+                            todosCodigosInfoCodigo.getChildren().add(card);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            mostrarRecetasConIngredientesEscaneados(usuario, listaUsuarioCodigo);
+        }
+    }
+    
+    public void mostrarRecetasAleatorias(Usuario usuario) {
+        ObservableList<Receta> todasLasRecetas = FuncionesRepetidas.obtenerListaRecetas();
+
+        if (!todasLasRecetas.isEmpty()) {
+            List<Receta> listaRecetas = new ArrayList<>(todasLasRecetas);
+
+            int contador = 0;
+            while (contador < 3 && contador < listaRecetas.size()) {
+
+                int indiceAleatorio = (int) (Math.random() * listaRecetas.size());
+                Receta receta = listaRecetas.get(indiceAleatorio);
+
+                VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
+                recomendarRecetasInfoCodigo.getChildren().add(card);
+
+                contador++;
+            }
+        }
+    }
+    
+    public void mostrarRecetasConIngredientesEscaneados(Usuario usuario, ObservableList<UsuarioCodigo> listaUsuarioCodigo) {
+        ObservableList<Receta> todasLasRecetas = FuncionesRepetidas.obtenerListaRecetas();
+        ObservableList<Receta> recetasConIngredientes = FXCollections.observableArrayList();
+
+        for (Receta receta : todasLasRecetas) {
+            Map<Integer, String> cantidades = new HashMap<>();
+            ObservableList<Ingrediente> ingredientesReceta = FuncionesRepetidas.obtenerRecetaIngredientes(receta.getId_receta(), cantidades);
+
+            boolean contieneIngredienteEscaneado = false;
+
+            for (UsuarioCodigo uc : listaUsuarioCodigo) {
+                ObservableList<Codigo> codigos = FuncionesRepetidas.obtenerCodigoDeImagen(ultimoCodigoEscaneado);
+                if (!codigos.isEmpty()) {
+                    int idIngredienteEscaneado = codigos.get(0).getId_ingrediente();
+
+                    for (Ingrediente ing : ingredientesReceta) {
+                        if (ing.getId_ingrediente() == idIngredienteEscaneado) {
+                            contieneIngredienteEscaneado = true;
+                            break;
+                        }
+                    }
+                }
+                if (contieneIngredienteEscaneado) break;
+            }
+
+            if (contieneIngredienteEscaneado) {
+                recetasConIngredientes.add(receta);
+            }
+        }
+
+        int contador = 0;
+        for (Receta receta : recetasConIngredientes) {
+            if (contador < 3) {
+                VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
+                recomendarRecetasInfoCodigo.getChildren().add(card);
+                contador++;
+            } else {
+                break;
+            }
+        }
+    }
+    
     public String leerCodigoBarrasDesdeImagen(File imagenArchivo) {
         try {
             BufferedImage bufferedImage = ImageIO.read(imagenArchivo);
@@ -903,7 +1078,9 @@ public class ControladorHomeAppPage implements Initializable {
         }
     }
     
+    public Ingrediente ingredienteEncontrado;
     public void mostrarInfoCardCodigo(String codigoLeido) {
+        infoCardCodigoEscanearPane.setVisible(true);
         ObservableList<Codigo> listaCodigos = FuncionesRepetidas.obtenerCodigoDeImagen(codigoLeido);
 
         infoCardCodigoEscanearPane.getChildren().clear();
@@ -927,6 +1104,7 @@ public class ControladorHomeAppPage implements Initializable {
                 if (ing.getId_ingrediente() == cod.getId_ingrediente()) {
                     rutaImagen = ing.getImagen_ingrediente();
                     nombreIngrediente = ing.getNombre_ingrediente();
+                    ingredienteEncontrado = ing;
                     break;
                 }
             }
@@ -939,67 +1117,662 @@ public class ControladorHomeAppPage implements Initializable {
             }
 
             infoCardCodigoEscanearPane.getChildren().add(scrollPaneInfoCardCodigo);
+            saberMasInfoCardCodigoEscanearPane.setOnMouseClicked(event -> {
+                if (ingredienteEncontrado != null) {
+                    infoCardIngredienteSelec = ingredienteEncontrado;
+                    escanearPane.setVisible(false);
+                    infoCardPane.setVisible(true);
+                    infoCardIngredientePane.setVisible(true);
+                    mostrarInfoCardIngrediente();
+                }
+            });
         }
     }
     
+    @FXML public void volverAtrasSubirImagen() {
+        inicioEscanearPane.setVisible(true);
+        infoCodigoEscanearPane.setVisible(false);
+        camaraCodigoEscanearPane.setVisible(false);
+        subirCodigoEscanearPane.setVisible(false);
+    }
+    
+    // SUBIR RECETA PANE:
+    @FXML public void btnVerTerminosSubirReceta(){
+        try {
+            URL url = getClass().getResource("/vistas/TerminosyCondicionesModal.fxml");
+            FXMLLoader loader = new FXMLLoader(url);
+            Parent root = loader.load();
 
+            ControladorTerminosyCondicionesModal controlador = loader.getController();
 
+            Stage modalStage = new Stage();
+            // paar bloquear la ventana
+            modalStage.initModality(Modality.APPLICATION_MODAL);
 
+            Scene scene = new Scene(root);
+            modalStage.setScene(scene);
+            controlador.setStage(modalStage);
 
- @FXML
-    public void escanearConCamara() {
-        System.out.println("Botón presionado");
-        Platform.runLater(() -> {
-            webcam = Webcam.getDefault();
-            webcam.open();
+            // Centrar el modal en la pantalla
+            modalStage.centerOnScreen();
+            modalStage.show();
 
-            executor.submit(() -> {
-                while (webcam.isOpen()) {
-                    BufferedImage imagen = webcam.getImage();
-                    String codigo = escanearCodigo(imagen);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void rellenarInfoSubirReceta() {
+        lblNombreSubirReceta.setText(nombreSubirReceta.getText());
+        lblTipoSubirReceta.setText(tipoSubirReceta.getValue() != null ? tipoSubirReceta.getValue().toString() : "");   
+        lblDificultadSubirReceta.setText(dificultadSubirReceta.getValue() != null ? dificultadSubirReceta.getValue().toString() : "");
+        lblTipoCoccionSubirReceta.setText(tipoCoccionSubirReceta.getValue() != null ? tipoCoccionSubirReceta.getValue().toString() : "");        
+        lblTiempoSubirReceta.setText(tiempoSubirReceta.getText());
+        lblPasosSubirReceta.setText(pasosSubirReceta.getText());        
+    }
 
-                    Platform.runLater(() -> actualizarUI(imagen, codigo));
+    public void configurarArrastrarImgSubirReceta() {
+        subirRecetaPane.setOnDragOver(event -> {
+            if (event.getDragboard().hasFiles()) {
+                String extension = getFileExtension(event.getDragboard().getFiles().get(0).getName());
+                if (extension != null && (extension.equals("png") || extension.equals("jpg") || extension.equals("jpeg"))) {
+                    event.acceptTransferModes(TransferMode.COPY);
+                }
+            }
+            event.consume();
+        });
 
-                    if (codigo != null) {
-                        webcam.close();
-                    }
+        subirRecetaPane.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
 
+            if (db.hasFiles()) {
+                File file = db.getFiles().get(0);
+                String extension = getFileExtension(file.getName());
+
+                if (extension != null && (extension.equals("png") || extension.equals("jpg") || extension.equals("jpeg"))) {
                     try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
+                        Image image = new Image(file.toURI().toString());
+                        imgSubirReceta.setImage(image);
+
+                        imagenBase64 = convertirImagenABase64(file);
+
+                        success = true;
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
+                }
+            }
+
+            event.setDropCompleted(success);
+            event.consume();
+        });
+    }
+
+    public void importarImgSubirReceta() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar imagen");
+
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
+            "Archivos de imagen", "*.png", "*.jpg", "*.jpeg");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        File file = fileChooser.showOpenDialog(subirRecetaPane.getScene().getWindow());
+
+        if (file != null) {
+            try {
+                Image image = new Image(file.toURI().toString());
+                imgSubirReceta.setImage(image);
+
+                imagenBase64 = convertirImagenABase64(file);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public String getFileExtension(String fileName) {
+        if (fileName == null) return null;
+        int lastIndexOf = fileName.lastIndexOf(".");
+        if (lastIndexOf == -1) return null;
+        return fileName.substring(lastIndexOf + 1).toLowerCase();
+    }
+
+    public String convertirImagenABase64(File file) {
+        try {
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+            return Base64.getEncoder().encodeToString(fileContent);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public void cargarIngredientesAleatorios() {
+        listaIngredientesSubirReceta.getChildren().clear();
+        ObservableList<Ingrediente> aleatorios = FXCollections.observableArrayList();
+        List<Integer> indicesUsados = new ArrayList<>();
+        
+        int contador = 0;
+        while (contador < 5 && contador < todosLosIngredientes.size()) {
+            int indiceAleatorio = (int) (Math.random() * todosLosIngredientes.size());
+
+            if (!indicesUsados.contains(indiceAleatorio)) {
+                indicesUsados.add(indiceAleatorio);
+                aleatorios.add(todosLosIngredientes.get(indiceAleatorio));
+                contador++;
+            }
+        }
+
+        for (Ingrediente ingrediente : aleatorios) {
+            añadirIngredienteALista(ingrediente);
+        }
+    }
+
+    public void buscarIngredientes(String busqueda) {
+        listaIngredientesSubirReceta.getChildren().clear();
+        
+        String busquedaMinusculas = busqueda.toLowerCase();
+        
+        for (Ingrediente ingrediente : todosLosIngredientes) {
+            String nombreIngrediente = ingrediente.getNombre_ingrediente().toLowerCase();
+            if (nombreIngrediente.contains(busquedaMinusculas)) {
+                añadirIngredienteALista(ingrediente);
+            }
+        }
+    }
+    
+    private void añadirIngredienteALista(Ingrediente ingrediente) {
+        VBox ingredienteBox = new VBox(5);
+        ingredienteBox.setAlignment(Pos.CENTER);
+
+        ImageView imagen = new ImageView();
+        try {
+            String rutaImagen = ingrediente.getImagen_ingrediente();
+            if (rutaImagen != null && !rutaImagen.isEmpty()) {
+               
+                Image img = new Image(getClass().getResourceAsStream(rutaImagen));
+                imagen.setImage(img);
+            } else {
+                
+                Image img = new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png"));
+                imagen.setImage(img);
+            }
+        } catch (Exception e) {
+            
+            try {
+                Image img = new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png"));
+                imagen.setImage(img);
+            } catch (Exception ex) {
+                Rectangle rect = new Rectangle(30, 30);
+                rect.setFill(Color.PLUM);
+                ingredienteBox.getChildren().add(rect);
+            }
+        }
+
+        if (imagen.getImage() != null) {
+            imagen.setFitHeight(40);
+            imagen.setFitWidth(40);
+            imagen.setPreserveRatio(true);
+            ingredienteBox.getChildren().add(imagen);
+        }
+        Label nombre = new Label(ingrediente.getNombre_ingrediente());
+        nombre.setWrapText(true);
+        nombre.setMaxWidth(40);
+        nombre.setAlignment(Pos.CENTER);
+
+        ingredienteBox.getChildren().add(nombre);
+
+        ingredienteBox.setOnMouseClicked(e -> seleccionarIngrediente(ingrediente));
+
+        ingredienteBox.setStyle("-fx-padding: 5; -fx-background-color: white; -fx-background-radius: 5;");
+        ingredienteBox.setOnMouseEntered(event -> ingredienteBox.setStyle("-fx-padding: 5; -fx-background-color: #f0f0f0; -fx-background-radius: 5;"));
+        ingredienteBox.setOnMouseExited(event -> ingredienteBox.setStyle("-fx-padding: 5; -fx-background-color: white; -fx-background-radius: 5;"));
+
+        listaIngredientesSubirReceta.getChildren().add(ingredienteBox);
+    }
+    
+    private void mostrarIngredientesSeleccionados() {
+        listaIngredientesSubirReceta.getChildren().clear();
+        for (Ingrediente ingrediente : ingredientesSeleccionadosList) {
+            añadirIngredienteALista(ingrediente);
+        }
+    }
+    
+    private void seleccionarIngrediente(Ingrediente ingrediente) {
+        if (!ingredientesSeleccionadosList.contains(ingrediente)) {
+            ingredientesSeleccionadosList.add(ingrediente);
+
+            HBox seleccionadoBox = new HBox(10);
+            seleccionadoBox.setAlignment(Pos.CENTER_LEFT);
+
+            ImageView imagen = new ImageView();
+            try {
+                String rutaImagen = ingrediente.getImagen_ingrediente();
+                if (rutaImagen != null && !rutaImagen.isEmpty()) {
+                    if (!rutaImagen.startsWith("/")) {
+                        rutaImagen = "/" + rutaImagen;
+                    }
+                    Image img = new Image(getClass().getResourceAsStream(rutaImagen));
+                    imagen.setImage(img);
+                } else {
+                    Image img = new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png"));
+                    imagen.setImage(img);
+                }
+            } catch (Exception e) {
+                Rectangle rect = new Rectangle(30, 30);
+                rect.setFill(Color.PLUM);
+                seleccionadoBox.getChildren().add(rect);
+            }
+
+            if (imagen.getImage() != null) {
+                imagen.setFitHeight(30);
+                imagen.setFitWidth(30);
+                imagen.setPreserveRatio(true);
+                seleccionadoBox.getChildren().add(imagen);
+            }
+
+            Label nombre = new Label(ingrediente.getNombre_ingrediente());
+
+            Button btnMenos = new Button("-");
+            btnMenos.setStyle("-fx-background-radius: 50%; -fx-min-width: 25px; -fx-min-height: 25px;");
+
+            Label cantidad = new Label("1");
+            cantidad.setMinWidth(30);
+            cantidad.setAlignment(Pos.CENTER);
+
+            Button btnMas = new Button("+");
+            btnMas.setStyle("-fx-background-radius: 50%; -fx-min-width: 25px; -fx-min-height: 25px;");
+
+            Button btnEliminar = new Button("X");
+            btnEliminar.setStyle("-fx-background-color: #ff4444; -fx-text-fill: white;");
+
+            btnMenos.setOnAction(e -> {
+                int cantidadActual = Integer.parseInt(cantidad.getText());
+                if (cantidadActual > 1) {
+                    cantidad.setText(String.valueOf(cantidadActual - 1));
+                } else {
+                    // Si la cantidad llega a 0, eliminar el ingrediente
+                    ingredientesSeleccionadosList.remove(ingrediente);
+                    ingredientesSeleccionadosSubirReceta.getChildren().remove(seleccionadoBox);
+                    if (buscadorIngredientesSubirReceta.getText().isEmpty()) {
+                        mostrarIngredientesSeleccionados();
+                    }
+                }
+            });
+
+            btnMas.setOnAction(e -> {
+                int cantidadActual = Integer.parseInt(cantidad.getText());
+                cantidad.setText(String.valueOf(cantidadActual + 1));
+            });
+
+            btnEliminar.setOnAction(e -> {
+                ingredientesSeleccionadosList.remove(ingrediente);
+                ingredientesSeleccionadosSubirReceta.getChildren().remove(seleccionadoBox);
+                if (buscadorIngredientesSubirReceta.getText().isEmpty()) {
+                    mostrarIngredientesSeleccionados();
+                }
+            });
+
+            seleccionadoBox.getChildren().addAll(nombre, btnMenos, cantidad, btnMas, btnEliminar);
+            ingredientesSeleccionadosSubirReceta.getChildren().add(seleccionadoBox);
+
+            System.out.println("Ingrediente seleccionado: " + ingrediente.getNombre_ingrediente());
+            System.out.println("Ingredientes seleccionados: " + ingredientesSeleccionadosList);
+        }
+    }
+    
+    public void limpiarSubirRecetaPane(){
+        imgSubirReceta.setImage(null);
+        nombreSubirReceta.clear();
+        buscadorIngredientesSubirReceta.clear();
+        tiempoSubirReceta.clear();
+        pasosSubirReceta.clear();
+        tipoSubirReceta.setValue(null);
+        dificultadSubirReceta.setValue(null);
+        tipoCoccionSubirReceta.setValue(null);
+        listaIngredientesSubirReceta.getChildren().clear();
+        alergenosSubirReceta.getSelectionModel().clearSelection();
+        etiqImgSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqNombreSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqTipoSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqDificultadSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqIngredientesSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqAlergenosSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqTipoCoccionSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqTiempoSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqPasosSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        lblNombreSubirReceta.setText("");
+        lblTipoSubirReceta.setText("");
+        lblDificultadSubirReceta.setText("");
+        lblTipoCoccionSubirReceta.setText("");
+        lblTiempoSubirReceta.setText("");
+        lblPasosSubirReceta.setText("");
+        ingredientesSeleccionadosSubirReceta.getChildren().clear();
+        //alergenosSeleccionadosSubirReceta.getChildren().clear();
+    }
+    
+    public ListCell<Alergeno> crearListCellAlergeno() {
+        return new ListCell<Alergeno>() {
+            private ImageView imageView = new ImageView();
+
+            {
+                imageView.setFitHeight(20);
+                imageView.setFitWidth(20);
+                setGraphicTextGap(10);
+            }
+
+            @Override
+            protected void updateItem(Alergeno alergeno, boolean empty) {
+                super.updateItem(alergeno, empty);
+                if (empty || alergeno == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    imageView.setImage(new Image(alergeno.getImagen_alergeno()));
+                    setText(alergeno.getNombre_alergeno());
+                    setGraphic(imageView);
+                }
+            }
+        };
+    }
+    
+    private ListCell<Alergeno> crearListCellAlergenoSeleccionado() {
+        return new ListCell<Alergeno>() {
+            private ImageView imageView = new ImageView();
+            private Button btnEliminar = new Button("X");
+
+            {
+                imageView.setFitHeight(20);
+                imageView.setFitWidth(20);
+                setGraphicTextGap(10);
+
+                btnEliminar.setStyle("-fx-background-color: red; -fx-text-fill: white;");
+                btnEliminar.setOnAction(e -> {
+                    Alergeno alergeno = getItem();
+                    if (alergeno != null) {
+                        alergenosSeleccionadosSubirReceta.getItems().remove(alergeno);
+                        if (alergenosSeleccionadosSubirReceta.getItems().isEmpty()) {
+                            etiqAlergenosSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                        }
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Alergeno alergeno, boolean empty) {
+                super.updateItem(alergeno, empty);
+                if (empty || alergeno == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    imageView.setImage(new Image(alergeno.getImagen_alergeno()));
+
+                    HBox hbox = new HBox(10);
+                    hbox.setAlignment(Pos.CENTER_LEFT);
+                    hbox.getChildren().addAll(imageView, new Label(alergeno.getNombre_alergeno()), btnEliminar);
+
+                    setGraphic(hbox);
+                }
+            }
+        };
+    }
+    
+    @FXML private void btnSubirRecetaVal() {
+        if (comprobarValidacionesSubirReceta()) {
+            Receta receta = new Receta();
+        receta.setNombre_receta(nombreSubirReceta.getText());
+        receta.setConsejos_receta(null);
+        receta.setPasos_receta(pasosSubirReceta.getText());
+        receta.setImagen_receta(imagenBase64);
+        receta.setTiempo_preparacion_receta(Integer.parseInt(tiempoSubirReceta.getText()));
+        receta.setDificultad_receta(dificultadSubirReceta.getValue().toString());
+        receta.setId_autor(usuario.getId_usuario());
+        receta.setTipo_receta(tipoSubirReceta.getValue().toString());
+        receta.setTipo_coccion_receta(tipoCoccionSubirReceta.getValue().toString());
+        receta.setPublicada_por_restaurante(0);
+        receta.setVisible_receta(0);
+
+        if (FuncionesRepetidas.insertarSubirReceta(receta)) {
+            int idReceta = FuncionesRepetidas.obtenerUltimoIdReceta();
+
+            // Insertamos los alérgenos
+            for (var item : alergenosSeleccionadosSubirReceta.getItems()) {
+                Alergeno alergeno = (Alergeno) item;
+                if (!FuncionesRepetidas.insertarRecetaAlergeno(idReceta, alergeno.getId_alergeno())) {
+                    FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error al guardar los alérgenos", 
+                        "No se pudieron guardar todos los alérgenos de la receta");
+                    return;
+                }
+            }
+
+            // Insertamos los ingredientes con sus cantidades
+            for (int i = 0; i < ingredientesSeleccionadosList.size(); i++) {
+                Ingrediente ingrediente = ingredientesSeleccionadosList.get(i);
+                HBox hbox = (HBox) ingredientesSeleccionadosSubirReceta.getChildren().get(i);
+                
+                // Imprimir la estructura del HBox
+                System.out.println("HBox " + i + " contiene:");
+                for (int j = 0; j < hbox.getChildren().size(); j++) {
+                    System.out.println("  Elemento " + j + ": " + hbox.getChildren().get(j).getClass().getSimpleName());
+                }
+                
+                // Buscar el Label de cantidad
+                String cantidad = "1"; // valor por defecto
+                for (Node node : hbox.getChildren()) {
+                    if (node instanceof Label) {
+                        Label label = (Label) node;
+                        if (label.getText().matches("\\d+")) { // si es un número
+                            cantidad = label.getText();
+                            break;
+                        }
+                    }
+                }
+                
+                if (!FuncionesRepetidas.insertarRecetaIngrediente(
+                    idReceta, 
+                    ingrediente.getId_ingrediente(),
+                    cantidad)) {
+
+                    FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error al guardar los ingredientes", 
+                        "No se pudieron guardar todos los ingredientes de la receta");
+                    return;
+                }
+            }
+
+                FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "¡Éxito! Has subido tu receta", 
+                    "Te recordamos que te avisaremos cuando el servicio compruebe que todos los datos son correctos");
+
+                limpiarSubirRecetaPane();
+
+            } else {
+                FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error al intentar subir tu receta", 
+                    "Por favor, revisa los Términos y condiciones para subir una receta o comprueba que todos los campos estén bien");
+            }
+        } else {
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error al intentar subir tu receta", 
+                "Por favor, revisa los Términos y condiciones para subir una receta o comprueba que todos los campos estén bien");
+        }
+    }
+    
+    
+    // Tooltips
+    private void ponerTooltips() {
+        etiqImgSubirReceta.setTooltip(new Tooltip("Debes subir una imagen de la receta"));
+        etiqNombreSubirReceta.setTooltip(new Tooltip("Introduce el nombre de la receta"));
+        etiqTipoSubirReceta.setTooltip(new Tooltip("Selecciona el tipo de receta"));
+        etiqDificultadSubirReceta.setTooltip(new Tooltip("Selecciona el nivel de dificultad"));
+        etiqIngredientesSubirReceta.setTooltip(new Tooltip("Añade al menos un ingrediente"));
+        etiqAlergenosSubirReceta.setTooltip(new Tooltip("Selecciona los alérgenos presentes"));
+        etiqTipoCoccionSubirReceta.setTooltip(new Tooltip("Selecciona el tipo de cocción"));
+        etiqTiempoSubirReceta.setTooltip(new Tooltip("Introduce el tiempo de preparación en minutos"));
+        etiqPasosSubirReceta.setTooltip(new Tooltip("Describe los pasos a seguir"));
+    }
+    
+    // Validadores
+    private void configurarValidacionesSubirReceta() {
+        etiqImgSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqNombreSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqTipoSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqDificultadSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqIngredientesSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqAlergenosSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqTipoCoccionSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqTiempoSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        etiqPasosSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+
+        imgSubirReceta.imageProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                if (imgSubirReceta.getImage() != null) {
+                    etiqImgSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    etiqImgSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                }
+            });
+        });
+        
+        nombreSubirReceta.textProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                if (!newVal.trim().isEmpty()) {
+                    etiqNombreSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    etiqNombreSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                }
+            });
+        });
+
+        tipoSubirReceta.valueProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                if (newVal != null) {
+                    etiqTipoSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    etiqTipoSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                }
+            });
+        });
+
+        dificultadSubirReceta.valueProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                if (newVal != null) {
+                    etiqDificultadSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    etiqDificultadSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                }
+            });
+        });
+
+        ingredientesSeleccionadosSubirReceta.getChildren().addListener((ListChangeListener<Node>) change -> {
+            Platform.runLater(() -> {
+                if (!ingredientesSeleccionadosSubirReceta.getChildren().isEmpty()) {
+                    etiqIngredientesSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    etiqIngredientesSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                }
+            });
+        });
+
+        alergenosSubirReceta.setItems(FuncionesRepetidas.obtenerListaAlergenos());
+        alergenosSubirReceta.setCellFactory(param -> crearListCellAlergeno());
+        alergenosSeleccionadosSubirReceta.setCellFactory(param -> crearListCellAlergenoSeleccionado());
+
+        alergenosSubirReceta.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                Platform.runLater(() -> {
+                    if (!alergenosSeleccionadosSubirReceta.getItems().contains(newVal)) {
+                        alergenosSeleccionadosSubirReceta.getItems().add(newVal);
+                    }
+                    alergenosSubirReceta.getSelectionModel().clearSelection();
+                    etiqAlergenosSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                });
+            }
+        });
+
+        tipoCoccionSubirReceta.valueProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                if (newVal != null) {
+                    etiqTipoCoccionSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    etiqTipoCoccionSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                }
+            });
+        });
+
+        tiempoSubirReceta.textProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                if (!newVal.trim().isEmpty() && newVal.matches("\\d+")) {
+                    etiqTiempoSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    etiqTiempoSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                }
+            });
+        });
+
+        pasosSubirReceta.textProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                if (!newVal.trim().isEmpty()) {
+                    etiqPasosSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    etiqPasosSubirReceta.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
                 }
             });
         });
     }
+   
+    public boolean comprobarValidacionesSubirReceta() {
+        System.out.println(nombreSubirReceta.getText()+", " +tipoSubirReceta.getValue().toString()+", " +
+                dificultadSubirReceta.getValue().toString()+", " +listaIngredientesSubirReceta.getChildren().toString()+", " +alergenosSubirReceta.getSelectionModel().getSelectedItems()+", " +tipoCoccionSubirReceta.getValue().toString()+", " +tiempoSubirReceta.getText()+", " +pasosSubirReceta.getText()
+                );
+        boolean ingredientesValidos = false;
+        for (int i = 0; i < listaIngredientesSubirReceta.getChildren().size(); i++) {
+            VBox vbox = (VBox) listaIngredientesSubirReceta.getChildren().get(i);
+            System.out.println("VBox " + i + " contiene:");
+            for (int j = 0; j < vbox.getChildren().size(); j++) {
+                System.out.println("  Elemento " + j + ": " + vbox.getChildren().get(j).getClass().getSimpleName());
+            }
+        }
 
-    private String escanearCodigo(BufferedImage imagen) {
+        return imgSubirReceta.getImage() != null &&
+              !nombreSubirReceta.getText().trim().isEmpty() &&
+              tipoSubirReceta.getValue() != null &&
+              dificultadSubirReceta.getValue() != null &&
+              !listaIngredientesSubirReceta.getChildren().isEmpty() && 
+              !alergenosSeleccionadosSubirReceta.getItems().isEmpty() &&
+              tipoCoccionSubirReceta.getValue() != null &&
+              !tiempoSubirReceta.getText().trim().isEmpty() &&
+              !pasosSubirReceta.getText().trim().isEmpty();
+    }
+
+    
+    
+    
+    // JuegosPane:
+    @FXML private void btnJuego() {
         try {
-            LuminanceSource source = new BufferedImageLuminanceSource(imagen);
-            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-            Result resultado = new MultiFormatReader().decode(bitmap);
-            return resultado.getText();
-        } catch (NotFoundException e) {
-            return null;
+            URL url = getClass().getResource("/vistas/JuegosPage.fxml");
+            FXMLLoader loader = new FXMLLoader(url);
+            Parent root = loader.load();
+
+            ControladorJuegosPage controlador = loader.getController();
+            controlador.setUsuario(usuario);
+
+            Stage stage = new Stage();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
-
-    private void actualizarUI(BufferedImage imagen, String codigo) {
-        Image fxImage = SwingFXUtils.toFXImage(imagen, null);
-        cameraImageView.setImage(fxImage);
-        if (codigo != null) {
-            System.out.println("Código detectado: " + codigo);
-        }
-    }
-
-
-   
-   
-
     
     
-   
+    
+    
+    
+    
+    
+    
     public void setStage(Stage stage) {
         this.stage = stage;
     }

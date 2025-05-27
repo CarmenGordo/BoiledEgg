@@ -136,7 +136,7 @@ public class ControladorLoginPage implements Initializable {
         
         cargarIconos();
         
-        // Hacer clic en el icono de perfil: mostrar panel de cambio
+        // Hacer clic en el icono de perfil = mostrar panel de cambio
         iconoPerfil.setOnMouseClicked(event -> {
             cambiarIconoPane.setVisible(true);
             inputsPane.setVisible(false);
@@ -170,7 +170,7 @@ public class ControladorLoginPage implements Initializable {
             List<VBox> vboxList = List.of(iconoPez, iconoDefecto, iconoColiflor, iconoUva, iconoSandwich, iconoAlmendra);
             List<ImageView> imageList = List.of(imgPez, imgDefecto, imgColiflor, imgUva, imgSandwich, imgAlmendra);
             List<Label> labelList = List.of(lblPez, lblDefecto, lblColiflor, lblUva, lblSandwich, lblAlmendra);
-            //Hemos asignado un nuevo orden para el pane con  los icons
+            // Nuevo orden para el pane con  los icons
             Map<String, Integer> ordenIconos = Map.of("Pezqueñín", 0, "Huevín", 1,"Coli", 2, "Uvina", 3, "Mordisquitos", 4, "Almond", 5);
 
             for (int i = 0; i < listaIconos.size(); i++) {

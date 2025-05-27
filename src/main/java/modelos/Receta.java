@@ -12,15 +12,16 @@ public class Receta {
     private String imagen_receta;
     private int tiempo_preparacion_receta;
     private String dificultad_receta;
-    private int id_autor;
+    private Integer id_autor;
     private String tipo_receta;
     private String tipo_coccion_receta;
     private int publicada_por_restaurante;
+    private int visible_receta;
 
     public Receta() {
     }
 
-    public Receta(int id_receta, String nombre_receta, String consejos_receta, String pasos_receta, String imagen_receta, int tiempo_preparacion_receta, String dificultad_receta, int id_autor, String tipo_receta, String tipo_coccion_receta, int publicada_por_restaurante) {
+    public Receta(int id_receta, String nombre_receta, String consejos_receta, String pasos_receta, String imagen_receta, int tiempo_preparacion_receta, String dificultad_receta, Integer id_autor, String tipo_receta, String tipo_coccion_receta, int publicada_por_restaurante, int visible_receta) {
         this.id_receta = id_receta;
         this.nombre_receta = nombre_receta;
         this.consejos_receta = consejos_receta;
@@ -32,6 +33,7 @@ public class Receta {
         this.tipo_receta = tipo_receta;
         this.tipo_coccion_receta = tipo_coccion_receta;
         this.publicada_por_restaurante = publicada_por_restaurante;
+        this.visible_receta = visible_receta;
     }
 
     public int getId_receta() {
@@ -90,11 +92,11 @@ public class Receta {
         this.dificultad_receta = dificultad_receta;
     }
 
-    public int getId_autor() {
+    public Integer getId_autor() {
         return id_autor;
     }
 
-    public void setId_autor(int id_autor) {
+    public void setId_autor(Integer id_autor) {
         this.id_autor = id_autor;
     }
 
@@ -117,11 +119,17 @@ public class Receta {
     public int getPublicada_por_restaurante() {
         return publicada_por_restaurante;
     }
-
+    
     public void setPublicada_por_restaurante(int publicada_por_restaurante) {
         this.publicada_por_restaurante = publicada_por_restaurante;
+    } 
+
+    public int getVisible_receta() {
+        return visible_receta;
     }
-    
-    
+
+    public void setVisible_receta(int visible_receta) {
+        this.visible_receta = visible_receta;
+    } 
     
 }

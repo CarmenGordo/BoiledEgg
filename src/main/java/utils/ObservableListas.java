@@ -24,7 +24,7 @@ public class ObservableListas {
     ));
 
     public static ObservableList<String> listaTiposRecetas = ordenar(
-        FXCollections.observableArrayList("Vegetariana", "Vegana", "Keto", "Sin glúten", "Carnívora", "Mediterránea", "Postre", "Entrante", "Bebida")
+        FXCollections.observableArrayList("Vegetariana", "Vegana", "Keto", "Sin glúten", "Carnívora", "Mediterránea", "Postre", "Entrante", "Bebida", "Crudívora", "Sin azúcar", "Halal")
     );
     
     public static ObservableList<String> listaDificultadRecetas = FXCollections.observableArrayList("Fácil", "Media", "Dificil", "Experto");

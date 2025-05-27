@@ -46,6 +46,7 @@ import modelos.Ingrediente;
 import modelos.Receta;
 import modelos.RecetaIngrediente;
 import modelos.RestauranteReceta;
+import modelos.UsuarioCodigo;
 import modelos.Valoracion;
 
 /**
@@ -176,7 +177,8 @@ public class FuncionesRepetidas {
                         rs.getString("contraseña_usuario"),
                         rs.getInt("nivel_usuario"),
                         rs.getInt("puntos_usuario"),
-                        rs.getInt("icono_perfil_id") 
+                        rs.getInt("icono_perfil_id"),
+                        rs.getInt("juego_completado_usuario")
                     );
                 listaUsuarios.add(usuario);
             }
@@ -205,13 +207,14 @@ public class FuncionesRepetidas {
 
                 if (rs.next()) {
                     return new Usuario(
-                            rs.getInt("id_usuario"),
-                            rs.getString("nombre_usuario"),
-                            rs.getString("email_usuario"),
-                            rs.getString("contraseña_usuario"),
-                            rs.getInt("nivel_usuario"),
-                            rs.getInt("puntos_usuario"),
-                            rs.getInt("icono_perfil_id")
+                        rs.getInt("id_usuario"),
+                        rs.getString("nombre_usuario"),
+                        rs.getString("email_usuario"),
+                        rs.getString("contraseña_usuario"),
+                        rs.getInt("nivel_usuario"),
+                        rs.getInt("puntos_usuario"),
+                        rs.getInt("icono_perfil_id"),
+                        rs.getInt("juego_completado_usuario")
                     );
                 }
             }
@@ -219,6 +222,23 @@ public class FuncionesRepetidas {
             System.err.println("Error al obtener usuario: " + e.getMessage());
         }
         return null;
+    }
+    
+    public static void actualizarUsuario(Usuario usuario) {
+        try (Connection conn = iniciarConexion()) {
+            String sql = "UPDATE Usuario SET nivel_usuario = ?, puntos_usuario = ?, juego_completado_usuario = ? WHERE id_usuario = ?";
+            
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, usuario.getNivel_usuario());
+            stmt.setInt(2, usuario.getPuntos_usuario());
+            stmt.setInt(3, usuario.getJuego_completado_usuario());
+            stmt.setInt(4, usuario.getId_usuario());
+            
+            stmt.executeUpdate();
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public static Restaurante obtenerRestaurantePorEmail(String email) {
@@ -294,7 +314,7 @@ public class FuncionesRepetidas {
                 System.err.println("------error en obtenerListaRecetas(). FuncionesRepetidas");
             }
 
-            String query = "SELECT * FROM Receta";
+            String query = "SELECT * FROM Receta WHERE visible_receta = 1";
             try (PreparedStatement ps = conexion.prepareStatement(query);
                  ResultSet rs = ps.executeQuery()) {
 
@@ -310,7 +330,8 @@ public class FuncionesRepetidas {
                         rs.getInt("id_autor"),
                         rs.getString("tipo_receta"),
                         rs.getString("tipo_coccion_receta"),
-                        rs.getInt("publicada_por_restaurante")
+                        rs.getInt("publicada_por_restaurante"),
+                        rs.getInt("visible_receta")
                     );
                     recetas.add(receta);
                 }
@@ -321,6 +342,49 @@ public class FuncionesRepetidas {
         }
 
         return recetas;
+    }
+    
+    public static boolean insertarSubirReceta(Receta receta) {
+        try (Connection conexion = iniciarConexion()) {
+    
+            String query = "INSERT INTO Receta (nombre_receta, consejos_receta, pasos_receta, imagen_receta, tiempo_preparacion_receta, dificultad_receta, id_autor, tipo_receta, tipo_coccion_receta, publicada_por_restaurante, visible_receta) " +
+                          "VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+            
+            PreparedStatement stmt = conexion.prepareStatement(query);
+            stmt.setString(1, receta.getNombre_receta());
+            stmt.setString(2, receta.getPasos_receta());
+            stmt.setString(3, receta.getImagen_receta());
+            stmt.setInt(4, receta.getTiempo_preparacion_receta());
+            stmt.setString(5, receta.getDificultad_receta());
+            stmt.setInt(6, receta.getId_autor());
+            stmt.setString(7, receta.getTipo_receta());
+            stmt.setString(8, receta.getTipo_coccion_receta());
+            stmt.setInt(9, receta.getPublicada_por_restaurante());
+
+            return stmt.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public static int obtenerUltimoIdReceta() {
+        int idReceta = -1;
+        String sql = "SELECT MAX(id_receta) as ultimo_id FROM Receta";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                idReceta = rs.getInt("ultimo_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return idReceta;
     }
     
     public static double obtenerValoracionMedia(int recetaId) {
@@ -610,6 +674,23 @@ public class FuncionesRepetidas {
         return listaAlergenos;
     }
     
+    public static boolean insertarRecetaAlergeno(int idReceta, int idAlergeno) {
+        String sql = "INSERT INTO RecetaAlergeno (id_receta, id_alergeno) VALUES (?, ?)";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, idReceta);
+            ps.setInt(2, idAlergeno);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
     
     public static ObservableList<Ingrediente> obtenerListaIngredientes() {
         ObservableList<Ingrediente> listaIngredientes = FXCollections.observableArrayList();
@@ -677,6 +758,25 @@ public class FuncionesRepetidas {
 
         return listaIngredientes;
     }
+    
+    public static boolean insertarRecetaIngrediente(int idReceta, int idIngrediente, String cantidad) {
+        String sql = "INSERT INTO RecetaIngrediente (id_receta, id_ingrediente, cantidad_ingrediente) VALUES (?, ?, ?)";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, idReceta);
+            ps.setInt(2, idIngrediente);
+            ps.setString(3, cantidad);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
     
     public static ObservableList<Restaurante> obtenerListaRestaurantes() {
         ObservableList<Restaurante> lista = FXCollections.observableArrayList();
@@ -767,6 +867,57 @@ public class FuncionesRepetidas {
         }
 
         return lista;
+    }
+    
+    public static ObservableList<UsuarioCodigo> obtenerListaUsuarioCodigo(Usuario usuario) {
+        ObservableList<UsuarioCodigo> listaUsuarioCodigo = FXCollections.observableArrayList();
+
+        String query = "SELECT uc.*, c.*, i.* FROM UsuarioCodigo uc " +
+                      "JOIN Codigo c ON uc.id_codigo = c.id_codigo " +
+                      "JOIN Ingrediente i ON c.id_ingrediente = i.id_ingrediente " +
+                      "WHERE uc.id_usuario = ? " +
+                      "ORDER BY uc.fecha_escaneo DESC";
+
+        try (Connection conexion = iniciarConexion();
+             PreparedStatement ps = conexion.prepareStatement(query)) {
+
+            ps.setInt(1, usuario.getId_usuario());
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                UsuarioCodigo uc = new UsuarioCodigo(
+                    rs.getInt("id_escaneo"),
+                    rs.getInt("id_usuario"),
+                    rs.getInt("id_codigo"),
+                    rs.getTimestamp("fecha_escaneo"),
+                    rs.getInt("cantidad")
+                );
+                listaUsuarioCodigo.add(uc);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error obteniendo lista UsuarioCodigo: " + e.getMessage());
+        }
+
+        return listaUsuarioCodigo;
+    }
+    
+    public static boolean insertarUsuarioCodigo(Usuario usuario, String codigoBarras) {
+        String query = "INSERT INTO UsuarioCodigo (id_usuario, id_codigo) " +
+                      "SELECT ?, id_codigo FROM Codigo WHERE codigo_barras = ?";
+
+        try (Connection conexion = iniciarConexion();
+             PreparedStatement ps = conexion.prepareStatement(query)) {
+
+            ps.setInt(1, usuario.getId_usuario());
+            ps.setString(2, codigoBarras);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error insertando UsuarioCodigo: " + e.getMessage());
+            return false;
+        }
     }
     
     
@@ -867,7 +1018,6 @@ public class FuncionesRepetidas {
                     SVGPath svgAñadirCardFav = (SVGPath) graphic;
                     svgAñadirCardFav.getStyleClass().add("svgSoloBordes");
                     ponerHoverFavorito(btnAñadirCardFav, svgAñadirCardFav);
-                    System.out.println("----SVGPath encontrado dentro del btn");
                     
                     boolean esFavorito = esFavorito(usuario.getId_usuario(), receta.getId_receta(), Favoritos.TipoObjeto.RECETA);
                     if (esFavorito) {
@@ -907,20 +1057,34 @@ public class FuncionesRepetidas {
             HBox tipoIconos = (HBox) card.lookup("#tipoIconosCard");
             Label alergenosLabel = (Label) card.lookup("#lblAlergenosCard");
             HBox alergenosIconosCard = (HBox) card.lookup("#alergenosIconosCard");
-
+            Label nombreUsuarioLabel = (Label) card.lookup("#lblNombreUsuarioCard");
+            
             nombre.setText(receta.getNombre_receta());
             
             String rutaImagen = receta.getImagen_receta();
-            if (rutaImagen == null || rutaImagen.isEmpty()) {
-                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
-            } else if(FuncionesRepetidas.class.getResource(rutaImagen) == null){
-                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
-            } else {
-                img.setImage(new Image(FuncionesRepetidas.class.getResource(rutaImagen).toExternalForm()));
-            }
+            img.setImage(FuncionesRepetidas.cargarImagenReceta(rutaImagen));
         
             tipo.setText("Tipo: " + receta.getTipo_receta());
 
+            if (receta.getId_autor()!= null) {
+                Usuario autor = null;
+                for (Usuario u : obtenerListaUsuarios()) {
+                    if (u.getId_usuario() == receta.getId_autor()) {
+                        autor = u;
+                        break;
+                    }
+                }
+
+                if (autor != null) {
+                    nombreUsuarioLabel.setText(autor.getNombre_usuario());
+                    nombreUsuarioLabel.setVisible(true);
+                } else {
+                    nombreUsuarioLabel.setVisible(false);
+                }
+            } else {
+                nombreUsuarioLabel.setVisible(false);
+            }
+            
             for (Alergeno alergeno : alergenos) {
                 ImageView alergenoIcono = new ImageView();
                 alergenoIcono.setImage(new Image(FuncionesRepetidas.class.getResource(alergeno.getImagen_alergeno()).toExternalForm()));
@@ -1004,7 +1168,6 @@ public class FuncionesRepetidas {
                     SVGPath svgAñadirCardFav = (SVGPath) graphic;
                     svgAñadirCardFav.getStyleClass().add("svgSoloBordes");
                     ponerHoverFavorito(btnAñadirCardFav, svgAñadirCardFav);
-                    System.out.println("----SVGPath encontrado dentro del btn");
                     
                     boolean esFavorito = esFavorito(usuario.getId_usuario(), ingre.getId_ingrediente(), Favoritos.TipoObjeto.INGREDIENTE);
                     if (esFavorito) {
@@ -1044,16 +1207,12 @@ public class FuncionesRepetidas {
             HBox tipoIconos = (HBox) card.lookup("#tipoIconosCard");
             Label alergenosLabel = (Label) card.lookup("#lblAlergenosCard");
             HBox alergenosIconosCard = (HBox) card.lookup("#alergenosIconosCard");
+            Label nombreUsuarioLabel = (Label) card.lookup("#lblNombreUsuarioCard");
 
+            nombreUsuarioLabel.setVisible(false);
             nombre.setText(ingre.getNombre_ingrediente());
             String rutaImagen = ingre.getImagen_ingrediente();
-            if (rutaImagen == null || rutaImagen.isEmpty()) {
-                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
-            } else if(FuncionesRepetidas.class.getResource(rutaImagen) == null){
-                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
-            } else {
-                img.setImage(new Image(FuncionesRepetidas.class.getResource(rutaImagen).toExternalForm()));
-            }
+            img.setImage(FuncionesRepetidas.cargarImagenReceta(rutaImagen));
           
             Label tipoLbl = new Label(ingre.getTipo_ingrediente());
             tipoIconos.getChildren().add(tipoLbl);
@@ -1104,7 +1263,6 @@ public class FuncionesRepetidas {
                     SVGPath svgAñadirCardFav = (SVGPath) graphic;
                     svgAñadirCardFav.getStyleClass().add("svgSoloBordes");
                     ponerHoverFavorito(btnAñadirCardFav, svgAñadirCardFav);
-                    System.out.println("----SVGPath encontrado dentro del btn");
                     
                     boolean esFavorito = esFavorito(usuario.getId_usuario(), restau.getId_restaurante(), Favoritos.TipoObjeto.RESTAURANTE);
                     if (esFavorito) {
@@ -1144,18 +1302,13 @@ public class FuncionesRepetidas {
             HBox tipoIconos = (HBox) card.lookup("#tipoIconosCard");
             Label alergenosLabel = (Label) card.lookup("#lblAlergenosCard");
             HBox alergenosIconosCard = (HBox) card.lookup("#alergenosIconosCard");
-            
-            
+            Label nombreUsuarioLabel = (Label) card.lookup("#lblNombreUsuarioCard");
+
+            nombreUsuarioLabel.setVisible(false);
             nombre.setText(restau.getNombre_restaurante());
             
             String rutaImagen = restau.getImagen_restaurante();
-            if (rutaImagen == null || rutaImagen.isEmpty()) {
-                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
-            } else if(FuncionesRepetidas.class.getResource(rutaImagen) == null){
-                img.setImage(new Image(FuncionesRepetidas.class.getResource("/assets/img_otros/noImagen.png").toExternalForm()));
-            } else {
-                img.setImage(new Image(FuncionesRepetidas.class.getResource(rutaImagen).toExternalForm()));
-            }
+            img.setImage(FuncionesRepetidas.cargarImagenReceta(rutaImagen));
         
             tipo.setText("Tipo: " + restau.getTipo_restaurante());
             alergenosLabel.setVisible(false);
@@ -1168,8 +1321,7 @@ public class FuncionesRepetidas {
         }
     }
 
-    
-    
+
     
     
     public static int puntuacionSeleccionada = 0;
@@ -1258,6 +1410,32 @@ public class FuncionesRepetidas {
     }
 
 
+    
+    
+    
+    // PAra que lea tanto base 64 como ruta
+    public static Image cargarImagenReceta(String rutaImagen) {
+        if (rutaImagen == null || rutaImagen.isEmpty()) {
+            return new Image(FuncionesRepetidas.class.getResourceAsStream("/assets/img_otros/noImagen.png"));
+        }
+
+        try {
+            if (rutaImagen.startsWith("data:image") || rutaImagen.matches("^[A-Za-z0-9+/=]+$")) {
+                byte[] imageBytes = Base64.getDecoder().decode(rutaImagen);
+                return new Image(new ByteArrayInputStream(imageBytes));
+            } else {
+
+                URL urlImagenReceta = FuncionesRepetidas.class.getResource(rutaImagen);
+                if (urlImagenReceta != null) {
+                    return new Image(urlImagenReceta.toExternalForm());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new Image(FuncionesRepetidas.class.getResourceAsStream("/assets/img_otros/noImagen.png"));
+    }
     
     
     
