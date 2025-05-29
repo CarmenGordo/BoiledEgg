@@ -10,10 +10,14 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
 
-<StackPane prefHeight="447.0" prefWidth="473.0" styleClass="fondo" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controladores.ControladorJuegosPage">
+<StackPane prefHeight="632.0" prefWidth="473.0" styleClass="fondo" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controladores.ControladorJuegosPage">
+    <padding>
+        <Insets bottom="20" top="20" />
+    </padding>
       <!-- Juego de Memoria -->
-     <VBox fx:id="juegoMemoria" alignment="TOP_CENTER" spacing="10" visible="false">
+     <VBox fx:id="juegoMemoria" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" spacing="10" VBox.vgrow="ALWAYS">
       <HBox alignment="TOP_RIGHT" prefHeight="33.0" prefWidth="473.0">
          <children>
                <Label styleClass="titulo-juego" text="Juego de Memoria" />
@@ -32,6 +36,11 @@
          <children>
                <Label fx:id="lblPuntuacion" styleClass="puntuacion" text="Puntuación: 0" />
                <Label fx:id="lblIntentos" styleClass="intentos" text="Intentos: 0" />
+            <Button fx:id="btnQuitarMusicaMemoria" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0">
+               <graphic>
+                  <SVGPath fx:id="svgQuitarMusicaMemoria" content="M400-120q-66 0-113-47t-47-113q0-66 47-113t113-47q23 0 42.5 5.5T480-418v-382q0-17 11.5-28.5T520-840h160q17 0 28.5 11.5T720-800v80q0 17-11.5 28.5T680-680H560v400q0 66-47 113t-113 47Z" scaleX="0.03" scaleY="0.03" />
+               </graphic>
+            </Button>
          </children>
          <VBox.margin>
             <Insets right="10.0" />
@@ -46,7 +55,7 @@
          <Button fx:id="btnSiguienteJuego" onAction="#siguienteJuego" text="Siguiente Juego" visible="false" />
      </VBox>
      <!-- Juego de Dados -->
-     <VBox fx:id="juegoDados" alignment="TOP_CENTER" prefHeight="220.0" prefWidth="473.0" spacing="10">
+     <VBox fx:id="juegoDados" alignment="TOP_CENTER" prefHeight="562.0" prefWidth="473.0" spacing="10" visible="false" VBox.vgrow="ALWAYS">
       <HBox alignment="TOP_RIGHT" prefHeight="33.0" prefWidth="473.0">
          <children>
             <Label styleClass="titulo-juego" text="Juego de Dados" />
@@ -65,19 +74,24 @@
          <children>
             <Label fx:id="lblRondaDados" styleClass="puntuacion" text="Ronda: 1/6" />
             <Label fx:id="lblVidasDados" styleClass="intentos" text="Vidas: 5" />
+            <Button fx:id="btnQuitarMusicaDados" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0">
+               <graphic>
+                  <SVGPath fx:id="svgQuitarMusicaDados" content="M400-120q-66 0-113-47t-47-113q0-66 47-113t113-47q23 0 42.5 5.5T480-418v-382q0-17 11.5-28.5T520-840h160q17 0 28.5 11.5T720-800v80q0 17-11.5 28.5T680-680H560v400q0 66-47 113t-113 47Z" scaleX="0.03" scaleY="0.03" />
+               </graphic>
+            </Button>
          </children>
          <padding>
             <Insets right="10.0" />
          </padding>
       </VBox>
          
+               <ImageView fx:id="imgDado" fitHeight="140.0" fitWidth="141.0" visible="false" />
+         
                <TextField fx:id="txtNumeroDado" onAction="#comprobarNumeroDado" promptText="Introduce un número (1-6)">
          <VBox.margin>
             <Insets left="20.0" right="20.0" />
          </VBox.margin>
       </TextField>
-         
-               <ImageView fx:id="imgDado" fitHeight="100" fitWidth="100" visible="false" />
          
                <Label fx:id="lblResultadoDado" styleClass="mensaje" />
          

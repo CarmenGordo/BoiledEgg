@@ -1,6 +1,5 @@
 package controladores;
 
-import com.github.sarxos.webcam.Webcam;
 import conexion.ConexionBD;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -78,6 +77,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.Dragboard;
@@ -85,6 +85,8 @@ import javafx.scene.input.TransferMode;
 import javax.imageio.ImageIO;
 import modelos.Codigo;
 import javafx.scene.layout.Pane;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.Media;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebEngine;
@@ -104,13 +106,21 @@ public class ControladorHomeAppPage implements Initializable {
     @FXML private SVGPath iconoTema;
     @FXML private ImageView btnPerfil;
     @FXML private VBox vboxTipoFiltrar, vboxTipoReceta, vboxAlergenos, vboxDificultad, vboxValoraciones, vboxTipoCoccion;
-    @FXML private AnchorPane homePane, buscadorPane, infoCardPane, escanearPane, subirRecetaPane, perfilPane;
+    @FXML private AnchorPane homePane, buscadorPane, infoCardPane, escanearPane, subirRecetaPane, perfilPane, ajustesPane;
     @FXML private Button btnBuscar;
-    @FXML private HBox btnHome, btnEscanear, btnSubirReceta, cajaBuscar ;
+    @FXML private HBox btnHome, btnEscanear, btnSubirReceta, btnAjustes, cajaBuscar;
     @FXML private TextField inputBuscar;
     @FXML public FlowPane flowRecetas;
     @FXML public ScrollPane filtrosScroll, busquedasPane;
         
+    // FXML de homePane:
+    @FXML private HBox recetasRecomendadasCaja, restaurantesCaja;
+    @FXML private VBox valoracionesCaja;
+    @FXML private Label lblNivelUsuario, lblPuntosUsuario, lblProximoNivel;
+    @FXML private ProgressBar progresoNivel;
+    @FXML private Button btnExplorarRecetas;
+
+    
     // FXML de infoCardPane:
     @FXML private ImageView infoCardRecetaImagen, infoCardIngreImagen, infoCardRestauImagen;
     @FXML private Label infoCardRecetaNombre, infoCardRecetaDificultad, infoCardRecetaCocion, infoCardRecetaTiempo, infoCardRecetaValoracion, infoCardRecetaPasos, infoCardRecetaConsejos, infoCardIngreNombre, infoCardIngreTipo, infoCardRestauNombre, infoCardRestauTipo, infoCardRestauUrl, infoCardRestauCiudad, infoCardRestauDireccion;
@@ -130,7 +140,7 @@ public class ControladorHomeAppPage implements Initializable {
     @FXML private Button saberMasInfoCardCodigoEscanearPane;
     
     
-    // FXML de subirRecetaPane:
+    // FXML subirRecetaPane:
     @FXML private ImageView imgSubirReceta;
     @FXML private Button btnImportarSubirReceta, btnSubirRecetaVal, btnCancelar;
     @FXML private TextField nombreSubirReceta, buscadorIngredientesSubirReceta, tiempoSubirReceta;
@@ -140,8 +150,15 @@ public class ControladorHomeAppPage implements Initializable {
     @FXML private ComboBox tipoSubirReceta, dificultadSubirReceta, tipoCoccionSubirReceta;
     @FXML private ListView alergenosSubirReceta, alergenosSeleccionadosSubirReceta;
     @FXML private TextArea pasosSubirReceta;
-            
     
+    // FXML ajustesPane:
+    @FXML private Label lblReestablecerPreferenias, lblCerrarSesion, lblBorrarPerfil, lblAjustesJuego, lblManualPdf, lblVolverFundidoPage, lblContactarSoporte, lblReportar, lblCreditos, lblTerminosyCondiciones, lblPoliticayPrivacidad;
+    @FXML private VBox inicioAjustesPane,condicionesPane, ajustesJuegoPane, correoSoportePane, informacionAppSoportePane;
+    @FXML private Label lblCondiciones, lvlTextoDescriptivo, lblTextoDescripcion, lblAyudaTexto, lblAyudaTextoInfo;
+    @FXML private Button btnAceptarCondiciones, btnCancelarCondiciones, btnReproducirAjustesJuego, btnSonidoAjustesJuego;
+    @FXML private SVGPath svgSonidoAjustesJuego;
+    @FXML private ProgressBar volumenProgressBar;
+    @FXML private TextArea mensajeCorreoSoportePane;
     
     
             
@@ -159,9 +176,21 @@ public class ControladorHomeAppPage implements Initializable {
     public String ultimoCodigoEscaneado = null;
     public ObservableList<Ingrediente> ingredientesSeleccionadosList = FXCollections.observableArrayList();
     public ObservableList<Ingrediente> todosLosIngredientes;
-    private String imagenBase64; // este es de SubirRecetaPane
+    private String imagenBase64; // de SubirRecetaPane
     ImageView iconoOk = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream("assets/iconos/icono_ok.png")));
     ImageView iconoError = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream("assets/iconos/icono_error.png")));
+    private String accionActual = "";
+    private MediaPlayer mediaPlayer;
+    private boolean sonidoActivado = true;
+    private double volumen = 1.0;
+    private String accionActualCorreo = "";
+    
+    // Svgs:
+    private String svgTemaClaro = "M480-360q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Zm0 80q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM80-440q-17 0-28.5-11.5T40-480q0-17 11.5-28.5T80-520h80q17 0 28.5 11.5T200-480q0 17-11.5 28.5T160-440H80Zm720 0q-17 0-28.5-11.5T760-480q0-17 11.5-28.5T800-520h80q17 0 28.5 11.5T920-480q0 17-11.5 28.5T880-440h-80ZM480-760q-17 0-28.5-11.5T440-800v-80q0-17 11.5-28.5T480-920q17 0 28.5 11.5T520-880v80q0 17-11.5 28.5T480-760Zm0 720q-17 0-28.5-11.5T440-80v-80q0-17 11.5-28.5T480-200q17 0 28.5 11.5T520-160v80q0 17-11.5 28.5T480-40ZM226-678l-43-42q-12-11-11.5-28t11.5-29q12-12 29-12t28 12l42 43q11 12 11 28t-11 28q-11 12-27.5 11.5T226-678Zm494 495-42-43q-11-12-11-28.5t11-27.5q11-12 27.5-11.5T734-282l43 42q12 11 11.5 28T777-183q-12 12-29 12t-28-12Zm-42-495q-12-11-11.5-27.5T678-734l42-43q11-12 28-11.5t29 11.5q12 12 12 29t-12 28l-43 42q-12 11-28 11t-28-11ZM183-183q-12-12-12-29t12-28l43-42q12-11 28.5-11t27.5 11q12 11 11.5 27.5T282-226l-42 43q-11 12-28 11.5T183-183Zm297-297Z";
+    private String svgTemaOscuro = "M484-80q-84 0-157.5-32t-128-86.5Q144-253 112-326.5T80-484q0-128 72-232t193-146q22-8 41 5.5t18 36.5q-3 85 27 162t90 137q60 60 137 90t162 27q26-1 38.5 17.5T863-345q-44 120-147.5 192.5T484-80Zm0-80q88 0 163-44t118-121q-86-8-163-43.5T464-465q-61-61-97-138t-43-163q-77 43-120.5 118.5T160-484q0 135 94.5 229.5T484-160Zm-20-305Z";
+    
+    private String svgConSonido = "M400-120q-66 0-113-47t-47-113q0-66 47-113t113-47q23 0 42.5 5.5T480-418v-382q0-17 11.5-28.5T520-840h160q17 0 28.5 11.5T720-800v80q0 17-11.5 28.5T680-680H560v400q0 66-47 113t-113 47Z";
+    private String svgSinSonido = "M764-84 84-764q-11-11-11-28t11-28q11-11 28-11t28 11l680 680q11 11 11 28t-11 28q-11 11-28 11t-28-11ZM560-680v70q0 20-12.5 29.5T520-571q-15 0-27.5-10T480-611v-189q0-17 11.5-28.5T520-840h160q17 0 28.5 11.5T720-800v80q0 17-11.5 28.5T680-680H560ZM400-120q-66 0-113-47t-47-113q0-66 47-113t113-47q23 0 42.5 5.5T480-418v-62l80 80v120q0 66-47 113t-113 47Z";
     
     
         
@@ -176,6 +205,7 @@ public class ControladorHomeAppPage implements Initializable {
         inicioEscanearPane.setVisible(false);
         subirRecetaPane.setVisible(false);
         perfilPane.setVisible(false);
+        ajustesPane.setVisible(false);
 
 
         try {
@@ -200,6 +230,10 @@ public class ControladorHomeAppPage implements Initializable {
             btnTema.setSelected(false);
             aplicarTemaClaro();
         }
+        
+        Platform.runLater(() -> {
+            cargarEstiloInicial();
+        });
 
         btnTema.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
             if (isSelected) {
@@ -217,7 +251,13 @@ public class ControladorHomeAppPage implements Initializable {
             inicioEscanearPane.setVisible(true);
             infoCodigoEscanearPane.setVisible(false);
         });
-        btnHome.setOnMouseClicked(event -> mostrarPane(homePane));   
+        btnHome.setOnMouseClicked(event -> mostrarPane(homePane));
+        
+        cargarDatosUsuario();
+        cargarRecetasRecomendadas();
+        cargarRestaurantesRecomendados();
+        cargarValoracionesRecientes();
+        btnExplorarRecetas.setOnMouseClicked(event-> mostrarPane(buscadorPane));
         
         //Filtros: 
         cargarFiltrosTipo(ObservableListas.listaFiltrar);
@@ -352,13 +392,146 @@ public class ControladorHomeAppPage implements Initializable {
         configurarValidacionesSubirReceta();
         
         
-        btnPerfil.setOnMouseClicked(event -> { mostrarPane(perfilPane); });
+        btnPerfil.setOnMouseClicked(event -> mostrarPane(perfilPane));
      
+        // AjustesPage
+        btnAjustes.setOnMouseClicked(event -> {
+            mostrarPane(ajustesPane);
+            mostrarAjustesPane(inicioAjustesPane);
+        });   
+        lblReestablecerPreferenias.setOnMouseClicked(event -> {
+            mostrarAjustesPane(condicionesPane);
+            accionActual = "restablecer";
+            lblCondiciones.setText("Reestablecer preferencias del sistema");
+            lvlTextoDescriptivo.setText("El restablecimiento de los ajustes del sistema borrará todas las preferencias " +
+                "como el tema de la app, los ajustes del sonido de los juegos, y otras configuraciones personalizadas. " +
+                "Todo volverá a su configuración por defecto.");
+        });
+        
+        btnAceptarCondiciones.setOnAction(event -> {
+            if ("cerrarSesion".equals(accionActual)) {
+                cerrarSesion();
+            } else if ("restablecer".equals(accionActual)) {
+                restablecerPreferencias();
+            } else if ("borrarPerfil".equals(accionActual)) {
+                borrarPerfil();
+            }
+            condicionesPane.setVisible(false);
+        });
+        
+        btnCancelarCondiciones.setOnAction(event -> {
+            mostrarAjustesPane(inicioAjustesPane);
+        });
+        
+        lblCerrarSesion.setOnMouseClicked(event -> {
+            mostrarAjustesPane(condicionesPane);
+            accionActual = "cerrarSesion";
+            lblCondiciones.setText("Cerrar sesión");
+            lvlTextoDescriptivo.setText("Si cierras sesión ahora, perderás todo aquello que no hayas guardado. La sesión se cerrará y deberás de ingresar tus datos para poder entrar.");
+        });
+        
+        lblBorrarPerfil.setOnMouseClicked(event -> {
+            mostrarAjustesPane(condicionesPane);
+            accionActual = "borrarPerfil";
+            lblCondiciones.setText("Borrar perfil");
+            lvlTextoDescriptivo.setText("Al borrar por completo tu perfil, no podrás recuperar los datos. Por lo que se borrará toda aquella información incluso si decides volver a registrarte.");
+        });
+        
+        lblAjustesJuego.setOnMouseClicked(event -> {
+            mostrarAjustesPane(ajustesJuegoPane);
+        });
+        
+        cargarEstadoSonido();
+
+        btnReproducirAjustesJuego.setOnAction(event -> reproducirMusica());
+        btnSonidoAjustesJuego.setOnAction(event -> toggleSonido());
+        volumenProgressBar.setOnMouseDragged(event -> ajustarVolumen(event.getX()));
+        volumenProgressBar.setOnMouseClicked(event -> ajustarVolumen(event.getX()));
+        volumenProgressBar.setProgress(volumen);
+        
+        lblContactarSoporte.setOnMouseClicked(event -> {
+            mostrarAjustesPane(correoSoportePane);
+            accionActualCorreo = "contactar";
+            lblTextoDescripcion.setText("¿Quieres contactar con nosotros? Puedes hacerlo a traves del correo: soporteboiledegg@gmial.com o simplemente escribiendonos en el apartado de acontinuación. Recuerda que si usas este método, ");
+        });
+        
+        lblCreditos.setOnMouseClicked(event ->{
+            mostrarAjustesPane(informacionAppSoportePane);
+            lblAyudaTexto.setText("Créditos");
+            lblAyudaTextoInfo.setText("Versión: 1.0 Beta\n\n" +
+                            "Desarrollado por: Carmen Gordo-Ureña Toro\n" +
+                            "Trabajo de Fin de Grado\n" +
+                            "Desarrollo de Aplicaciones Multiplataforma\n" +
+                            "Universidad de I.E.S Politécnico Hermenegildo Lanz ");
+        });
+        
+        lblTerminosyCondiciones.setOnMouseClicked(event ->{
+            mostrarAjustesPane(informacionAppSoportePane);
+            lblAyudaTexto.setText("Términos y Condiciones");
+            lblAyudaTextoInfo.setText("1. Aceptación de los Términos\n\n" +
+                            "Al acceder y utilizar esta aplicación, usted acepta estar sujeto a estos términos y condiciones.\n\n" +
+                            "2. Uso de la Aplicación\n\n" +
+                            "La aplicación está diseñada para proporcionar información sobre recetas y productos alimenticios. " +
+                            "El usuario se compromete a utilizar la aplicación de manera responsable y ética.\n\n" +
+                            "3. Cuentas de Usuario\n\n" +
+                            "Los usuarios son responsables de mantener la confidencialidad de sus credenciales de acceso.\n\n" +
+                            "4. Contenido del Usuario\n\n" +
+                            "Los usuarios pueden compartir contenido, pero deben respetar los derechos de autor y la propiedad intelectual.\n\n" +
+                            "5. Limitaciones de Responsabilidad\n\n" +
+                            "La aplicación se proporciona 'tal cual', sin garantías de ningún tipo.\n\n" +
+                            "6. Modificaciones\n\n" +
+                            "Nos reservamos el derecho de modificar estos términos en cualquier momento.");
+        });
+        
+        lblPoliticayPrivacidad.setOnMouseClicked(event -> {
+            mostrarAjustesPane(informacionAppSoportePane);
+            lblAyudaTexto.setText("Política de Privacidad");
+            lblAyudaTextoInfo.setText("1. Recopilación de Información\n\n" +
+                            "Recopilamos información que usted nos proporciona directamente, como su nombre, correo electrónico y preferencias.\n\n"
+                            +"2. Uso de la Información\n\n" +
+                            "Utilizamos su información para:\n" +
+                            "- Proporcionar y mantener nuestros servicios\n" +
+                            "- Personalizar su experiencia\n" +
+                            "- Comunicarnos con usted\n\n" +
+                            "3. Protección de Datos\n\n" +
+                            "Implementamos medidas de seguridad para proteger su información personal.\n\n" +
+                            "4. Cookies\n\n" +
+                            "Utilizamos cookies para mejorar su experiencia de usuario.\n\n" +
+                            "5. Sus Derechos\n\n" +
+                            "Usted tiene derecho a acceder, corregir o eliminar sus datos personales.\n\n" +
+                            "6. Cambios en la Política\n\n" +
+                            "Nos reservamos el derecho de actualizar esta política de privacidad en cualquier momento.");
+        });
     }
     
+    private void cargarEstiloInicial() {
+        try {
+            Map<String, String> cacheData = FuncionesRepetidas.leerSesionCache();
+            String tema = cacheData.getOrDefault("tema", "claro");
+                        
+            Scene scene = btnTema.getScene();
+            if (scene != null) {
+                scene.getStylesheets().clear();
+                if ("oscuro".equals(tema)) {
+                    URL styleUrl = getClass().getResource(rutaTemaOscuro);
+                    if (styleUrl != null) {
+                        scene.getStylesheets().add(styleUrl.toExternalForm());
+                    }
+                } else {
+                    URL styleUrl = getClass().getResource(rutaTemaClaro);
+                    if (styleUrl != null) {
+                        scene.getStylesheets().add(styleUrl.toExternalForm());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al cargar el estilo inicial: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
     
     private void aplicarTemaClaro() {
-        iconoTema.setContent("M480-360q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Zm0 80q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM80-440q-17 0-28.5-11.5T40-480q0-17 11.5-28.5T80-520h80q17 0 28.5 11.5T200-480q0 17-11.5 28.5T160-440H80Zm720 0q-17 0-28.5-11.5T760-480q0-17 11.5-28.5T800-520h80q17 0 28.5 11.5T920-480q0 17-11.5 28.5T880-440h-80ZM480-760q-17 0-28.5-11.5T440-800v-80q0-17 11.5-28.5T480-920q17 0 28.5 11.5T520-880v80q0 17-11.5 28.5T480-760Zm0 720q-17 0-28.5-11.5T440-80v-80q0-17 11.5-28.5T480-200q17 0 28.5 11.5T520-160v80q0 17-11.5 28.5T480-40ZM226-678l-43-42q-12-11-11.5-28t11.5-29q12-12 29-12t28 12l42 43q11 12 11 28t-11 28q-11 12-27.5 11.5T226-678Zm494 495-42-43q-11-12-11-28.5t11-27.5q11-12 27.5-11.5T734-282l43 42q12 11 11.5 28T777-183q-12 12-29 12t-28-12Zm-42-495q-12-11-11.5-27.5T678-734l42-43q11-12 28-11.5t29 11.5q12 12 12 29t-12 28l-43 42q-12 11-28 11t-28-11ZM183-183q-12-12-12-29t12-28l43-42q12-11 28.5-11t27.5 11q12 11 11.5 27.5T282-226l-42 43q-11 12-28 11.5T183-183Zm297-297Z");
+        iconoTema.setContent(svgTemaClaro);
         Scene scene = btnTema.getScene();
         if (scene != null) {
             scene.getStylesheets().clear();
@@ -367,7 +540,7 @@ public class ControladorHomeAppPage implements Initializable {
     }
 
     private void aplicarTemaOscuro() {
-        iconoTema.setContent("M484-80q-84 0-157.5-32t-128-86.5Q144-253 112-326.5T80-484q0-128 72-232t193-146q22-8 41 5.5t18 36.5q-3 85 27 162t90 137q60 60 137 90t162 27q26-1 38.5 17.5T863-345q-44 120-147.5 192.5T484-80Zm0-80q88 0 163-44t118-121q-86-8-163-43.5T464-465q-61-61-97-138t-43-163q-77 43-120.5 118.5T160-484q0 135 94.5 229.5T484-160Zm-20-305Z");
+        iconoTema.setContent(svgTemaOscuro);
         Scene scene = btnTema.getScene();
         if (scene != null) {
             scene.getStylesheets().clear();
@@ -396,6 +569,183 @@ public class ControladorHomeAppPage implements Initializable {
     }
    
    
+    // HOME PANE:
+    private void cargarDatosUsuario() {
+        if (usuario != null) {
+            lblNivelUsuario.setText(String.valueOf(usuario.getNivel_usuario()));
+            lblPuntosUsuario.setText(String.valueOf(usuario.getPuntos_usuario()));
+
+            // Calcular progreso al siguiente nivel
+            int puntosActuales = usuario.getPuntos_usuario();
+            int puntosSiguienteNivel = calcularPuntosSiguienteNivel(usuario.getNivel_usuario());
+            double progreso = (double) puntosActuales / puntosSiguienteNivel;
+            progresoNivel.setProgress(progreso);
+
+            // Mostrar puntos necesarios para siguiente nivel
+            int puntosFaltantes = puntosSiguienteNivel - puntosActuales;
+            lblProximoNivel.setText("Siguiente nivel: " + puntosFaltantes + " puntos");
+        }
+    }
+
+    private int calcularPuntosSiguienteNivel(int nivelActual) {
+        return nivelActual * 100;
+    }
+    
+    private void cargarRecetasRecomendadas() {
+        recetasRecomendadasCaja.getChildren().clear();
+
+        // Obtener todos los favoritos del usuario
+        ObservableList<Favoritos> favoritos = FuncionesRepetidas.obtenerFavoritosUsuario(usuario.getId_usuario());
+        ObservableList<Receta> todasLasRecetas = FuncionesRepetidas.obtenerListaRecetas();
+        ObservableList<Receta> recetasFavoritas = FXCollections.observableArrayList();
+
+        // Filtrar solo las recetas favoritas
+        for (Favoritos fav : favoritos) {
+            if (fav.getTipo_objeto() == Favoritos.TipoObjeto.RECETA) {
+                for (Receta receta : todasLasRecetas) {
+                    if (receta.getId_receta() == fav.getId_objeto()) {
+                        recetasFavoritas.add(receta);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Si no hay favoritas, obtener recetas aleatorias
+        if (recetasFavoritas.isEmpty()) {
+            List<Receta> listaRecetas = new ArrayList<>(todasLasRecetas);
+
+            // Seleccionar 8 recetas aleatorias
+            for (int i = 0; i < 8 && i < listaRecetas.size(); i++) {
+                int indiceAleatorio = (int) (Math.random() * listaRecetas.size());
+                Receta receta = listaRecetas.get(indiceAleatorio);
+                listaRecetas.remove(indiceAleatorio);
+
+                VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
+                if (card != null) {
+                    card.setOnMouseClicked(event -> {
+                        infoCardRecetaSelec = receta;
+                        mostrarInfoCardReceta();
+                        mostrarPane(infoCardPane);
+                    });
+                    recetasRecomendadasCaja.getChildren().add(card);
+                }
+            }
+        } else {
+            // Mostrar hasta 8 recetas favoritas
+            for (int i = 0; i < 8 && i < recetasFavoritas.size(); i++) {
+                Receta receta = recetasFavoritas.get(i);
+                VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
+                if (card != null) {
+                    card.setOnMouseClicked(event -> {
+                        infoCardRecetaSelec = receta;
+                        mostrarInfoCardReceta();
+                        mostrarPane(infoCardPane);
+                    });
+                    recetasRecomendadasCaja.getChildren().add(card);
+                }
+            }
+        }
+    }
+    
+    private void cargarRestaurantesRecomendados() {
+        restaurantesCaja.getChildren().clear();
+
+        // Obtener todos los favoritos del usuario
+        ObservableList<Favoritos> favoritos = FuncionesRepetidas.obtenerFavoritosUsuario(usuario.getId_usuario());
+        ObservableList<Restaurante> todosRestaurantes = FuncionesRepetidas.obtenerListaRestaurantes();
+        ObservableList<Restaurante> restaurantesFavoritos = FXCollections.observableArrayList();
+
+        // Filtrar solo los restaurantes favoritos
+        for (Favoritos fav : favoritos) {
+            if (fav.getTipo_objeto() == Favoritos.TipoObjeto.RESTAURANTE) {
+                for (Restaurante restaurante : todosRestaurantes) {
+                    if (restaurante.getId_restaurante() == fav.getId_objeto()) {
+                        restaurantesFavoritos.add(restaurante);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Si no hay favoritos, obtener restaurantes aleatorios
+        if (restaurantesFavoritos.isEmpty()) {
+            List<Restaurante> listaRestaurantes = new ArrayList<>(todosRestaurantes);
+
+            // Seleccionar 8 restaurantes aleatorios
+            for (int i = 0; i < 8 && i < listaRestaurantes.size(); i++) {
+                int indiceAleatorio = (int) (Math.random() * listaRestaurantes.size());
+                Restaurante restaurante = listaRestaurantes.get(indiceAleatorio);
+                listaRestaurantes.remove(indiceAleatorio);
+
+                VBox card = FuncionesRepetidas.crearCardRestaurante(usuario, restaurante);
+                if (card != null) {
+                    card.setOnMouseClicked(event -> {
+                        infoCardRestauranteSelec = restaurante;
+                        mostrarInfoCardRestaurante();
+                        mostrarPane(infoCardPane);
+                    });
+                    restaurantesCaja.getChildren().add(card);
+                }
+            }
+        } else {
+            // Mostrar hasta 8 restaurantes favoritos
+            for (int i = 0; i < 8 && i < restaurantesFavoritos.size(); i++) {
+                Restaurante restaurante = restaurantesFavoritos.get(i);
+                VBox card = FuncionesRepetidas.crearCardRestaurante(usuario, restaurante);
+                if (card != null) {
+                    card.setOnMouseClicked(event -> {
+                        infoCardRestauranteSelec = restaurante;
+                        mostrarInfoCardRestaurante();
+                        mostrarPane(infoCardPane);
+                    });
+                    restaurantesCaja.getChildren().add(card);
+                }
+            }
+        }
+    }
+    
+    private void cargarValoracionesRecientes() {
+        valoracionesCaja.getChildren().clear();
+
+        // Obtener valoraciones de recetas
+        ObservableList<Valoracion> valoracionesRecetas = FuncionesRepetidas.obtenerListaValoraciones(
+            Valoracion.TipoObjeto.RECETA.getValor(), 
+            0  // 0 para obtener todas
+        );
+
+        ObservableList<Valoracion> valoracionesRestaurantes = FuncionesRepetidas.obtenerListaValoraciones(Valoracion.TipoObjeto.RESTAURANTE.getValor(), 0);
+
+        ObservableList<Valoracion> todasValoraciones = FXCollections.observableArrayList();
+        todasValoraciones.addAll(valoracionesRecetas);
+        todasValoraciones.addAll(valoracionesRestaurantes);
+
+        ObservableList<Valoracion> valoracionesRecientes = FXCollections.observableArrayList();
+        while (!todasValoraciones.isEmpty() && valoracionesRecientes.size() < 12) {
+            Valoracion masReciente = todasValoraciones.get(0);
+            int indiceMasReciente = 0;
+
+            for (int i = 1; i < todasValoraciones.size(); i++) {
+                if (todasValoraciones.get(i).getFecha_valoracion().after(masReciente.getFecha_valoracion())) {
+                    masReciente = todasValoraciones.get(i);
+                    indiceMasReciente = i;
+                }
+            }
+
+            valoracionesRecientes.add(masReciente);
+            todasValoraciones.remove(indiceMasReciente);
+        }
+
+        for (Valoracion valoracion : valoracionesRecientes) {
+            HBox cardValoracion = FuncionesRepetidas.crearCardValoraciones(valoracion);
+            if (cardValoracion != null) {
+                valoracionesCaja.getChildren().add(cardValoracion);
+            }
+        }
+    }
+
+    
+    
     // FILTROS:
     public void cargarFiltros(ObservableList<String> opciones, VBox destino) {
         for (String nombre : opciones) {
@@ -435,6 +785,8 @@ public class ControladorHomeAppPage implements Initializable {
         infoCardPane.setVisible(false);
         escanearPane.setVisible(false);
         subirRecetaPane.setVisible(false);
+        perfilPane.setVisible(false);
+        ajustesPane.setVisible(false);
         
         paneMostrar.setVisible(true);
     } 
@@ -779,7 +1131,6 @@ public class ControladorHomeAppPage implements Initializable {
         }
         inputAñadirValoracionReceta.clear();
     }
-
     
     public void mostrarInfoCardIngrediente() {
         if (infoCardIngredienteSelec == null) return;
@@ -1744,30 +2095,233 @@ public class ControladorHomeAppPage implements Initializable {
     }
 
     
-    
-    
-    // JuegosPane:
+    // JUEGOS PANE:
     @FXML private void btnJuego() {
         try {
+            
             URL url = getClass().getResource("/vistas/JuegosPage.fxml");
             FXMLLoader loader = new FXMLLoader(url);
             Parent root = loader.load();
 
             ControladorJuegosPage controlador = loader.getController();
             controlador.setUsuario(usuario);
+            Thread musicaThread = new Thread(() -> {
+                try {
+                    Thread.sleep(500);
 
+                    Platform.runLater(() -> {
+                        if (controlador != null) {
+                            controlador.iniciarMusica();
+                        }
+                    });
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+            
             Stage stage = new Stage();
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.show();
-
+            musicaThread.start();
+            stage.setOnCloseRequest(event -> {
+                if (controlador != null) {
+                    controlador.pararMusica();
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     
     
+    // AJUSTES PANE:
+    public void mostrarAjustesPane(VBox paneMostrar) {
+        inicioAjustesPane.setVisible(false);
+        condicionesPane.setVisible(false);
+        ajustesJuegoPane.setVisible(false);
+        correoSoportePane.setVisible(false);
+        informacionAppSoportePane.setVisible(false);
+        
+        paneMostrar.setVisible(true);
+    } 
     
+    private void restablecerPreferencias() {
+        try {
+            Map<String, String> cacheData = FuncionesRepetidas.leerSesionCache();
+            String usuario = cacheData.get("Usuario");
+            
+            if (usuario != null) {
+                FuncionesRepetidas.guardarSesionCache("Usuario", usuario);
+                FuncionesRepetidas.guardarSesionCache("tema", "claro");
+                
+                aplicarTemaClaro();
+                
+                FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "Preferencias restablecidas", "¡Éxito! /n Las preferencias han sido restablecidas correctamente.");
+            }
+            
+        } catch (Exception e) {
+            
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error al restablecer las referencias", "Error al restablecer preferencias. /n Ha ocurrido un error al restablecer las preferencias.");
+            System.err.println("Error al restablecer preferencias: " + e.getMessage());
+        }
+    }
+    
+    private void cerrarSesion() {
+        try {
+            Path sessionPath = Paths.get("sesionCache.txt");
+            if (Files.exists(sessionPath)) {
+                Files.delete(sessionPath);
+            }
+            
+            Stage stage = (Stage) btnAceptarCondiciones.getScene().getWindow();
+            
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/vistas/LoginPage.fxml"));
+                Parent root = loader.load();
+                Scene scene = new Scene(root);
+                Stage newStage = new Stage();
+                newStage.setScene(scene);
+                newStage.show();
+                
+                Platform.runLater(() -> {
+                    stage.close();
+                });
+                
+            } catch (IOException e) {
+                System.err.println("Error al cargar la página de inicio: " + e.getMessage());
+                e.printStackTrace();
+            }
+            
+        } catch (Exception e) {     
+            e.printStackTrace();
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error al cerrar sesión", "Ha ocurrido un error al cerrar la sesión.");
+        }
+    }
+    
+    private void borrarPerfil(){
+        try {
+            Path sessionPath = Paths.get("sesionCache.txt");
+            if (Files.exists(sessionPath)) {
+                Files.delete(sessionPath);
+            }
+            
+            
+            FuncionesRepetidas.borrarFavoritos(usuario.getId_usuario());
+            FuncionesRepetidas.borrarUsuarioAlergeno(usuario.getId_usuario());
+            FuncionesRepetidas.borrarUsuarioCodigo(usuario.getId_usuario());
+            FuncionesRepetidas.actualizarDarBajaUsuario(usuario.getId_usuario());
+            
+            Stage stage = (Stage) btnAceptarCondiciones.getScene().getWindow();
+            
+            Platform.exit();
+            
+        } catch (Exception e) {     
+            e.printStackTrace();
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error al borrar el perfil", "Ha ocurrido un error, no se ha podido borrar este perfil.");
+        }
+    }
+    
+    private void cargarEstadoSonido() {
+        Map<String, String> cacheData = FuncionesRepetidas.leerSesionCache();
+        
+        if (!cacheData.containsKey("sonido_juegos")) {
+            sonidoActivado = true;
+            FuncionesRepetidas.guardarSesionCache("sonido_juegos", "true");
+        } else {
+            sonidoActivado = Boolean.parseBoolean(cacheData.get("sonido_juegos"));
+        }
+        
+        if (!cacheData.containsKey("volumen_juegos")) {
+            volumen = 1.0;
+            FuncionesRepetidas.guardarSesionCache("volumen_juegos", "1.0");
+        } else {
+            volumen = Double.parseDouble(cacheData.get("volumen_juegos"));
+        }
+        
+        volumenProgressBar.setProgress(volumen);
+        actualizarIconoSonido();
+    }
+    
+    private void reproducirMusica() {
+        try {
+            if (mediaPlayer != null) {
+                mediaPlayer.stop();
+            }
+            
+            String projectPath = System.getProperty("user.dir");
+            String musicPath = projectPath + "/src/main/resources/assets/musica/musicaJuego.mp3";
+            File musicFile = new File(musicPath);
+            
+            if (!musicFile.exists()) {
+                System.out.println("No se encontró el archivo de música");
+                return;
+            }
+            
+            Media media = new Media(musicFile.toURI().toString());
+            mediaPlayer = new MediaPlayer(media);
+            mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+            mediaPlayer.setVolume(sonidoActivado ? volumen : 0);
+            mediaPlayer.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error al reproducir música: " + e.getMessage());
+        }
+    }
+    
+    private void toggleSonido() {
+        sonidoActivado = !sonidoActivado;
+        if (mediaPlayer != null) {
+            mediaPlayer.setVolume(sonidoActivado ? volumen : 0);
+        }
+        actualizarIconoSonido();
+        guardarEstadoSonido();
+    }
+    
+    private void actualizarIconoSonido() {
+        svgSonidoAjustesJuego.setContent(sonidoActivado ? svgConSonido : svgSinSonido);
+    }
+    
+    private void ajustarVolumen(double x) {
+        double width = volumenProgressBar.getWidth();
+
+        // x / width da un valor entre 0 y 1
+        // Math.max(0, Math.min(1, ...)) asegura que el valor esté entre 0 y 1
+        volumen = Math.max(0, Math.min(1, x / width));
+
+        volumenProgressBar.setProgress(volumen);
+
+        if (mediaPlayer != null && sonidoActivado) {
+            mediaPlayer.setVolume(volumen);
+        }
+
+        guardarEstadoSonido();
+    }
+    
+    private void guardarEstadoSonido() {
+        FuncionesRepetidas.guardarSesionCache("sonido_juegos", String.valueOf(sonidoActivado));
+        FuncionesRepetidas.guardarSesionCache("volumen_juegos", String.valueOf(volumen));
+    }
+    
+    public void pararMusica() {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.dispose();
+            mediaPlayer = null;
+        }
+    }
+    
+    @FXML private void btnGuardarAjustesJuego() {
+        guardarEstadoSonido();
+        FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "¡Éxito!", "Has guardado los ajustes. ");
+        pararMusica();
+    }
+    
+    @FXML private void btnCancelarAjustesJuego() {
+        cargarEstadoSonido();
+        mostrarAjustesPane(inicioAjustesPane);
+        pararMusica();
+    }
     
     
     

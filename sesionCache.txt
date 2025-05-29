@@ -1,1 +1,5 @@
 Usuario:aaa
+tema:claro
+sonidoJuegos:true
+volumen_juegos:0.46
+sonido_juegos:true

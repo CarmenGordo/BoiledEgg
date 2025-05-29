@@ -1,16 +1,16 @@
 
 .root {
-    fondo: #f5f5f5;
-    blanco: #fff;
-    naranja: #f58e04;
-    rosa: #f2629c;
-    verde: #bed600;
-    azul: #4bbde8;
-    morado: #7e89ee;
-    grisClaro: #888;
-    grisOscuro: #333;
-    negro: 000;
-    sombraRelive: inset 2px 2px 4px #f58e04;
+    -fx-fondo: #f2f2f2;
+    -fx-blanco: #fff;
+    -fx-naranja: #f58e04;
+    -fx-rosa: #f2629c;
+    -fx-verde: #bed600;
+    -fx-azul: #4bbde8;
+    -fx-morado: #7e89ee;
+    -fx-grisClaro: #888;
+    -fx-grisOscuro: #333;
+    -fx-negro: #000;
+    -fx-sombraRelive: inset 2px 2px 4px #f58e04;
 }
 
 
@@ -18,19 +18,22 @@
 
 
 .fondo{
-    -fx-background-color: blanco;
+    -fx-background-color: -fx-blanco;
 }
 
 .fondoApp{
-    -fx-background-color: fondo;
+    -fx-background-color: -fx-fondo;
+}
+
+
+.resalte{
+   -fx-background-color: -fx-grisClaro;
 }
 
 
 .h1{
     -fx-font-size: 30px;
 }
-
-
 
 .p{
     -fx-font-size: 16px;
@@ -43,7 +46,7 @@
 .editText{
     -fx-width: 250px;
     -fx-height: 40px;
-    -fx-background-color: blanco;
+    -fx-background-color: -fx-blanco;
     -fx-border-radius: 10px;
 }
 
@@ -55,13 +58,13 @@
 }
 
 .bordesAzul{
-    -fx-border-color: azul;
+    -fx-border-color: -fx-azul;
 }
 
 
 
 .btn{
-    -fx-text-fill: blanco;
+    -fx-text-fill: -fx-blanco;
     -fx-font-size: 16px;
     -fx-padding: 5px 20px;
     -fx-border: none;
@@ -77,16 +80,16 @@
     -fx-background-size: cover;
 }
 
-.naranja{ -fx-background-color: naranja;}
-.rosa{ -fx-background-color: rosa;}
-.verde{ -fx-background-color: verde;}
-.azul{ -fx-background-color: azul;}
-.morado{ -fx-background-color: morado;}
+.naranja{ -fx-background-color: -fx-naranja;}
+.rosa{ -fx-background-color: -fx-rosa;}
+.verde{ -fx-background-color: -fx-verde;}
+.azul{ -fx-background-color: -fx-azul;}
+.morado{ -fx-background-color: -fx-morado;}
 
 .menu{
     -fx-background-radius: 10px;
-    -fx-background-color: rosa;
-    -fx-box-shadow: sombraRelive;
+    -fx-background-color: -fx-rosa;
+    -fx-box-shadow: -fx-sombraRelive;
 }
 
 .btnMenu{
@@ -95,12 +98,12 @@
 
 .topMenu{
     -fx-background-radius: 10px;
-    -fx-background-color: azul;
+    -fx-background-color: -fx-azul;
     -fx-padding: 5px;
 }
 
 .iconoSvg {
-    -fx-fill: blanco;
+    -fx-fill: -fx-blanco;
 }
 
 .btnSinNada{
@@ -110,7 +113,7 @@
 
 
 .cajaBuscador {
-    -fx-background-color: blanco;
+    -fx-background-color: -fx-blanco;
     -fx-padding: 5px;
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
@@ -142,14 +145,14 @@
 
 .svgSoloBordes{
     -fx-fill: transparent;
-    -fx-stroke: grisClaro;
+    -fx-stroke: -fx-grisClaro;
     -fx-stroke-width: 2px;
 }
 
 .fillFav{
-    -fx-stroke: rosa;
+    -fx-stroke: -fx-rosa;
     -fx-stroke-width: 2px;
-    -fx-fill: rosa;
+    -fx-fill: -fx-rosa;
 }
 
 
@@ -162,10 +165,10 @@
 }
 
 .cardRecetaUsuario{
-    -fx-background-color: morado;
+    -fx-background-color: -fx-morado;
     -fx-padding: 6px;
     -fx-border-radius: 20;
-    -fx-text-fill: blanco;
+    -fx-text-fill: -fx-blanco;
 }
 
 .titulo-receta {
@@ -176,4 +179,40 @@
 .titulo-seccion {
     -fx-font-size: 12px;
     -fx-text-fill: #333;
+}
+
+
+
+
+
+.panel-header {
+    -fx-background-color: #f5f5f5;
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+}
+
+.user-info-panel {
+    -fx-background-color: #f5f5f5;
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+}
+
+.btn-primary {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+}
+
+.btn-primary:hover {
+    -fx-background-color: #45a049;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
 }

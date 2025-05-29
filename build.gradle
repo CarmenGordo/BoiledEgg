@@ -51,7 +51,10 @@ dependencies {
     implementation 'com.google.zxing:javase:3.5.2'
 
     // para poder poner la cam
-implementation 'com.github.sarxos:webcam-capture:0.3.12'
+    //implementation 'com.github.sarxos:webcam-capture:0.3.12'
+
+    // enviar correo
+    implementation 'com.sun.mail:javax.mail:1.6.2'
 }
 
 mainClassName = 'vistas.Main'

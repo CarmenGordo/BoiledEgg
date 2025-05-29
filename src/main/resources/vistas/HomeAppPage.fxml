@@ -7,6 +7,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -23,7 +24,7 @@
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity" minHeight="500.0" minWidth="800.0" prefHeight="500.0" prefWidth="800.0" stylesheets="@../style/Style.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controladores.ControladorHomeAppPage">
+<BorderPane fx:id="root" maxHeight="Infinity" maxWidth="Infinity" minHeight="500.0" minWidth="800.0" prefHeight="500.0" prefWidth="800.0" styleClass="fondoApp" stylesheets="@../style/Style.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controladores.ControladorHomeAppPage">
 
     <!-- LEFT MENU -->
     <left>
@@ -75,20 +76,8 @@
                         <Cursor fx:constant="HAND" />
                      </cursor>
                   </HBox>
-                  <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="151.0">
-                     <children>
-                        <SVGPath content="M240-120q-60 0-95.5-46.5T124-270l72-272q-33-21-54.5-57T120-680q0-66 47-113t113-47h320q45 0 68 38t3 78l-80 160q-11 20-29.5 32T520-520h-81l-11 40h12q17 0 28.5 11.5T480-440v80q0 17-11.5 28.5T440-320h-54l-30 112q-11 39-43 63.5T240-120Zm0-80q14 0 24-8t14-21l78-291h-83l-72 270q-5 19 7 34.5t32 15.5Zm40-400h240l80-160H280q-33 0-56.5 23.5T200-680q0 33 23.5 56.5T280-600Zm597-213-90 41q-11 5-22.5.5T748-787q-5-11-1-22.5t15-16.5l90-41q11-5 23-.5t17 15.5q5 11 .5 22.5T877-813ZM763-533q-11-5-16-17t0-23q5-12 17-16t24 1l90 42q11 5 15 16.5t-1 22.5q-5 11-16.5 15.5T853-492l-90-41Zm127-117H790q-13 0-21.5-8.5T760-680q0-13 8.5-21.5T790-710h100q13 0 21.5 8.5T920-680q0 13-8.5 21.5T890-650Zm-490-30Zm-85 160Z" scaleX="0.03" scaleY="0.03" translateX="-20.0" />
-                        <Label maxWidth="-Infinity" minWidth="-Infinity" prefHeight="17.0" prefWidth="43.0" text="Home" translateX="-400.0" />
-                     </children>
-                     <VBox.margin>
-                        <Insets bottom="10.0" />
-                     </VBox.margin>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </HBox>
                   <Region prefHeight="206.0" prefWidth="94.0" VBox.vgrow="ALWAYS" />
-                  <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="151.0">
+                  <HBox fx:id="btnAjustes" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="151.0">
                      <children>
                         <SVGPath content="M433-80q-27 0-46.5-18T363-142l-9-66q-13-5-24.5-12T307-235l-62 26q-25 11-50 2t-39-32l-47-82q-14-23-8-49t27-43l53-40q-1-7-1-13.5v-27q0-6.5 1-13.5l-53-40q-21-17-27-43t8-49l47-82q14-23 39-32t50 2l62 26q11-8 23-15t24-12l9-66q4-26 23.5-44t46.5-18h94q27 0 46.5 18t23.5 44l9 66q13 5 24.5 12t22.5 15l62-26q25-11 50-2t39 32l47 82q14 23 8 49t-27 43l-53 40q1 7 1 13.5v27q0 6.5-2 13.5l53 40q21 17 27 43t-8 49l-48 82q-14 23-39 32t-50-2l-60-26q-11 8-23 15t-24 12l-9 66q-4 26-23.5 44T527-80h-94Zm7-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z" scaleX="0.03" scaleY="0.03" />
                         <Label maxWidth="-Infinity" minWidth="-Infinity" prefHeight="17.0" prefWidth="87.0" text="Ajustes" translateX="-360.0" />
@@ -111,7 +100,7 @@
                 <Insets bottom="10" left="0" right="10" top="10" />
             </BorderPane.margin>
             <HBox alignment="CENTER_LEFT" layoutX="-3.0" layoutY="10.0" prefHeight="50.0" prefWidth="619.0" spacing="20.0" HBox.hgrow="ALWAYS">
-                <HBox alignment="CENTER_LEFT" prefHeight="51.0" prefWidth="433.0" spacing="15.0" styleClass="topMenu" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" prefHeight="51.0" prefWidth="466.0" spacing="15.0" styleClass="topMenu" HBox.hgrow="ALWAYS">
                     <children>
                         <Label fx:id="saludoLabel" prefHeight="17.0" prefWidth="137.0" styleClass="saludo-label" text="¡Hola Usuario!" HBox.hgrow="ALWAYS" />
                         <Region prefHeight="50.0" prefWidth="23.0" HBox.hgrow="ALWAYS" />
@@ -134,7 +123,7 @@
                     </children>
                 </HBox>
 
-                <HBox alignment="CENTER_RIGHT" maxWidth="Infinity" prefHeight="51.0" prefWidth="75.0" spacing="15.0" styleClass="topMenu" HBox.hgrow="ALWAYS">
+                <HBox alignment="CENTER_RIGHT" maxWidth="200.0" prefHeight="51.0" prefWidth="75.0" spacing="15.0" styleClass="topMenu" HBox.hgrow="ALWAYS">
                     <Button fx:id="btnVerFavoritos" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="29.0" prefWidth="50.0" styleClass="btnSinNada">
                         <graphic>
                            <SVGPath content="M480-147q-14 0-28.5-5T426-168l-69-63q-106-97-191.5-192.5T80-634q0-94 63-157t157-63q53 0 100 22.5t80 61.5q33-39 80-61.5T660-854q94 0 157 63t63 157q0 115-85 211T602-230l-68 62q-11 11-25.5 16t-28.5 5Zm-38-543q-29-41-62-62.5T300-774q-60 0-100 40t-40 100q0 52 37 110.5T285.5-410q51.5 55 106 103t88.5 79q34-31 88.5-79t106-103Q726-465 763-523.5T800-634q0-60-40-100t-100-40q-47 0-80 21.5T518-690q-7 10-17 15t-21 5q-11 0-21-5t-17-15Zm38 189Z" scaleX="0.03" scaleY="0.03" styleClass="iconoSvg" />
@@ -162,14 +151,148 @@
                 </HBox>
             </HBox>
             <StackPane fx:id="mainStackPane" maxHeight="Infinity" minHeight="0" VBox.vgrow="ALWAYS">
-                <AnchorPane fx:id="homePane" visible="false">
-                    <HBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                        <VBox fx:id="homeLeftPane" prefHeight="429.0" prefWidth="500.0" styleClass="main-left">
-                     <children>
-                        <Label text="homePane" />
-                     </children></VBox>
-                        <VBox fx:id="homeRightPane" prefWidth="300.0" styleClass="main-right" />
-                    </HBox>
+                <AnchorPane fx:id="homePane" maxHeight="Infinity" minHeight="0" mouseTransparent="false" prefHeight="410.0" prefWidth="619.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                    <children>
+                      <HBox prefWidth="Infinity" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+                        <children>
+                        <VBox fx:id="bb" maxHeight="Infinity" maxWidth="Infinity" minWidth="-Infinity" HBox.hgrow="ALWAYS">
+                                <children>
+                                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="Infinity" maxWidth="Infinity" vbarPolicy="AS_NEEDED">
+                                        <content>
+                                            <VBox maxHeight="Infinity" maxWidth="Infinity" spacing="10">
+                                        <children>
+                                            <HBox alignment="CENTER_LEFT" maxHeight="Infinity" maxWidth="Infinity" prefHeight="149.0" prefWidth="400.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                                <children>
+                                                    <VBox alignment="CENTER_LEFT" maxHeight="Infinity" maxWidth="Infinity" prefHeight="122.0" prefWidth="321.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                                        <children>
+                                                            <Label maxWidth="Infinity" style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Cocina con Huevin" HBox.hgrow="ALWAYS" />
+                                                            <Label maxWidth="Infinity" prefHeight="37.0" prefWidth="281.0" style="-fx-font-size: 14px;" text="Aquí están todas las nuevas recetas que se han subido, ¿por qué no cocinamos algo juntos?" wrapText="true" HBox.hgrow="ALWAYS" />
+                                                            <Button fx:id="btnExplorarRecetas" maxWidth="-Infinity" prefHeight="26.0" prefWidth="162.0" text="Explorar Recetas" HBox.hgrow="ALWAYS">
+                                                                <VBox.margin>
+                                                                    <Insets top="10" />
+                                                                </VBox.margin>
+                                                         <styleClass>
+                                                            <String fx:value="btn" />
+                                                            <String fx:value="verde" />
+                                                         </styleClass>
+                                                            </Button>
+                                                        </children>
+                                                        <padding>
+                                                            <Insets left="20" right="20" />
+                                                        </padding>
+                                                    </VBox>
+                                                    <ImageView fitHeight="108.0" fitWidth="157.0" preserveRatio="true" HBox.hgrow="ALWAYS">
+                                                        <image>
+                                                            <Image url="@../assets/iconos_perfil/huevin2.png" />
+                                                        </image>
+                                                   <HBox.margin>
+                                                      <Insets right="10.0" />
+                                                   </HBox.margin>
+                                                    </ImageView>
+                                                </children>
+                                                <padding>
+                                                    <Insets bottom="20" top="20" />
+                                                </padding>
+                                             <styleClass>
+                                                <String fx:value="cajaResalte" />
+                                                <String fx:value="morado" />
+                                             </styleClass>
+                                            </HBox>
+                                            <VBox maxHeight="Infinity" maxWidth="Infinity" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                                <children>
+                                                    <Label maxWidth="Infinity" style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Recetas Recomendadas" HBox.hgrow="ALWAYS">
+                                                        <VBox.margin>
+                                                            <Insets bottom="10" left="20" top="20" />
+                                                        </VBox.margin>
+                                                    </Label>
+                                                    <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" maxHeight="Infinity" maxWidth="Infinity" prefHeight="200.0" vbarPolicy="NEVER" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                                        <content>
+                                                            <HBox fx:id="recetasRecomendadasCaja" alignment="CENTER_LEFT" maxHeight="Infinity" maxWidth="Infinity" spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                                                <padding>
+                                                                    <Insets left="20" right="20" />
+                                                                </padding>
+                                                                <!-- Aquí se cargan CardRecetas -->
+                                                            </HBox>
+                                                        </content>
+                                                    </ScrollPane>
+                                                </children>
+                                            </VBox>
+                                            <VBox maxHeight="Infinity" maxWidth="Infinity" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                                <children>
+                                                    <Label maxWidth="Infinity" style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Conoce nuevos restaurantes" HBox.hgrow="ALWAYS">
+                                                        <VBox.margin>
+                                                            <Insets bottom="10" left="20" top="20" />
+                                                        </VBox.margin>
+                                                    </Label>
+                                                    <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" maxHeight="Infinity" maxWidth="Infinity" prefHeight="200.0" vbarPolicy="NEVER" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                                        <content>
+                                                            <HBox fx:id="restaurantesCaja" alignment="CENTER_LEFT" maxHeight="Infinity" maxWidth="Infinity" spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                                                                <padding>
+                                                                    <Insets left="20" right="20" />
+                                                                </padding>
+                                                                <!-- Aquí se cargarán dinámicamente las CardRestaurantes -->
+                                                            </HBox>
+                                                        </content>
+                                                    </ScrollPane>
+                                                </children>
+                                            </VBox>
+                                        </children>
+                                    </VBox>
+                                </content>
+                            </ScrollPane>
+                        </children>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
+                    </VBox>
+                        <VBox maxHeight="Infinity" maxWidth="500.0" minWidth="-Infinity" HBox.hgrow="ALWAYS">
+                            <children>
+                                <VBox styleClass="cajaResalteBlanco">
+                                    <children>
+                                        <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Tu Perfil" />
+                                        <HBox alignment="CENTER_LEFT">
+                                            <children>
+                                                <Label style="-fx-font-weight: bold;" text="Nivel:" />
+                                                <Label fx:id="lblNivelUsuario" text="1" />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT">
+                                            <children>
+                                                <Label style="-fx-font-weight: bold;" text="Puntos:" />
+                                                <Label fx:id="lblPuntosUsuario" text="0" />
+                                            </children>
+                                        </HBox>
+                                        <ProgressBar fx:id="progresoNivel" prefWidth="150.0" progress="0.0" />
+                                        <Label fx:id="lblProximoNivel" text="Siguiente nivel: 10 puntos" />
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="20" left="20" right="20" top="20" />
+                                    </padding>
+                                </VBox>
+                                <VBox VBox.vgrow="ALWAYS">
+                                    <children>
+                                        <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Valoraciones Recientes">
+                                            <VBox.margin>
+                                                <Insets bottom="10" left="20" top="20" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+                                            <content>
+                                                <VBox fx:id="valoracionesCaja" spacing="10">
+                                                    <padding>
+                                                        <Insets bottom="20" left="20" right="20" />
+                                                    </padding>
+                                                    <!-- Aquí se cargan las valoraciones -->
+                                                </VBox>
+                                            </content>
+                                        </ScrollPane>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+                        </children>
+                        </HBox>
+                    </children>
                 </AnchorPane>
                 <AnchorPane fx:id="buscadorPane" focusTraversable="false" maxHeight="Infinity" minHeight="0" mouseTransparent="false" prefHeight="410.0" prefWidth="619.0" visible="false" VBox.vgrow="ALWAYS">
                     <HBox prefWidth="Infinity" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
@@ -936,36 +1059,427 @@
                   </children>
                </HBox>
                 </AnchorPane>
-            <AnchorPane fx:id="perfilPane">
+            <AnchorPane fx:id="perfilPane" visible="false">
                <children>
                   <HBox minHeight="421.0" minWidth="624.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                      <children>
                         <VBox alignment="TOP_CENTER" maxWidth="Infinity" minWidth="300" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                            <children>
-                              <ImageView fitHeight="75.0" fitWidth="75.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@../assets/iconos_perfil/huevin.png" />
-                                 </image>
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor>
-                              </ImageView>
-                              <Label text="Nombre usuario" VBox.vgrow="ALWAYS">
-                                 <font>
-                                    <Font size="20.0" />
-                                 </font>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: pink;" VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <ImageView fitHeight="75.0" fitWidth="75.0" layoutX="4.0" layoutY="8.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../assets/iconos_perfil/huevin.png" />
+                                       </image>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                    </ImageView>
+                                    <Label layoutX="82.0" layoutY="14.0" text="Nombre usuario">
+                                       <font>
+                                          <Font size="20.0" />
+                                       </font>
+                                    </Label>
+                                    <Button fx:id="btnJuego" layoutX="190.0" layoutY="126.0" mnemonicParsing="false" onAction="#btnJuego" text="Juego" />
+                                 </children>
+                              </AnchorPane>
+                           </children>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
+                        </VBox>
+                        <VBox fx:id="parte21" alignment="TOP_CENTER" maxWidth="Infinity" minWidth="183.0" prefHeight="421.0" prefWidth="200.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                           <children>
+                              <AnchorPane prefHeight="200.0" prefWidth="257.0" style="-fx-background-color: orange;" />
+                              <Region prefHeight="40.0" prefWidth="304.0" />
+                              <AnchorPane prefHeight="203.0" prefWidth="257.0" style="-fx-background-color: red;" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+            </AnchorPane>
+            <AnchorPane fx:id="ajustesPane" visible="false">
+               <children>
+                  <HBox minHeight="421.0" minWidth="624.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                     <children>
+                        <VBox alignment="TOP_CENTER" fillWidth="false" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="421.0" prefWidth="182.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
+                           <children>
+                              <VBox prefHeight="79.0" prefWidth="182.0">
+                                 <children>
+                                    <Label text="Condiciones del perfil:" underline="true">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin></Label>
+                                    <Label fx:id="lblReestablecerPreferenias" text="Reestablecer preferencias">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor></Label>
+                                    <Label fx:id="lblCerrarSesion" text="Cerrar sesion">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor></Label>
+                                    <Label fx:id="lblBorrarPerfil" text="Borrar perfil">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor></Label>
+                                 </children>
+                              </VBox>
+                              <VBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="41.0" prefWidth="182.0">
+                                 <children>
+                                    <Label text="Ajustes de juego:" underline="true">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin></Label>
+                                    <Label fx:id="lblAjustesJuego" text="Ajustes de sonido">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor></Label>
+                                 </children>
                                  <VBox.margin>
                                     <Insets top="10.0" />
                                  </VBox.margin>
-                              </Label>
-                              <Button fx:id="btnJuego" mnemonicParsing="false" onAction="#btnJuego" text="Juego" />
+                              </VBox>
+                              <VBox prefHeight="105.0" prefWidth="182.0">
+                                 <children>
+                                    <Label text="Ayuda y soporte:" underline="true">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin></Label>
+                                    <Label fx:id="lblManualPdf" text="Manual de la app en pdf">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin></Label>
+                                    <Label fx:id="lblVolverFundidoPage" text="Volver a ver manual de la app">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor></Label>
+                                    <Label fx:id="lblContactarSoporte" text="Contactar con soporte">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor></Label>
+                                    <Label fx:id="lblReportar" text="Reportar incidencia">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor></Label>
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                              </VBox>
+                              <VBox prefHeight="99.0" prefWidth="182.0">
+                                 <children>
+                                    <Label text="Información sobre la app:" underline="true">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin></Label>
+                                    <Label fx:id="lblTerminosyCondiciones" text="Términos y condiciones">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor></Label>
+                                    <Label fx:id="lblPoliticayPrivacidad" text="Política de privacidad">
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin></Label>
+                                    <Label fx:id="lblCreditos" text="Versión actual y creditos">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor></Label>
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                              </VBox>
                            </children>
                         </VBox>
-                        <VBox fx:id="parte21" alignment="TOP_CENTER" maxWidth="Infinity" minWidth="250" style="-fx-background-color: orange;" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
-                           <HBox.margin>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                           </HBox.margin>
-                        </VBox>
+                        <StackPane prefHeight="421.0" prefWidth="383.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <VBox fx:id="inicioAjustesPane" prefHeight="200.0" prefWidth="100.0" />
+                                <VBox fx:id="condicionesPane" alignment="TOP_CENTER" maxWidth="Infinity" minWidth="183.0" prefHeight="421.0" prefWidth="200.0" visible="false">
+                                    <children>
+                                        <Label fx:id="lblCondiciones" text="Condiciones  del perfil">
+                                            <font>
+                                                <Font size="20.0" />
+                                            </font>
+                                            <VBox.margin>
+                                                <Insets bottom="10.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <Label fx:id="lvlTextoDescriptivo" text="Texto descriptivo" wrapText="true">
+                                            <VBox.margin>
+                                                <Insets top="20.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <Label text="¿Estas seguro?">
+                                            <VBox.margin>
+                                                <Insets top="20.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <HBox alignment="CENTER" prefHeight="43.0" prefWidth="412.0">
+                                            <children>
+                                                <Button fx:id="btnAceptarCondiciones" alignment="CENTER" mnemonicParsing="false" text="Aceptar">
+                                                    <HBox.margin>
+                                                        <Insets right="10.0" />
+                                                    </HBox.margin>
+                                                    <cursor>
+                                                        <Cursor fx:constant="HAND" />
+                                                    </cursor>
+                                                </Button>
+                                                <Button fx:id="btnCancelarCondiciones" mnemonicParsing="false" text="Cancelar">
+                                                    <HBox.margin>
+                                                        <Insets left="10.0" />
+                                                    </HBox.margin>
+                                                    <cursor>
+                                                        <Cursor fx:constant="HAND" />
+                                                    </cursor>
+                                                </Button>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+                                    </padding>
+                                </VBox>
+                                <VBox fx:id="ajustesJuegoPane" alignment="TOP_CENTER" maxWidth="Infinity" minWidth="183.0" prefHeight="421.0" prefWidth="200.0" visible="false">
+                                    <children>
+                                        <Label fx:id="lblCondiciones1" text="Ajustes de juego">
+                                            <font>
+                                                <Font size="20.0" />
+                                            </font>
+                                            <VBox.margin>
+                                                <Insets bottom="10.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <HBox alignment="CENTER_LEFT" prefHeight="43.0" prefWidth="412.0">
+                                            <children>
+                                                <Label text="Musica de los juegos:">
+                                                    <HBox.margin>
+                                                        <Insets right="10.0" />
+                                                    </HBox.margin>
+                                                </Label>
+                                                <Button fx:id="btnReproducirAjustesJuego" alignment="CENTER" mnemonicParsing="false" text="Reproducir">
+                                                    <HBox.margin>
+                                                        <Insets right="10.0" />
+                                                    </HBox.margin>
+                                                    <cursor>
+                                                        <Cursor fx:constant="HAND" />
+                                                    </cursor>
+                                                </Button>
+                                            </children>
+                                            <VBox.margin>
+                                                <Insets top="20.0" />
+                                            </VBox.margin>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" prefHeight="43.0" prefWidth="412.0">
+                                            <children>
+                                                <Label text="Sonido:">
+                                                    <HBox.margin>
+                                                        <Insets right="10.0" />
+                                                    </HBox.margin>
+                                                </Label>
+                                                <Button fx:id="btnSonidoAjustesJuego" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0">
+                                                    <HBox.margin>
+                                                        <Insets right="10.0" />
+                                                    </HBox.margin>
+                                                    <cursor>
+                                                        <Cursor fx:constant="HAND" />
+                                                    </cursor>
+                                                    <graphic>
+                                                        <SVGPath fx:id="svgSonidoAjustesJuego" content="M40,60 C42,48 44,30 25,32" scaleX="0.03" scaleY="0.03" />
+                                                    </graphic>
+                                                </Button>
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="412.0">
+                                            <children>
+                                                <Label text="Volumen:">
+                                                    <HBox.margin>
+                                                        <Insets right="10.0" />
+                                                    </HBox.margin>
+                                                </Label>
+                                                <Button alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" styleClass="btnSinNada">
+                                                    <HBox.margin>
+                                                        <Insets />
+                                                    </HBox.margin>
+                                                    <cursor>
+                                                        <Cursor fx:constant="NONE" />
+                                                    </cursor>
+                                                    <graphic>
+                                                        <SVGPath content="M440-360H320q-17 0-28.5-11.5T280-400v-160q0-17 11.5-28.5T320-600h120l132-132q19-19 43.5-8.5T640-703v446q0 27-24.5 37.5T572-228L440-360Z" scaleX="0.03" scaleY="0.03" />
+                                                    </graphic>
+                                                </Button>
+                                                <ProgressBar fx:id="volumenProgressBar" prefHeight="16.0" prefWidth="200.0" progress="0.0" />
+                                                <Button alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" styleClass="btnSinNada">
+                                                    <cursor>
+                                                        <Cursor fx:constant="NONE" />
+                                                    </cursor>
+                                                    <graphic>
+                                                        <SVGPath content="M760-481q0-83-44-151.5T598-735q-15-7-22-21.5t-2-29.5q6-16 21.5-23t31.5 0q97 43 155 131.5T840-481q0 108-58 196.5T627-153q-16 7-31.5 0T574-176q-5-15 2-29.5t22-21.5q74-34 118-102.5T760-481ZM280-360H160q-17 0-28.5-11.5T120-400v-160q0-17 11.5-28.5T160-600h120l132-132q19-19 43.5-8.5T480-703v446q0 27-24.5 37.5T412-228L280-360Zm380-120q0 42-19 79.5T591-339q-10 6-20.5.5T560-356v-250q0-12 10.5-17.5t20.5.5q31 25 50 63t19 80ZM400-606l-86 86H200v80h114l86 86v-252ZM300-480Z" scaleX="0.03" scaleY="0.03" />
+                                                    </graphic>
+                                                    <HBox.margin>
+                                                        <Insets left="10.0" />
+                                                    </HBox.margin>
+                                                </Button>
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER" prefHeight="43.0" prefWidth="412.0">
+                                            <children>
+                                                <Button fx:id="btnGuardarAjustesJuego" alignment="CENTER" mnemonicParsing="false" onAction="#btnGuardarAjustesJuego" text="Guardar">
+                                                    <HBox.margin>
+                                                        <Insets right="10.0" />
+                                                    </HBox.margin>
+                                                    <cursor>
+                                                        <Cursor fx:constant="HAND" />
+                                                    </cursor>
+                                                </Button>
+                                                <Button fx:id="btnCancelarAjustesJuego" mnemonicParsing="false" onAction="#btnCancelarAjustesJuego" text="Cancelar">
+                                                    <HBox.margin>
+                                                        <Insets left="10.0" />
+                                                    </HBox.margin>
+                                                    <cursor>
+                                                        <Cursor fx:constant="HAND" />
+                                                    </cursor>
+                                                </Button>
+                                            </children>
+                                            <VBox.margin>
+                                                <Insets top="20.0" />
+                                            </VBox.margin>
+                                        </HBox>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+                                    </padding>
+                                </VBox>
+                                <VBox fx:id="correoSoportePane" alignment="TOP_CENTER" maxWidth="Infinity" minWidth="183.0" prefHeight="421.0" prefWidth="200.0" visible="false">
+                                    <children>
+                                        <Label fx:id="lblCondiciones11" text="Ayuda y soporte">
+                                            <font>
+                                                <Font size="20.0" />
+                                            </font>
+                                            <VBox.margin>
+                                                <Insets />
+                                            </VBox.margin>
+                                        </Label>
+                                        <Label fx:id="lblTextoDescripcion" text="Ayuda y soporte">
+                                            <VBox.margin>
+                                                <Insets top="20.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <VBox alignment="CENTER_LEFT" prefHeight="163.0" prefWidth="412.0">
+                                            <children>
+                                                <Label text="Mensaje:">
+                                                    <HBox.margin>
+                                                        <Insets right="10.0" />
+                                                    </HBox.margin>
+                                                    <VBox.margin>
+                                                        <Insets bottom="10.0" />
+                                                    </VBox.margin>
+                                                </Label>
+                                                <TextArea fx:id="mensajeCorreoSoportePane" prefHeight="108.0" prefWidth="412.0" promptText="Cuentanos" />
+                                            </children>
+                                            <VBox.margin>
+                                                <Insets top="20.0" />
+                                            </VBox.margin>
+                                        </VBox>
+                                        <HBox alignment="CENTER" prefHeight="43.0" prefWidth="412.0">
+                                            <children>
+                                                <Button fx:id="btnEnviarCorreoSoportePane" alignment="CENTER" mnemonicParsing="false" onAction="#btnGuardarAjustesJuego" text="Enviar">
+                                                    <HBox.margin>
+                                                        <Insets right="10.0" />
+                                                    </HBox.margin>
+                                                    <cursor>
+                                                        <Cursor fx:constant="HAND" />
+                                                    </cursor>
+                                                </Button>
+                                                <Button fx:id="btnCancelarAjustesJuego1" mnemonicParsing="false" onAction="#btnCancelarAjustesJuego" text="Cancelar">
+                                                    <HBox.margin>
+                                                        <Insets left="10.0" />
+                                                    </HBox.margin>
+                                                    <cursor>
+                                                        <Cursor fx:constant="HAND" />
+                                                    </cursor>
+                                                </Button>
+                                            </children>
+                                            <VBox.margin>
+                                                <Insets top="20.0" />
+                                            </VBox.margin>
+                                        </HBox>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+                                    </padding>
+                                </VBox>
+                                <VBox fx:id="informacionAppSoportePane" alignment="TOP_CENTER" maxWidth="Infinity" minWidth="183.0" prefHeight="421.0" prefWidth="200.0" visible="false">
+                                    <children>
+                                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="494.0" prefWidth="412.0" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+                                            <content>
+                                                <VBox alignment="TOP_CENTER" maxWidth="412.0" prefWidth="412.0">
+                                                    <children>
+                                                        <Label fx:id="lblCondiciones111" text="Información sobre la app">
+                                                            <font>
+                                                                <Font size="20.0" />
+                                                            </font>
+                                                        </Label>
+                                                        <Label fx:id="lblAyudaTexto" text="Info" wrapText="true">
+                                                            <font>
+                                                                <Font size="16.0" />
+                                                            </font>
+                                                            <VBox.margin>
+                                                                <Insets top="20.0" />
+                                                            </VBox.margin>
+                                                        </Label>
+                                                        <Label fx:id="lblAyudaTextoInfo" text="Mensaje" wrapText="true">
+                                                            <VBox.margin>
+                                                                <Insets top="20.0" />
+                                                            </VBox.margin>
+                                                        </Label>
+                                                    </children>
+                                                </VBox>
+                                            </content>
+                                        </ScrollPane>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+                                    </padding>
+                                </VBox>
+                            </children>
+                        </StackPane>
                      </children>
                   </HBox>
                </children>

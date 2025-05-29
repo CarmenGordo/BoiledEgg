@@ -3,7 +3,7 @@ package controladores;
 import conexion.ConexionBD;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -39,6 +39,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.Media;
+import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import modelos.Restaurante;
 import modelos.Usuario;
@@ -53,17 +56,20 @@ public class ControladorJuegosPage implements Initializable {
     @FXML private VBox juegoMemoria, mensajeNivelInsuficiente;
     @FXML private GridPane gridCartas;
     @FXML private Label lblPuntuacion, lblIntentos, lblNivelRequerido, mostrarNormasMemoria;
-    @FXML private Button btnReiniciar,  btnSiguienteJuego;
+    @FXML private Button btnReiniciar,  btnSiguienteJuego, btnQuitarMusicaMemoria;
+    @FXML private SVGPath svgQuitarMusicaMemoria;
     
     // juego dados
     @FXML private VBox juegoDados;
     @FXML private TextField txtNumeroDado;
     @FXML private ImageView imgDado;
-    @FXML private Label lblRondaDados, lblVidasDados, lblResultadoDado;
-    @FXML private Button btnComprobarDado, btnReiniciarDados;
+    @FXML private Label lblRondaDados, lblVidasDados, lblResultadoDado, mostrarNormasDados;
+    @FXML private Button btnComprobarDado, btnReiniciarDados, btnQuitarMusicaDados;
+    @FXML private SVGPath svgQuitarMusicaDados;
     
     private Stage stage;
     private Usuario usuario;
+     
     // Var juego Memoria cartas:
     private boolean puedeJugar = false;
     private boolean juegoMemoriaCompletado = false;
@@ -87,11 +93,16 @@ public class ControladorJuegosPage implements Initializable {
     };
     
     
-    
     // Var juego de dados:
     private int numeroAleatorio;
     private int vidas = 5;
     private int ronda = 1;
+    
+    
+    private MediaPlayer mediaPlayer;
+    private boolean musicaActiva = true;
+    private String svgConSonido = "M400-120q-66 0-113-47t-47-113q0-66 47-113t113-47q23 0 42.5 5.5T480-418v-382q0-17 11.5-28.5T520-840h160q17 0 28.5 11.5T720-800v80q0 17-11.5 28.5T680-680H560v400q0 66-47 113t-113 47Z";
+    private String svgSinSonido = "M764-84 84-764q-11-11-11-28t11-28q11-11 28-11t28 11l680 680q11 11 11 28t-11 28q-11 11-28 11t-28-11ZM560-680v70q0 20-12.5 29.5T520-571q-15 0-27.5-10T480-611v-189q0-17 11.5-28.5T520-840h160q17 0 28.5 11.5T720-800v80q0 17-11.5 28.5T680-680H560ZM400-120q-66 0-113-47t-47-113q0-66 47-113t113-47q23 0 42.5 5.5T480-418v-62l80 80v120q0 66-47 113t-113 47Z";
     
     
     
@@ -102,18 +113,36 @@ public class ControladorJuegosPage implements Initializable {
         juegoDados.setVisible(false);
         mensajeNivelInsuficiente.setVisible(false);
         
+        //iniciarMusica();
+        cargarEstadoSonido();
+        btnQuitarMusicaMemoria.setOnAction(event -> toggleMusica());
+        btnQuitarMusicaDados.setOnAction(event -> toggleMusica());
+
+        
         mostrarNormasMemoria.setOnMouseClicked(event->{
             String normas = "Normas del Juego de Memoria:\n\n" +
             "1. Encuentra las parejas de cartas, estas pueden tener la misma forma, o detalles iguales.\n" +
             "2. Si encuentras las cartas 'Calavera' sin haber hecho ninguna relación, pierdes.\n" +
             "3. Si encuentras las cartas 'Joya' sin haber completado todas las demás relaciones, pierdes. Por tanto estas deben de ser las últimas en encontrar.\n" +
             "4. La relación 'Pocima' te protege de perder con las de 'Calavera'.\n" +
-            "5. Al encontrar la relación 'Libro', se te mostrará la ubicación de una carta de 'Pocima' durante 3 segundos.";
+            "5. Al encontrar la relación 'Libro', se te mostrará la ubicación de una carta de 'Pocima' durante 3 segundos.\n" +
+            "Recuerda que solo podrás jugar una vez, si llegas a superar este nivel.";
             
-            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "Normas del Juego", normas);
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "Normas del juego de las Cartas", normas);
         });
         
-        //mostrarNormasDados
+        mostrarNormasDados.setOnMouseClicked(event->{
+            String normas = "Normas del Juego de Memoria:\n\n" +
+            "1. Escribe un número del 1 al 6 (ambos incluidos).\n" +
+            "2. Si adivinas que sacará el dado, ganas.\n" +
+            "3. Si no lo adivinas, perderas una vida.\n" +
+            "4. Si llegas a 0 vidas pierdes.\n" +
+            "5. Si se te acaban los intentos, pierdes.\n" +
+            "5. Si completas las 6 rondas y te quedan vidas, ganas.\n" +
+            "Recuerda que solo podrás jugar una vez, si llegas a superar este nivel.";
+            
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "Normas del juego del dado", normas);
+        });
     }
     
     public void setUsuario(Usuario usuario) {
@@ -122,16 +151,14 @@ public class ControladorJuegosPage implements Initializable {
     }
     
     private void verificarNivelUsuario() {
-        System.out.println("Verificando nivel usuario.  Juego completado: " + usuario.getJuego_completado_usuario());
+        //System.out.println("Verificando nivel usuario.  Juego completado: " + usuario.getJuego_completado_usuario());
         
         if (usuario.getJuego_completado_usuario() == 1) {
-            System.out.println("Mostrando juego de dados");
             juegoMemoria.setVisible(false);
             juegoDados.setVisible(true);
             mensajeNivelInsuficiente.setVisible(false);
             iniciarJuegoDados();
         } else {
-            System.out.println("Mostrando juego de memoria");
             juegoMemoria.setVisible(true);
             juegoDados.setVisible(false);
             mensajeNivelInsuficiente.setVisible(false);
@@ -193,15 +220,13 @@ public class ControladorJuegosPage implements Initializable {
         StackPane cartaPane = new StackPane();
         cartaPane.getStyleClass().add("carta");
 
-        // Crear un fondo gris para el reverso
         StackPane reverso = new StackPane();
-        reverso.setStyle("-fx-background-color: gray; -fx-min-width: 100; -fx-min-height: 150;");
+        reverso.setStyle("-fx-background-color: gray; -fx-min-width: 80; -fx-min-height: 130;");
 
-        // Cargar imagen del frente con la ruta correcta
         Image frenteImg = new Image(getClass().getResourceAsStream("/assets/img_juegos/juego_cartas/" + valor + ".png"));
         ImageView frente = new ImageView(frenteImg);
-        frente.setFitWidth(100);
-        frente.setFitHeight(150);
+        frente.setFitWidth(80);
+        frente.setFitHeight(130);
         frente.setVisible(false);
 
         cartaPane.getChildren().addAll(reverso, frente);
@@ -212,92 +237,89 @@ public class ControladorJuegosPage implements Initializable {
     }
      
     private void manejarClicCarta(String valor, ImageView frente, StackPane cartaPane) {
-    if (bloqueado || frente.isVisible() || valor.equals(primeraCarta)) return;
-    
-    frente.setVisible(true);
-    
-    if (primeraCarta == null) {
-        primeraCarta = valor;
-    } else {
-        segundaCarta = valor;
-        intentos++;
-        actualizarContadores();
-        
-        String tipoPrimera = primeraCarta.split("_")[0];
-        String tipoSegunda = segundaCarta.split("_")[0];
-        
-        if (tipoPrimera.equals(tipoSegunda)) {
-            // Verificar reglas especiales
-            if (tipoPrimera.equals("calavera")) {
-                if (!relacionPocimaEncontrada && relacionesCompletadas == 0) {
-                    perderJuego();
-                    return;
-                }
-                if (relacionLibroEncontrada) {
-                    perderJuego();
-                    return;
-                }
-            }
-            
-            if (tipoPrimera.equals("joya") && relacionesCompletadas < 5) {
-                perderJuego();
-                return;
-            }
-            
-            if (tipoPrimera.equals("pocima")) {
-                relacionPocimaEncontrada = true;
-            }
-            
-            if (tipoPrimera.equals("libro")) {
-                relacionLibroEncontrada = true;
-                mostrarPocima();
-            }
-            
-            // Guardar la pareja encontrada
-            parejasEncontradas.add(primeraCarta);
-            parejasEncontradas.add(segundaCarta);
-            
-            relacionesCompletadas++;
-            paresEncontrados++;
-            
-            // Quitar el fondo gris de las cartas emparejadas
-            StackPane reversoPrimera = (StackPane) cartaPane.getChildren().get(0);
-            reversoPrimera.setStyle("");
-            StackPane primeraCartaPane = encontrarCartaPane(primeraCarta);
-            if (primeraCartaPane != null) {
-                StackPane reversoSegunda = (StackPane) primeraCartaPane.getChildren().get(0);
-                reversoSegunda.setStyle("");
-            }
-            
-            if (paresEncontrados == 6) {
-                ganarJuego();
-            }
+        if (bloqueado || frente.isVisible() || valor.equals(primeraCarta)) return;
+
+        frente.setVisible(true);
+
+        if (primeraCarta == null) {
+            primeraCarta = valor;
         } else {
-            bloqueado = true;
-            new Thread(() -> {
-                try {
-                    Thread.sleep(2000);
-                    Platform.runLater(() -> {
-                        // Solo ocultar las cartas si no son parte de una pareja encontrada
-                        if (!parejasEncontradas.contains(valor)) {
-                            frente.setVisible(false);
-                        }
-                        StackPane primeraCartaPane = encontrarCartaPane(primeraCarta);
-                        if (primeraCartaPane != null && !parejasEncontradas.contains(primeraCarta)) {
-                            ImageView primeraFrente = (ImageView) primeraCartaPane.getChildren().get(1);
-                            primeraFrente.setVisible(false);
-                        }
-                        primeraCarta = null;
-                        segundaCarta = null;
-                        bloqueado = false;
-                    });
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            segundaCarta = valor;
+            intentos++;
+            actualizarContadores();
+
+            String tipoPrimera = primeraCarta.split("_")[0];
+            String tipoSegunda = segundaCarta.split("_")[0];
+
+            if (tipoPrimera.equals(tipoSegunda)) {
+                if (tipoPrimera.equals("calavera")) {
+                    if (!relacionPocimaEncontrada && relacionesCompletadas == 0) {
+                        perderJuego();
+                        return;
+                    }
+                    if (relacionLibroEncontrada) {
+                        perderJuego();
+                        return;
+                    }
                 }
-            }).start();
+
+                if (tipoPrimera.equals("joya") && relacionesCompletadas < 5) {
+                    perderJuego();
+                    return;
+                }
+
+                if (tipoPrimera.equals("pocima")) {
+                    relacionPocimaEncontrada = true;
+                }
+
+                if (tipoPrimera.equals("libro")) {
+                    relacionLibroEncontrada = true;
+                    mostrarPocima();
+                }
+
+                parejasEncontradas.add(primeraCarta);
+                parejasEncontradas.add(segundaCarta);
+
+                relacionesCompletadas++;
+                paresEncontrados++;
+
+                StackPane reversoPrimera = (StackPane) cartaPane.getChildren().get(0);
+                reversoPrimera.setStyle("");
+                StackPane primeraCartaPane = encontrarCartaPane(primeraCarta);
+                if (primeraCartaPane != null) {
+                    StackPane reversoSegunda = (StackPane) primeraCartaPane.getChildren().get(0);
+                    reversoSegunda.setStyle("");
+                }
+
+                if (paresEncontrados == 6) {
+                    ganarJuego();
+                }
+            } else {
+                bloqueado = true;
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(2000);
+                        Platform.runLater(() -> {
+
+                            if (!parejasEncontradas.contains(valor)) {
+                                frente.setVisible(false);
+                            }
+                            StackPane primeraCartaPane = encontrarCartaPane(primeraCarta);
+                            if (primeraCartaPane != null && !parejasEncontradas.contains(primeraCarta)) {
+                                ImageView primeraFrente = (ImageView) primeraCartaPane.getChildren().get(1);
+                                primeraFrente.setVisible(false);
+                            }
+                            primeraCarta = null;
+                            segundaCarta = null;
+                            bloqueado = false;
+                        });
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            }
         }
     }
-}
     
     private StackPane encontrarCartaPane(String valor) {
         for (int fila = 0; fila < 3; fila++) {
@@ -356,7 +378,6 @@ public class ControladorJuegosPage implements Initializable {
                 ImageView frente = (ImageView) cartaPane.getChildren().get(1);
                 String valor = cartas.get(index);
                 
-                // Mostrar la carta si es parte de una pareja encontrada o si está seleccionada actualmente
                 frente.setVisible(parejasEncontradas.contains(valor) || 
                                 valor.equals(primeraCarta) || 
                                 valor.equals(segundaCarta));
@@ -381,7 +402,6 @@ public class ControladorJuegosPage implements Initializable {
 
         usuario.setPuntos_usuario(usuario.getPuntos_usuario() + 10);
 
-        // Verificar si sube de nivel
         if (usuario.getPuntos_usuario() >= 25) {
             usuario.setNivel_usuario(2);
         } else if (usuario.getPuntos_usuario() >= 10) {
@@ -420,10 +440,12 @@ public class ControladorJuegosPage implements Initializable {
         lblResultadoDado.setText("");
         btnReiniciarDados.setVisible(false);
         btnComprobarDado.setVisible(true);
+        txtNumeroDado.setDisable(false);
     }
     
     private void generarNumeroAleatorio() {
         numeroAleatorio = (int) (Math.random() * 6) + 1;
+        //System.err.println(numeroAleatorio);
     }
     
     private void actualizarContadoresDados() {
@@ -463,6 +485,7 @@ public class ControladorJuegosPage implements Initializable {
                 } else {
                     lblResultadoDado.setText("Incorrecto. Inténtalo de nuevo");
                     txtNumeroDado.clear();
+                    generarNumeroAleatorio();
                 }
             }
             
@@ -491,6 +514,7 @@ public class ControladorJuegosPage implements Initializable {
         lblResultadoDado.setText("¡Has perdido! Te has quedado sin vidas");
         btnComprobarDado.setVisible(false);
         btnReiniciarDados.setVisible(true);
+        txtNumeroDado.setDisable(true);
     }
     
     @FXML private void reiniciarJuegoDados() {
@@ -500,10 +524,75 @@ public class ControladorJuegosPage implements Initializable {
     
     
     
+    // Musica:
+    public void iniciarMusica() {
+        try {
+            String projectPath = System.getProperty("user.dir");
+            String musicPath = projectPath + "/src/main/resources/assets/musica/musicaJuego.mp3";
+            File musicFile = new File(musicPath);
+
+            if (!musicFile.exists()) {
+                System.out.println("No se encontró el archivo de música");
+                return;
+            }
+
+            Media media = new Media(musicFile.toURI().toString());
+            mediaPlayer = new MediaPlayer(media);
+            mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+            mediaPlayer.setMute(!musicaActiva);
+            mediaPlayer.play();
+
+        } catch (Exception e) {
+            System.out.println("Error al inicializar la música: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private void cargarEstadoSonido() {
+        Map<String, String> cacheData = FuncionesRepetidas.leerSesionCache();
+        
+        if (!cacheData.containsKey("sonido_juegos")) {
+            musicaActiva = true;
+            FuncionesRepetidas.guardarSesionCache("sonido_juegos", "true");
+        } else {
+            musicaActiva = Boolean.parseBoolean(cacheData.get("sonido_juegos"));
+        }
+        
+        actualizarIconosSonido();
+    }
+    
+    private void actualizarIconosSonido() {
+        String icono = musicaActiva ? svgConSonido : svgSinSonido;
+        svgQuitarMusicaMemoria.setContent(icono);
+        svgQuitarMusicaDados.setContent(icono);
+    }
+    
+    private void toggleMusica() {
+        musicaActiva = !musicaActiva;
+        
+        if (mediaPlayer != null) {
+            mediaPlayer.setMute(!musicaActiva);
+        }
+        
+        actualizarIconosSonido();
+        FuncionesRepetidas.guardarSesionCache("sonidoJuegos", String.valueOf(musicaActiva));
+    }
+    
+    public void pararMusica() {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.dispose();
+            mediaPlayer = null;
+        }
+    }
+    
     
     
     public void setStage(Stage stage) {
         this.stage = stage;
+        stage.setOnCloseRequest(event -> {
+            pararMusica();
+        });
     }
     
 }

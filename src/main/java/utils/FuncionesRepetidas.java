@@ -1,5 +1,6 @@
 package utils;
 
+import com.sun.jdi.connect.Transport;
 import conexion.ConexionBD;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,6 +27,7 @@ import modelos.Restaurante;
 import modelos.Usuario;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Properties;
 import java.util.Set;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -39,6 +41,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import modelos.Alergeno;
 import modelos.Codigo;
 import modelos.Favoritos;
@@ -62,6 +69,7 @@ public class FuncionesRepetidas {
     public static String rutaSesionCache = "sesionCache.txt";
     public static String rutaTemaClaro = "/style/Style.css";
     public static String rutaTemaOscuro = "/style/StyleOscuro.css";
+    public static String emailSoporte = "soporteboiledegg@gmail.com";
     
     
    
@@ -304,7 +312,7 @@ public class FuncionesRepetidas {
 
         return listaIconos;
     }
-    
+
     
     public static ObservableList<Receta> obtenerListaRecetas() {
         ObservableList<Receta> recetas = FXCollections.observableArrayList();
@@ -342,31 +350,6 @@ public class FuncionesRepetidas {
         }
 
         return recetas;
-    }
-    
-    public static boolean insertarSubirReceta(Receta receta) {
-        try (Connection conexion = iniciarConexion()) {
-    
-            String query = "INSERT INTO Receta (nombre_receta, consejos_receta, pasos_receta, imagen_receta, tiempo_preparacion_receta, dificultad_receta, id_autor, tipo_receta, tipo_coccion_receta, publicada_por_restaurante, visible_receta) " +
-                          "VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
-            
-            PreparedStatement stmt = conexion.prepareStatement(query);
-            stmt.setString(1, receta.getNombre_receta());
-            stmt.setString(2, receta.getPasos_receta());
-            stmt.setString(3, receta.getImagen_receta());
-            stmt.setInt(4, receta.getTiempo_preparacion_receta());
-            stmt.setString(5, receta.getDificultad_receta());
-            stmt.setInt(6, receta.getId_autor());
-            stmt.setString(7, receta.getTipo_receta());
-            stmt.setString(8, receta.getTipo_coccion_receta());
-            stmt.setInt(9, receta.getPublicada_por_restaurante());
-
-            return stmt.executeUpdate() > 0;
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
     
     public static int obtenerUltimoIdReceta() {
@@ -460,65 +443,6 @@ public class FuncionesRepetidas {
         return lista;
     }
     
-    public static boolean insertarValoracion(Valoracion val) {
-        try (Connection conn = iniciarConexion()){
-            String insertSql = "INSERT INTO Valoracion (tipo_objeto, id_objeto, id_usuario, puntuacion_valoracion, comentario_valoracion, fecha_valoracion) VALUES (?, ?, ?, ?, ?, ?)";
-            PreparedStatement stmt = conn.prepareStatement(insertSql);
-            stmt.setString(1, val.getTipo_objeto().getValor());
-            stmt.setInt(2, val.getId_objeto());
-            stmt.setInt(3, val.getId_usuario());
-            stmt.setInt(4, val.getPuntuacion_valoracion());
-            stmt.setString(5, val.getComentario_valoracion());
-            stmt.setDate(6, new java.sql.Date(val.getFecha_valoracion().getTime()));
-
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    
-    public static boolean actualizarValoracion(HBox contenedor, Valoracion nuevaVal) {
-        Valoracion actual = obtenerValoracionUsuarioEnObjeto(
-            nuevaVal.getId_usuario(),
-            nuevaVal.getId_objeto(),
-            nuevaVal.getTipo_objeto()
-        );
-
-        if (actual == null) {
-            return false;
-        }
-
-        boolean cambioPuntuacion = actual.getPuntuacion_valoracion() != nuevaVal.getPuntuacion_valoracion();
-        boolean cambioComentario = (actual.getComentario_valoracion() == null && nuevaVal.getComentario_valoracion() != null)
-            || (actual.getComentario_valoracion() != null && !actual.getComentario_valoracion().equals(nuevaVal.getComentario_valoracion()));
-
-        if (!cambioPuntuacion && !cambioComentario) {
-            //naada cambia
-            return true;
-        }
-
-        try (Connection conn = iniciarConexion()) {
-            String updateSql = "UPDATE Valoracion SET puntuacion_valoracion = ?, comentario_valoracion = ?, fecha_valoracion = ? WHERE id_valoracion = ?";
-            PreparedStatement stmt = conn.prepareStatement(updateSql);
-            stmt.setInt(1, nuevaVal.getPuntuacion_valoracion());
-            stmt.setString(2, nuevaVal.getComentario_valoracion());
-            stmt.setDate(3, new java.sql.Date(nuevaVal.getFecha_valoracion().getTime()));
-            stmt.setInt(4, actual.getId_valoracion());
-
-            boolean actualizado = stmt.executeUpdate() > 0;
-
-            if (actualizado && cambioPuntuacion) {
-                actualizarEstrellas(contenedor, nuevaVal.getPuntuacion_valoracion()); // Actualiza fill visualmente
-            }
-
-            return actualizado;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public static Valoracion obtenerValoracionUsuarioEnObjeto(int idUsuario, int objetoId, Valoracion.TipoObjeto tipoObjeto) {
         try (Connection conn =  iniciarConexion()){
             String sql = "SELECT * FROM Valoracion WHERE id_usuario = ? AND id_objeto = ? AND tipo_objeto = ?";
@@ -579,45 +503,6 @@ public class FuncionesRepetidas {
         return lista;
     }
 
-    public static boolean insertarFavorito(Favoritos favorito){
-         String insertSql = "INSERT INTO Favoritos (tipo_objeto, id_objeto, id_usuario, fecha_favorito) VALUES (?, ?, ?, ?)";
-        
-        try (Connection conn = iniciarConexion()){
-            PreparedStatement stmt = conn.prepareStatement(insertSql);
-            stmt.setString(1, favorito.getTipo_objeto().getValor());
-            stmt.setInt(2, favorito.getId_objeto());
-            stmt.setInt(3, favorito.getId_usuario());
-            stmt.setDate(4, new java.sql.Date(favorito.getFecha_favorito().getTime()));
-
-            return stmt.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error al insertar favorito: " + e.getMessage());
-            return false;
-        }
-    }
-    
-    public static boolean eliminarFavorito(int idUsuario, int idObjeto, Favoritos.TipoObjeto tipoObjeto) {
-        String sql = "DELETE FROM Favoritos WHERE id_usuario = ? AND id_objeto = ? AND tipo_objeto = ?";
-
-        try (Connection conn = iniciarConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, idUsuario);
-            stmt.setInt(2, idObjeto);
-            stmt.setString(3, tipoObjeto.getValor());
-
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("Error al eliminar favorito: " + e.getMessage());
-            return false;
-        }
-    }
-    
-
-
-
-    
     public static ObservableList<Alergeno> obtenerListaAlergenos() {
         ObservableList<Alergeno> lista = FXCollections.observableArrayList();
 
@@ -673,24 +558,6 @@ public class FuncionesRepetidas {
 
         return listaAlergenos;
     }
-    
-    public static boolean insertarRecetaAlergeno(int idReceta, int idAlergeno) {
-        String sql = "INSERT INTO RecetaAlergeno (id_receta, id_alergeno) VALUES (?, ?)";
-
-        try (Connection conn = iniciarConexion();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, idReceta);
-            ps.setInt(2, idAlergeno);
-
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    
     
     public static ObservableList<Ingrediente> obtenerListaIngredientes() {
         ObservableList<Ingrediente> listaIngredientes = FXCollections.observableArrayList();
@@ -758,25 +625,6 @@ public class FuncionesRepetidas {
 
         return listaIngredientes;
     }
-    
-    public static boolean insertarRecetaIngrediente(int idReceta, int idIngrediente, String cantidad) {
-        String sql = "INSERT INTO RecetaIngrediente (id_receta, id_ingrediente, cantidad_ingrediente) VALUES (?, ?, ?)";
-
-        try (Connection conn = iniciarConexion();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, idReceta);
-            ps.setInt(2, idIngrediente);
-            ps.setString(3, cantidad);
-
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    
     
     public static ObservableList<Restaurante> obtenerListaRestaurantes() {
         ObservableList<Restaurante> lista = FXCollections.observableArrayList();
@@ -902,6 +750,118 @@ public class FuncionesRepetidas {
         return listaUsuarioCodigo;
     }
     
+    private boolean verificarUsuarioExistente(String nombreUsuario) {
+        String query = "SELECT COUNT(*) FROM Usuario WHERE nombre_usuario = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(query)) {
+            ps.setString(1, nombreUsuario);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    
+    // Funciones con insert:
+    public static boolean insertarSubirReceta(Receta receta) {
+        try (Connection conexion = iniciarConexion()) {
+    
+            String query = "INSERT INTO Receta (nombre_receta, consejos_receta, pasos_receta, imagen_receta, tiempo_preparacion_receta, dificultad_receta, id_autor, tipo_receta, tipo_coccion_receta, publicada_por_restaurante, visible_receta) " +
+                          "VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+            
+            PreparedStatement stmt = conexion.prepareStatement(query);
+            stmt.setString(1, receta.getNombre_receta());
+            stmt.setString(2, receta.getPasos_receta());
+            stmt.setString(3, receta.getImagen_receta());
+            stmt.setInt(4, receta.getTiempo_preparacion_receta());
+            stmt.setString(5, receta.getDificultad_receta());
+            stmt.setInt(6, receta.getId_autor());
+            stmt.setString(7, receta.getTipo_receta());
+            stmt.setString(8, receta.getTipo_coccion_receta());
+            stmt.setInt(9, receta.getPublicada_por_restaurante());
+
+            return stmt.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean insertarValoracion(Valoracion val) {
+        try (Connection conn = iniciarConexion()){
+            String insertSql = "INSERT INTO Valoracion (tipo_objeto, id_objeto, id_usuario, puntuacion_valoracion, comentario_valoracion, fecha_valoracion) VALUES (?, ?, ?, ?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(insertSql);
+            stmt.setString(1, val.getTipo_objeto().getValor());
+            stmt.setInt(2, val.getId_objeto());
+            stmt.setInt(3, val.getId_usuario());
+            stmt.setInt(4, val.getPuntuacion_valoracion());
+            stmt.setString(5, val.getComentario_valoracion());
+            stmt.setDate(6, new java.sql.Date(val.getFecha_valoracion().getTime()));
+
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public static boolean insertarFavorito(Favoritos favorito){
+         String insertSql = "INSERT INTO Favoritos (tipo_objeto, id_objeto, id_usuario, fecha_favorito) VALUES (?, ?, ?, ?)";
+        
+        try (Connection conn = iniciarConexion()){
+            PreparedStatement stmt = conn.prepareStatement(insertSql);
+            stmt.setString(1, favorito.getTipo_objeto().getValor());
+            stmt.setInt(2, favorito.getId_objeto());
+            stmt.setInt(3, favorito.getId_usuario());
+            stmt.setDate(4, new java.sql.Date(favorito.getFecha_favorito().getTime()));
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error al insertar favorito: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    public static boolean insertarRecetaAlergeno(int idReceta, int idAlergeno) {
+        String sql = "INSERT INTO RecetaAlergeno (id_receta, id_alergeno) VALUES (?, ?)";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, idReceta);
+            ps.setInt(2, idAlergeno);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public static boolean insertarRecetaIngrediente(int idReceta, int idIngrediente, String cantidad) {
+        String sql = "INSERT INTO RecetaIngrediente (id_receta, id_ingrediente, cantidad_ingrediente) VALUES (?, ?, ?)";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, idReceta);
+            ps.setInt(2, idIngrediente);
+            ps.setString(3, cantidad);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
     public static boolean insertarUsuarioCodigo(Usuario usuario, String codigoBarras) {
         String query = "INSERT INTO UsuarioCodigo (id_usuario, id_codigo) " +
                       "SELECT ?, id_codigo FROM Codigo WHERE codigo_barras = ?";
@@ -919,6 +879,119 @@ public class FuncionesRepetidas {
             return false;
         }
     }
+    
+    
+    // Funciones con update:
+    public static boolean actualizarValoracion(HBox contenedor, Valoracion nuevaVal) {
+        Valoracion actual = obtenerValoracionUsuarioEnObjeto(
+            nuevaVal.getId_usuario(),
+            nuevaVal.getId_objeto(),
+            nuevaVal.getTipo_objeto()
+        );
+
+        if (actual == null) {
+            return false;
+        }
+
+        boolean cambioPuntuacion = actual.getPuntuacion_valoracion() != nuevaVal.getPuntuacion_valoracion();
+        boolean cambioComentario = (actual.getComentario_valoracion() == null && nuevaVal.getComentario_valoracion() != null)
+            || (actual.getComentario_valoracion() != null && !actual.getComentario_valoracion().equals(nuevaVal.getComentario_valoracion()));
+
+        if (!cambioPuntuacion && !cambioComentario) {
+            //naada cambia
+            return true;
+        }
+
+        try (Connection conn = iniciarConexion()) {
+            String updateSql = "UPDATE Valoracion SET puntuacion_valoracion = ?, comentario_valoracion = ?, fecha_valoracion = ? WHERE id_valoracion = ?";
+            PreparedStatement stmt = conn.prepareStatement(updateSql);
+            stmt.setInt(1, nuevaVal.getPuntuacion_valoracion());
+            stmt.setString(2, nuevaVal.getComentario_valoracion());
+            stmt.setDate(3, new java.sql.Date(nuevaVal.getFecha_valoracion().getTime()));
+            stmt.setInt(4, actual.getId_valoracion());
+
+            boolean actualizado = stmt.executeUpdate() > 0;
+
+            if (actualizado && cambioPuntuacion) {
+                actualizarEstrellas(contenedor, nuevaVal.getPuntuacion_valoracion()); // Actualiza fill visualmente
+            }
+
+            return actualizado;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static void actualizarDarBajaUsuario(int idUsuario) {
+        String sql = "UPDATE Usuarios SET baja_usuario = 1 WHERE id_usuario = ?";
+        try (Connection conn = iniciarConexion();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, idUsuario);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("----error al dar de baja al usuario: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    
+    // Funciones con delete:
+    public static boolean eliminarFavorito(int idUsuario, int idObjeto, Favoritos.TipoObjeto tipoObjeto) {
+        String sql = "DELETE FROM Favoritos WHERE id_usuario = ? AND id_objeto = ? AND tipo_objeto = ?";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idUsuario);
+            stmt.setInt(2, idObjeto);
+            stmt.setString(3, tipoObjeto.getValor());
+
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar favorito: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    public static void borrarFavoritos(int idUsuario) {
+        String sql = "DELETE FROM Favoritos WHERE id_usuario = ?";
+        try (Connection conn = iniciarConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, idUsuario);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("------------error al borrar favoritos: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public static void borrarUsuarioAlergeno(int idUsuario) {
+        String sql = "DELETE FROM Usuario_Alergeno WHERE id_usuario = ?";
+        try (Connection conn = iniciarConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, idUsuario);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("-------------error al borrar alergenos del usuario: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    public static void borrarUsuarioCodigo(int idUsuario) {
+        String sql = "DELETE FROM Usuario_Codigo WHERE id_usuario = ?";
+        try (Connection conn = iniciarConexion();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, idUsuario);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("--------error al borrar códigos del usuario: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+ 
+    
+    
     
     
     // recoger el icono/img 
@@ -979,22 +1052,6 @@ public class FuncionesRepetidas {
     
     
 
-    
-    private boolean verificarUsuarioExistente(String nombreUsuario) {
-        String query = "SELECT COUNT(*) FROM Usuario WHERE nombre_usuario = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(query)) {
-            ps.setString(1, nombreUsuario);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-    
-    
     
     
     
@@ -1409,6 +1466,56 @@ public class FuncionesRepetidas {
         }
     }
 
+
+    
+    // correo:
+    /*
+     public static void enviarCorreoSoporte(String mensaje) {
+        try {
+            Map<String, String> cacheData = leerSesionCache();
+            String emailUsuario = cacheData.get("Email");
+            String idUsuario = cacheData.get("Id");
+            String nombreUsuario = cacheData.get("Nombre");
+            
+            if (mensaje == null || mensaje.trim().isEmpty()) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "Por favor, escribe un mensaje");
+                return;
+            }
+            
+            Properties props = new Properties();
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", "smtp.gmail.com");
+            props.put("mail.smtp.port", "587");
+
+            Session session = Session.getInstance(props, new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(EMAIL_FROM, EMAIL_PASSWORD);
+                }
+            });
+
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(EMAIL_FROM));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(EMAIL_FROM));
+            message.setSubject("Contactar con Soporte. Nº Id Usuario: " + idUsuario + ". Nombre usuario: " + nombreUsuario);
+            message.setText("Mensaje de: " + emailUsuario + "\n\n" + mensaje);
+
+            Transport transport = session.getTransport("smtp");
+            transport.connect("smtp.gmail.com", EMAIL_FROM, EMAIL_PASSWORD);
+            transport.sendMessage(message, message.getAllRecipients());
+            transport.close();
+            
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Correo enviado correctamente");
+
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Correo enviado correctamente");
+        } catch (Exception e) {
+            System.err.println("Error al enviar el correo: " + e.getMessage());
+            e.printStackTrace();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo enviar el correo. Por favor, inténtalo de nuevo.");
+        }
+    }
+*/
 
     
     
