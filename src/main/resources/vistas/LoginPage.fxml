@@ -2,6 +2,7 @@
 
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
@@ -15,9 +16,10 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="root" minHeight="600" minWidth="800" prefHeight="600" prefWidth="800" stylesheets="@style/Style.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controladores.ControladorLoginPage">
+<BorderPane fx:id="root" minHeight="600" minWidth="800" prefHeight="600" prefWidth="800" stylesheets="@../style/Style.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controladores.ControladorLoginPage">
     
     <center>
         <HBox spacing="0" styleClass="fondoApp">
@@ -40,52 +42,148 @@
                            <children>
                               <VBox layoutX="-1.0" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="382.0" prefWidth="320.0">
                                  <children>
-                                    <Label styleClass="labelEditText" text="Nombre del restaurante*:" />
-                                    <TextField fx:id="nombreRestauranteInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="318.0" promptText="Introduce tu usuario">
-                                       <styleClass>
-                                          <String fx:value="editText" />
-                                          <String fx:value="bordes-azul" />
-                                       </styleClass></TextField>
-                                    <Region maxHeight="-Infinity" prefHeight="16.0" prefWidth="250.0" />
-                                    <Label styleClass="labelEditText" text="Email*:" />
-                                    <TextField fx:id="emailRestauranteInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="318.0" promptText="Introduce tu correo">
-                                       <styleClass>
-                                          <String fx:value="editText" />
-                                          <String fx:value="bordes-azul" />
-                                       </styleClass></TextField>
-                                    <Region maxHeight="-Infinity" prefHeight="16.0" prefWidth="250.0" />
-                                    <Label styleClass="labelEditText" text="Constraseña*:" />
-                                    <PasswordField fx:id="contraseñaRestauranteInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="318.0" promptText="Introduce una contraseña*">
-                                       <styleClass>
-                                          <String fx:value="editText" />
-                                          <String fx:value="bordes-azul" />
-                                       </styleClass></PasswordField>
-                                    <TextField fx:id="textoVisibleInput1" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="318.0" promptText="Introduce una contraseña*" visible="false" />
-                                    <Region maxHeight="-Infinity" prefHeight="16.0" prefWidth="250.0" />
-                                    <Label styleClass="labelEditText" text="Repite contraseña*:" />
-                                    <PasswordField fx:id="repetirContraseñaRestauranteInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="318.0" promptText="Comprueba la contraseña*">
-                                       <styleClass>
-                                          <String fx:value="editText" />
-                                          <String fx:value="bordes-azul" />
-                                       </styleClass></PasswordField>
-                                    <Region maxHeight="-Infinity" prefHeight="16.0" prefWidth="250.0" />
-                                    <Label styleClass="labelEditText" text="¿Que tipo de restaurante eres?*" />
-                                    <ComboBox fx:id="tipoRestauranteSelect" prefHeight="38.0" prefWidth="150.0">
+                                    <Label styleClass="labelEditText" text="Nombre del restaurante*:">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <font>
+                                          <Font size="15.0" />
+                                       </font></Label>
+                                    <HBox alignment="CENTER_LEFT" prefHeight="49.0" prefWidth="320.0">
+                                       <children>
+                                          <TextField fx:id="nombreRestauranteInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="315.0" promptText="Introduce tu usuario">
+                                             <styleClass>
+                                                <String fx:value="editText" />
+                                                <String fx:value="bordesAzul" />
+                                             </styleClass>
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </TextField>
+                                          <Label fx:id="etiqIconoNombreRestaurante" />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <Label styleClass="labelEditText" text="Email*:">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <font>
+                                          <Font size="15.0" />
+                                       </font></Label>
+                                    <HBox alignment="CENTER_LEFT" prefHeight="49.0" prefWidth="320.0">
+                                       <children>
+                                          <TextField fx:id="emailRestauranteInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="315.0" promptText="Introduce tu correo">
+                                             <styleClass>
+                                                <String fx:value="editText" />
+                                                <String fx:value="bordesAzul" />
+                                             </styleClass>
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </TextField>
+                                          <Label fx:id="etiqIconoEmailRestaurante" />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <Label styleClass="labelEditText" text="Constraseña*:">
+                                       <font>
+                                          <Font size="15.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin></Label>
+                                    <HBox alignment="CENTER_LEFT" prefHeight="45.0" prefWidth="320.0">
+                                       <children>
+                                          <PasswordField fx:id="contraseñaRestauranteInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="315.0" promptText="Introduce una contraseña*">
+                                             <styleClass>
+                                                <String fx:value="editText" />
+                                                <String fx:value="bordesAzul" />
+                                             </styleClass>
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </PasswordField>
+                                          <TextField fx:id="textoVisibleInput1" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="315.0" promptText="Introduce una contraseña*" visible="false" />
+                                          <Label fx:id="etiqIconoContraseñaRestaurante">
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </Label>
+                                          <ImageView fx:id="iconoVerContraseñaRestaurante" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true" />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <Label styleClass="labelEditText" text="Repite contraseña*:">
+                                       <font>
+                                          <Font size="15.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin></Label>
+                                    <HBox alignment="CENTER_LEFT" prefHeight="48.0" prefWidth="320.0">
+                                       <children>
+                                          <PasswordField fx:id="repetirContraseñaRestauranteInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="315.0" promptText="Comprueba la contraseña*">
+                                             <styleClass>
+                                                <String fx:value="editText" />
+                                                <String fx:value="bordesAzul" />
+                                             </styleClass>
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </PasswordField>
+                                          <Label fx:id="etiqIconoRepContraseñaRestaurante" />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <Label styleClass="labelEditText" text="¿Que tipo de restaurante eres?*">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <font>
+                                          <Font size="15.0" />
+                                       </font></Label>
+                                    <HBox alignment="CENTER_LEFT" prefHeight="40.0" prefWidth="320.0">
+                                       <children>
+                                          <ComboBox fx:id="tipoRestauranteSelect" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="32.0" prefWidth="150.0">
+                                             <styleClass>
+                                                <String fx:value="select" />
+                                                <String fx:value="bordesAzul" />
+                                             </styleClass>
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </ComboBox>
+                                          <Label fx:id="etiqIconoTipoRestaurante" />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <Label styleClass="labelEditText" text="¿Donde te encuentras?">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <font>
+                                          <Font size="15.0" />
+                                       </font></Label>
+                                    <ComboBox fx:id="ciudadRestaurante" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="32.0" prefWidth="150.0">
                                        <styleClass>
                                           <String fx:value="select" />
-                                          <String fx:value="bordes-azul" />
-                                       </styleClass></ComboBox>
-                                    <Region maxHeight="-Infinity" prefHeight="19.0" prefWidth="320.0" />
-                                    <Label styleClass="labelEditText" text="¿Donde te encuentras?" />
-                                    <ComboBox fx:id="ciudadRestaurante" prefHeight="38.0" prefWidth="150.0">
-                                       <styleClass>
-                                          <String fx:value="select" />
-                                          <String fx:value="bordes-azul" />
+                                          <String fx:value="bordesAzul" />
                                        </styleClass>
                                     </ComboBox>
                                  </children>
                               </VBox>
-                              <HBox layoutX="66.0" layoutY="395.0">
+                              <HBox layoutX="66.0" layoutY="435.0">
                                  <children>
                                     <Label text="Ya tengo una cuenta. ">
                                        <font>
@@ -93,29 +191,29 @@
                                        </font>
                                     </Label>
                                     <Region prefWidth="6.0" />
-                                    <Label fx:id="enlaceLogin2" text="Entrar" underline="true">
+                                    <Label fx:id="enlaceLogin2" style="-fx-text-fill: #f2629c; -fx-font-weight: bold;" text="Entrar" underline="true">
                                        <font>
                                           <Font size="15.0" />
                                        </font>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
                                     </Label>
                                  </children>
                               </HBox>
-                              <Button fx:id="btnRegistroRestaurante" layoutX="115.0" layoutY="418.0" onAction="#btnRegistroRestaurante" text="Registrarse">
+                              <Button fx:id="btnRegistroRestaurante" layoutX="121.0" layoutY="394.0" onAction="#btnRegistroRestaurante" text="Registrarse">
                                  <styleClass>
                                     <String fx:value="btn" />
-                                    <String fx:value="morado" />
-                                 </styleClass></Button>
-                              <Label fx:id="etiqIconoNombreRestaurante" layoutX="320.0" layoutY="36.0" text="aa" />
-                              <Label fx:id="etiqIconoEmailRestaurante" layoutX="320.0" layoutY="101.0" text="aa" />
-                              <Label fx:id="etiqIconoContraseñaRestaurante" layoutX="320.0" layoutY="168.0" text="aa" />
-                              <Label fx:id="etiqIconoRepContraseñaRestaurante" layoutX="320.0" layoutY="236.0" text="aa" />
-                              <Label fx:id="etiqIconoTipoRestaurante" layoutX="154.0" layoutY="298.0" text="aa" />
-                              <ImageView fx:id="iconoVerContraseñaRestaurante" fitHeight="25.0" fitWidth="26.0" layoutX="336.0" layoutY="165.0" pickOnBounds="true" preserveRatio="true" />
+                                    <String fx:value="verde" />
+                                 </styleClass>
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor></Button>
                            </children>
                         </Pane>
                      </children>
                   </Pane>
-                  <Pane fx:id="registroUsuarioPage" prefHeight="509.0" prefWidth="350.0" stylesheets="@../../resources/style/Style.css" visible="false">
+                  <Pane fx:id="registroUsuarioPage" prefHeight="509.0" prefWidth="350.0" stylesheets="@../../resources/style/Style.css">
                      <children>
                         <Label layoutX="103.0" layoutY="1.0" prefHeight="37.0" prefWidth="152.0" style="-fx-font-weight: bold;" text="Registrarse">
                            <font>
@@ -125,12 +223,22 @@
                         <ImageView fx:id="iconoPerfil" fitHeight="91.0" fitWidth="88.0" layoutX="132.0" layoutY="44.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@/assets/iconos_perfil/huevin.png" />
-                           </image></ImageView>
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor></ImageView>
                         <StackPane fx:id="stackpane" layoutY="140.0" prefHeight="339.0" prefWidth="350.0">
                            <children>
-                              <Pane fx:id="cambiarIconoPane" prefHeight="361.0" prefWidth="350.0" visible="false">
+                              <Pane fx:id="cambiarIconoPane" prefHeight="348.0" prefWidth="350.0">
                                  <children>
-                                    <Button fx:id="btnConfirmarCambiarIcono" layoutX="120.0" layoutY="330.0" onAction="#btnConfirmarCambiarIcono" styleClass="btn" text="Confirmar" />
+                                    <Button fx:id="btnConfirmarCambiarIcono" layoutX="134.0" layoutY="330.0" onAction="#btnConfirmarCambiarIcono" text="Confirmar">
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                       <styleClass>
+                                          <String fx:value="btn" />
+                                          <String fx:value="naranja" />
+                                       </styleClass></Button>
                                     <VBox fx:id="iconoPez" alignment="CENTER" layoutX="18.0" layoutY="34.0" prefHeight="106.0" prefWidth="85.0">
                                        <children>
                                           <ImageView fx:id="imgPez" fitHeight="79.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
@@ -140,6 +248,9 @@
                                           </ImageView>
                                           <Label fx:id="lblPez" text="Pezqueñín" />
                                        </children>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
                                     </VBox>
                                     <VBox fx:id="iconoDefecto" alignment="CENTER" layoutX="141.0" layoutY="170.0" prefHeight="124.0" prefWidth="85.0">
                                        <children>
@@ -150,6 +261,9 @@
                                           </ImageView>
                                           <Label fx:id="lblDefecto" text="Huevín" />
                                        </children>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
                                     </VBox>
                                     <VBox fx:id="iconoColiflor" alignment="CENTER" layoutX="133.0" layoutY="26.0" prefHeight="114.0" prefWidth="85.0">
                                        <children>
@@ -160,6 +274,9 @@
                                           </ImageView>
                                           <Label fx:id="lblColiflor" text="Coli" />
                                        </children>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
                                     </VBox>
                                     <VBox fx:id="iconoUva" alignment="CENTER" layoutX="248.0" layoutY="22.0" prefHeight="114.0" prefWidth="85.0">
                                        <children>
@@ -170,6 +287,9 @@
                                           </ImageView>
                                           <Label fx:id="lblUva" text="Uvina" />
                                        </children>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
                                     </VBox>
                                     <VBox fx:id="iconoSandwich" alignment="CENTER" layoutX="255.0" layoutY="173.0" prefHeight="114.0" prefWidth="85.0">
                                        <children>
@@ -180,6 +300,9 @@
                                           </ImageView>
                                           <Label fx:id="lblSandwich" text="Mordisquito" />
                                        </children>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
                                     </VBox>
                                     <VBox fx:id="iconoAlmendra" alignment="CENTER" layoutX="23.0" layoutY="170.0" prefHeight="114.0" prefWidth="85.0">
                                        <children>
@@ -190,28 +313,126 @@
                                           </ImageView>
                                           <Label fx:id="lblAlmendra" text="Almond" />
                                        </children>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
                                     </VBox>
                                  </children>
                               </Pane>
-                              <Pane fx:id="inputsPane" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="339.0" prefWidth="331.0">
+                              <Pane fx:id="inputsPane" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="339.0" prefWidth="331.0" visible="false">
                                  <children>
                                     <VBox layoutX="-1.0" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="307.0" prefWidth="320.0">
                                        <children>
-                                          <Label styleClass="labelEditText" text="Nombre de usuario*:" />
-                                          <TextField fx:id="nombreInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="318.0" promptText="Introduce tu usuario" styleClass="editText" />
-                                          <Region prefHeight="16.0" prefWidth="250.0" />
-                                          <Label styleClass="labelEditText" text="Email*:" />
-                                          <TextField fx:id="emailInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="318.0" promptText="Introduce tu correo" styleClass="editText" />
-                                          <Region prefHeight="16.0" prefWidth="250.0" />
-                                          <Label styleClass="labelEditText" text="Constraseña*:" />
-                                          <PasswordField fx:id="contraseñaInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="318.0" promptText="Introduce una contraseña*" styleClass="editText" />
-                                              <TextField fx:id="textoVisibleInput" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="318.0" promptText="Introduce una contraseña*" visible="false" />
-                                          <Region prefHeight="16.0" prefWidth="250.0" />
-                                          <Label styleClass="labelEditText" text="Repite contraseña*:" />
-                                          <PasswordField fx:id="repetirContraseñaInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="318.0" promptText="Comprueba la contraseña*" styleClass="editText" />
+                                          <Label text="Nombre de usuario*:">
+                                             <VBox.margin>
+                                                <Insets bottom="5.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font size="15.0" />
+                                             </font></Label>
+                                          <HBox alignment="CENTER_LEFT" prefHeight="42.0" prefWidth="320.0">
+                                             <children>
+                                                <TextField fx:id="nombreInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="315.0" promptText="Introduce tu usuario">
+                                                   <HBox.margin>
+                                                      <Insets right="5.0" />
+                                                   </HBox.margin>
+                                                   <styleClass>
+                                                      <String fx:value="bordesAzul" />
+                                                      <String fx:value="editText" />
+                                                   </styleClass>
+                                                </TextField>
+                                                <Label fx:id="etiqIconoNombre" />
+                                             </children>
+                                             <VBox.margin>
+                                                <Insets bottom="10.0" />
+                                             </VBox.margin>
+                                          </HBox>
+                                          <Label text="Email*:">
+                                             <VBox.margin>
+                                                <Insets bottom="5.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font size="15.0" />
+                                             </font></Label>
+                                          <HBox alignment="CENTER_LEFT" prefHeight="40.0" prefWidth="320.0">
+                                             <children>
+                                                <TextField fx:id="emailInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="315.0" promptText="Introduce tu correo">
+                                                   <HBox.margin>
+                                                      <Insets right="5.0" />
+                                                   </HBox.margin>
+                                                   <styleClass>
+                                                      <String fx:value="bordesAzul" />
+                                                      <String fx:value="editText" />
+                                                   </styleClass>
+                                                </TextField>
+                                                <Label fx:id="etiqIconoEmail" />
+                                             </children>
+                                             <VBox.margin>
+                                                <Insets bottom="10.0" />
+                                             </VBox.margin>
+                                          </HBox>
+                                          <Label text="Constraseña*:">
+                                             <VBox.margin>
+                                                <Insets bottom="5.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font size="15.0" />
+                                             </font></Label>
+                                          <HBox alignment="CENTER_LEFT" prefHeight="41.0" prefWidth="320.0">
+                                             <children>
+                                                <PasswordField fx:id="contraseñaInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="315.0" promptText="Introduce una contraseña*">
+                                                   <HBox.margin>
+                                                      <Insets right="5.0" />
+                                                   </HBox.margin>
+                                                   <styleClass>
+                                                      <String fx:value="bordesAzul" />
+                                                      <String fx:value="editText" />
+                                                   </styleClass>
+                                                </PasswordField>
+                                                    <TextField fx:id="textoVisibleInput" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="315.0" promptText="Introduce una contraseña*" visible="false">
+                                                   <HBox.margin>
+                                                      <Insets right="5.0" />
+                                                   </HBox.margin>
+                                                </TextField>
+                                                <Label fx:id="etiqIconoContraseña">
+                                                   <HBox.margin>
+                                                      <Insets right="5.0" />
+                                                   </HBox.margin>
+                                                </Label>
+                                                <ImageView fx:id="iconoVerContraseña" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
+                                                   <cursor>
+                                                      <Cursor fx:constant="HAND" />
+                                                   </cursor>
+                                                </ImageView>
+                                             </children>
+                                             <VBox.margin>
+                                                <Insets bottom="10.0" />
+                                             </VBox.margin>
+                                          </HBox>
+                                          <Label text="Repite contraseña*:">
+                                             <VBox.margin>
+                                                <Insets bottom="5.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font size="15.0" />
+                                             </font></Label>
+                                          <HBox alignment="CENTER_LEFT" prefHeight="42.0" prefWidth="320.0">
+                                             <children>
+                                                <PasswordField fx:id="repetirContraseñaInput" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="40.0" prefWidth="315.0" promptText="Comprueba la contraseña*">
+                                                   <HBox.margin>
+                                                      <Insets right="5.0" />
+                                                   </HBox.margin>
+                                                   <styleClass>
+                                                      <String fx:value="bordesAzul" />
+                                                      <String fx:value="editText" />
+                                                   </styleClass>
+                                                </PasswordField>
+                                                <Label fx:id="etiqIconoRepContraseña" />
+                                             </children>
+                                          </HBox>
                                        </children>
                                     </VBox>
-                                    <HBox layoutX="66.0" layoutY="319.0">
+                                    <HBox layoutX="66.0" layoutY="341.0">
                                        <children>
                                           <Label text="Ya tengo una cuenta. ">
                                              <font>
@@ -219,23 +440,36 @@
                                              </font>
                                           </Label>
                                           <Region prefWidth="6.0" />
-                                          <Label fx:id="enlaceLogin" text="Entrar" underline="true">
+                                          <Label fx:id="enlaceLogin" style="-fx-font-weight: bold; -fx-text-fill: #f2629c;" text="Entrar" underline="true">
                                              <font>
                                                 <Font size="15.0" />
                                              </font>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
                                           </Label>
                                        </children>
                                     </HBox>
-                                    <Label fx:id="etiqIconoNombre" layoutX="320.0" layoutY="28.0" />
-                                    <Label fx:id="etiqIconoEmail" layoutX="320.0" layoutY="92.0" />
-                                    <Label fx:id="etiqIconoContraseña" layoutX="320.0" layoutY="159.0" />
-                                    <Label fx:id="etiqIconoRepContraseña" layoutX="320.0" layoutY="225.0" />
-                                    <ImageView fx:id="iconoVerContraseña" fitHeight="25.0" fitWidth="26.0" layoutX="336.0" layoutY="154.0" pickOnBounds="true" preserveRatio="true" />
                                  </children>
                               </Pane>
                            </children>
                         </StackPane>
-                        <Button fx:id="btnRegistro" layoutX="123.0" layoutY="487.0" onAction="#btnRegistro" styleClass="btn" text="Registrarse" />
+                        <Button fx:id="btnRegistro" layoutX="130.0" layoutY="439.0" onAction="#btnRegistro" text="Registrarse">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                           <styleClass>
+                              <String fx:value="btn" />
+                              <String fx:value="naranja" />
+                           </styleClass></Button>
+                        <Button fx:id="btnVolverSinIcono" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#btnVolverSinIcono" prefHeight="40.0" prefWidth="40.0" styleClass="cajaResalteBlanco">
+                           <graphic>
+                              <SVGPath content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                           </graphic>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Button>
                      </children>
                   </Pane>
                       <Pane fx:id="loginPage" prefHeight="369.0" prefWidth="308.0" visible="false">
@@ -247,14 +481,41 @@
                         </Label>
                         <VBox layoutX="7.0" layoutY="200.0" prefHeight="147.0" prefWidth="318.0">
                            <children>
-                                    <Label styleClass="labelEditText" text="Correo o nombre de usuario:" />
-                                    <TextField fx:id="nombreInputLogin" prefHeight="40.0" prefWidth="242.0" promptText="Introduce tu usuario" styleClass="editText" />
+                                    <Label styleClass="labelEditText" text="Correo o nombre de usuario:">
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" />
+                                 </VBox.margin>
+                                 <font>
+                                    <Font size="15.0" />
+                                 </font></Label>
+                                    <TextField fx:id="nombreInputLogin" prefHeight="40.0" prefWidth="242.0" promptText="Introduce tu usuario">
+                                 <styleClass>
+                                    <String fx:value="editText" />
+                                    <String fx:value="bordesAzul" />
+                                 </styleClass></TextField>
                               <Region prefHeight="24.0" prefWidth="290.0" />
-                                    <Label styleClass="labelEditText" text="Contraseña:" />
-                                    <PasswordField fx:id="contraseñaInputLogin" prefHeight="38.0" prefWidth="250.0" promptText="Introduce tu contraseña" styleClass="editText" />
+                                    <Label styleClass="labelEditText" text="Contraseña:">
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" />
+                                 </VBox.margin>
+                                 <font>
+                                    <Font size="15.0" />
+                                 </font></Label>
+                                    <PasswordField fx:id="contraseñaInputLogin" prefHeight="38.0" prefWidth="250.0" promptText="Introduce tu contraseña">
+                                 <styleClass>
+                                    <String fx:value="editText" />
+                                    <String fx:value="bordesAzul" />
+                                 </styleClass></PasswordField>
                            </children>
                         </VBox>
-                              <Button fx:id="btnLogin" layoutX="133.0" layoutY="365.0" onAction="#btnLogin" styleClass="btn" text="Entrar" />
+                              <Button fx:id="btnLogin" layoutX="133.0" layoutY="365.0" onAction="#btnLogin" text="Entrar">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                           <styleClass>
+                              <String fx:value="btn" />
+                              <String fx:value="rosa" />
+                           </styleClass></Button>
                               <HBox layoutX="47.0" layoutY="412.0" prefHeight="51.0" prefWidth="256.0">
                                   <children>
                               <VBox prefHeight="51.0" prefWidth="267.0">
@@ -267,10 +528,13 @@
                                              </font>
                                           </Label>
                                                   <Region prefWidth="6.0" />
-                                                  <Label fx:id="enlaceRegistro" text="Crear una" underline="true">
+                                                  <Label fx:id="enlaceRegistro" style="-fx-text-fill: #f58e04; -fx-font-weight: bold;" text="Crear una" underline="true">
                                              <font>
                                                 <Font size="15.0" />
                                              </font>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
                                           </Label>
                                        </children>
                                     </HBox>
@@ -283,10 +547,13 @@
                                              </font>
                                           </Label>
                                           <Region prefWidth="6.0" />
-                                          <Label fx:id="enlaceRegistroRestaurante" text="Regístrate aquí" underline="true">
+                                          <Label fx:id="enlaceRegistroRestaurante" style="-fx-font-weight: bold; -fx-text-fill: #bed600;" text="Regístrate aquí" underline="true">
                                              <font>
                                                 <Font size="15.0" />
                                              </font>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
                                           </Label>
                                        </children>
                                     </HBox>
@@ -301,9 +568,12 @@
             </VBox>
 
             <!-- Pane con ImageView (lado derecho) -->
-            <Pane prefHeight="600.0" prefWidth="301.0" HBox.hgrow="ALWAYS">
+            <Pane prefHeight="600.0" prefWidth="301.0" style="-fx-background-color: white;" HBox.hgrow="ALWAYS">
                 <children>
-                    <ImageView fitHeight="600.0" fitWidth="387.0" />
+                    <ImageView fitHeight="436.0" fitWidth="403.0" layoutX="-38.0" layoutY="88.0">
+                  <image>
+                     <Image url="@../assets/img_otros/splash.png" />
+                  </image></ImageView>
                 </children>
             </Pane>
 

@@ -143,6 +143,8 @@ public class ControladorJuegosPage implements Initializable {
             
             FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "Normas del juego del dado", normas);
         });
+        
+        imgDado.setImage(new Image(getClass().getResourceAsStream("/assets/img_juegos/juego_dados/dadoDefecto.png")));
     }
     
     public void setUsuario(Usuario usuario) {
@@ -151,7 +153,7 @@ public class ControladorJuegosPage implements Initializable {
     }
     
     private void verificarNivelUsuario() {
-        //System.out.println("Verificando nivel usuario.  Juego completado: " + usuario.getJuego_completado_usuario());
+        //System.out.println("juego completado: " + usuario.getJuego_completado_usuario());
         
         if (usuario.getJuego_completado_usuario() == 1) {
             juegoMemoria.setVisible(false);
@@ -221,7 +223,7 @@ public class ControladorJuegosPage implements Initializable {
         cartaPane.getStyleClass().add("carta");
 
         StackPane reverso = new StackPane();
-        reverso.setStyle("-fx-background-color: gray; -fx-min-width: 80; -fx-min-height: 130;");
+        reverso.setStyle("-fx-background-color: #dee0df; -fx-min-width: 80; -fx-min-height: 130; -fx-border-radius: 10px; -fx-border-width: 10px;");
 
         Image frenteImg = new Image(getClass().getResourceAsStream("/assets/img_juegos/juego_cartas/" + valor + ".png"));
         ImageView frente = new ImageView(frenteImg);
@@ -341,7 +343,7 @@ public class ControladorJuegosPage implements Initializable {
                 String valor = cartas.get(index);
 
                 if (valor.startsWith("pocima_")) {
-                    cartaPane.setStyle("-fx-border-color: black; -fx-border-width: 3;");
+                    cartaPane.setStyle("-fx-border-color: #bed600; -fx-border-width: 3;");
                     new Thread(() -> {
                         try {
                             Thread.sleep(3000);
@@ -410,7 +412,7 @@ public class ControladorJuegosPage implements Initializable {
 
         usuario.setJuego_completado_usuario(1);
     
-        FuncionesRepetidas.actualizarUsuario(usuario);
+        FuncionesRepetidas.actualizarUsuarioPuntos(usuario);
         
         FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "¡Felicidades!", "Has ganado 10 puntos. Puntos totales: " + usuario.getPuntos_usuario());
     
@@ -436,7 +438,7 @@ public class ControladorJuegosPage implements Initializable {
         actualizarContadoresDados();
         generarNumeroAleatorio();
         txtNumeroDado.clear();
-        imgDado.setVisible(false);
+        imgDado.setVisible(true);
         lblResultadoDado.setText("");
         btnReiniciarDados.setVisible(false);
         btnComprobarDado.setVisible(true);
@@ -463,7 +465,6 @@ public class ControladorJuegosPage implements Initializable {
             }
             
             imgDado.setImage(new Image(getClass().getResourceAsStream("/assets/img_juegos/juego_dados/dado_" + numeroAleatorio + ".png")));
-            imgDado.setVisible(true);
             
             if (numeroUsuario == numeroAleatorio) {
                 lblResultadoDado.setText("¡Correcto!");
@@ -503,7 +504,7 @@ public class ControladorJuegosPage implements Initializable {
             usuario.setNivel_usuario(1);
         }
         
-        FuncionesRepetidas.actualizarUsuario(usuario);
+        FuncionesRepetidas.actualizarUsuarioPuntos(usuario);
         
         FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "¡Felicidades!", "Has ganado 15 puntos. Puntos totales: " + usuario.getPuntos_usuario());
         

@@ -23,6 +23,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import modelos.Restaurante;
@@ -70,8 +71,6 @@ public class ControladorCargaPage implements Initializable {
         
     }
     
-        
-    // Comprobar si tiene iniciada sesion en cache
     public void comprobarSessionCache(){
 
         Path sessionPath = Paths.get("sesionCache.txt");
@@ -79,31 +78,28 @@ public class ControladorCargaPage implements Initializable {
         if (Files.exists(sessionPath)) {
             Map<String, String> cacheData = FuncionesRepetidas.leerSesionCache();
 
-            if (cacheData.containsKey("Restau")) {
-                String emailRestaurante = cacheData.get("Restau");
-                Restaurante restaurante = FuncionesRepetidas.obtenerRestaurantePorEmail(emailRestaurante);
-                if (restaurante != null) {
-                    abrirVentanaApp("/vistas/HomeAppRestaurantePage.fxml", "Inicio - Restaurante", null, restaurante);
-                    return;
+            if (cacheData.containsKey("UsuarioId")) {
+                try {
+                    int idUsuario = Integer.parseInt(cacheData.get("UsuarioId"));
+                    Usuario usuario = FuncionesRepetidas.obtenerUsuarioPorId(idUsuario);
+                    if (usuario != null) {
+                        this.haySesion = true;
+                        this.usuarioEnSesion = usuario;
+                        abrirVentanaApp("/vistas/HomeAppPage.fxml", "Inicio", usuarioEnSesion);
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("Error al convertir ID de usuario: " + e.getMessage());
                 }
-            } else if (cacheData.containsKey("Usuario")) {
-                String nombreUsuario = cacheData.get("Usuario");
-                Usuario usuario = FuncionesRepetidas.obtenerUsuarioPorNombre(nombreUsuario);
-                if (usuario != null) {
-                    this.haySesion = true;
-                    this.usuarioEnSesion = usuario;
-                    abrirVentanaApp("/vistas/HomeAppPage.fxml", "Inicio", usuarioEnSesion, null);
-                    return;
-                }
-            } else {
-                abrirVentanaApp("/vistas/LoginPage.fxml", "Login", null, null);
             }
+
+            abrirVentanaApp("/vistas/LoginPage.fxml", "Login", null);
         } else {
-            abrirVentanaApp("/vistas/LoginPage.fxml", "Login", null, null);
+            abrirVentanaApp("/vistas/LoginPage.fxml", "Login", null);
         }
     }
     
-    private void abrirVentanaApp(String rutaFXML, String titulo, Usuario usuario, Restaurante restaurante) {
+    private void abrirVentanaApp(String rutaFXML, String titulo, Usuario usuario) {
         try {
             URL url = getClass().getResource(rutaFXML);
             FXMLLoader loader = new FXMLLoader(url);
@@ -112,12 +108,10 @@ public class ControladorCargaPage implements Initializable {
             if (usuario != null) {
                 ControladorHomeAppPage controlador = loader.getController();
                 controlador.inicializarUsuario(usuario);
-            } else if (restaurante != null) {
-                ControladorHomeAppRestaurantePage controlador = loader.getController();
-                controlador.inicializarRestaurante(restaurante);
             }
 
             Stage nuevaStage = new Stage();
+            establecerIconoStage(nuevaStage);
             nuevaStage.setScene(new Scene(root));
             nuevaStage.setTitle(titulo);
             nuevaStage.show();
@@ -138,6 +132,11 @@ public class ControladorCargaPage implements Initializable {
     
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+    
+    private void establecerIconoStage(Stage stage) {
+        Image icon = new Image(getClass().getResource("/assets/iconos_perfil/huevin.png").toExternalForm());
+        stage.getIcons().add(icon);
     }
     
 }

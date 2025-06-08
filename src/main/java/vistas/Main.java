@@ -33,7 +33,7 @@ public class Main extends Application{
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/style/Style.css").toExternalForm());
         stage.setScene(scene);
-        stage.setTitle("App - Tfg");
+        stage.setTitle("Boiled Egg");
         stage.show();
     }
 

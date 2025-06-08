@@ -1,6 +1,5 @@
 package utils;
 
-import com.sun.jdi.connect.Transport;
 import conexion.ConexionBD;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -13,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +43,9 @@ import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import javax.mail.Authenticator;
 import javax.mail.Message;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import modelos.Alergeno;
@@ -156,13 +158,15 @@ public class FuncionesRepetidas {
     
     public static ImageView crearIconoDesdeRuta(String rutaImagen) {
         try {
+            System.err.println("");
             Image img = new Image(FuncionesRepetidas.class.getResourceAsStream(rutaImagen));
             ImageView icono = new ImageView(img);
-            icono.setFitHeight(30);
-            icono.setFitWidth(30);
+            icono.setFitHeight(45);
+            icono.setFitWidth(45);
             return icono;
         } catch (Exception e) {
-            System.out.println("Error cargando imagen: " + rutaImagen);
+            System.err.println("Error cargando imagen: " + rutaImagen);
+            e.printStackTrace(); 
             return null;
         }
     }
@@ -186,6 +190,7 @@ public class FuncionesRepetidas {
                         rs.getInt("nivel_usuario"),
                         rs.getInt("puntos_usuario"),
                         rs.getInt("icono_perfil_id"),
+                        rs.getString("ciudad_usuario"),
                         rs.getInt("juego_completado_usuario")
                     );
                 listaUsuarios.add(usuario);
@@ -198,6 +203,34 @@ public class FuncionesRepetidas {
         return listaUsuarios;
     }
 
+    public static Usuario obtenerUsuarioPorId(int id) {
+        String sql = "SELECT * FROM Usuario WHERE id_usuario = ?";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Usuario(
+                        rs.getInt("id_usuario"),
+                        rs.getString("nombre_usuario"),
+                        rs.getString("email_usuario"),
+                        rs.getString("contraseña_usuario"),
+                        rs.getInt("nivel_usuario"),
+                        rs.getInt("puntos_usuario"),
+                        rs.getInt("icono_perfil_id"),
+                        rs.getString("ciudad_usuario"),
+                        rs.getInt("juego_completado_usuario")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     
     public static Usuario obtenerUsuarioPorNombre(String nombre) {
         String query = "SELECT * FROM Usuario WHERE nombre_usuario = ?";
@@ -222,6 +255,7 @@ public class FuncionesRepetidas {
                         rs.getInt("nivel_usuario"),
                         rs.getInt("puntos_usuario"),
                         rs.getInt("icono_perfil_id"),
+                        rs.getString("ciudad_usuario"),
                         rs.getInt("juego_completado_usuario")
                     );
                 }
@@ -230,23 +264,6 @@ public class FuncionesRepetidas {
             System.err.println("Error al obtener usuario: " + e.getMessage());
         }
         return null;
-    }
-    
-    public static void actualizarUsuario(Usuario usuario) {
-        try (Connection conn = iniciarConexion()) {
-            String sql = "UPDATE Usuario SET nivel_usuario = ?, puntos_usuario = ?, juego_completado_usuario = ? WHERE id_usuario = ?";
-            
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, usuario.getNivel_usuario());
-            stmt.setInt(2, usuario.getPuntos_usuario());
-            stmt.setInt(3, usuario.getJuego_completado_usuario());
-            stmt.setInt(4, usuario.getId_usuario());
-            
-            stmt.executeUpdate();
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     public static Restaurante obtenerRestaurantePorEmail(String email) {
@@ -720,11 +737,7 @@ public class FuncionesRepetidas {
     public static ObservableList<UsuarioCodigo> obtenerListaUsuarioCodigo(Usuario usuario) {
         ObservableList<UsuarioCodigo> listaUsuarioCodigo = FXCollections.observableArrayList();
 
-        String query = "SELECT uc.*, c.*, i.* FROM UsuarioCodigo uc " +
-                      "JOIN Codigo c ON uc.id_codigo = c.id_codigo " +
-                      "JOIN Ingrediente i ON c.id_ingrediente = i.id_ingrediente " +
-                      "WHERE uc.id_usuario = ? " +
-                      "ORDER BY uc.fecha_escaneo DESC";
+        String query = "SELECT * FROM UsuarioCodigo WHERE id_usuario = ? ORDER BY fecha_escaneo DESC";
 
         try (Connection conexion = iniciarConexion();
              PreparedStatement ps = conexion.prepareStatement(query)) {
@@ -737,8 +750,8 @@ public class FuncionesRepetidas {
                     rs.getInt("id_escaneo"),
                     rs.getInt("id_usuario"),
                     rs.getInt("id_codigo"),
-                    rs.getTimestamp("fecha_escaneo"),
-                    rs.getInt("cantidad")
+                    rs.getInt("id_ingrediente"),
+                    rs.getTimestamp("fecha_escaneo")
                 );
                 listaUsuarioCodigo.add(uc);
             }
@@ -762,6 +775,35 @@ public class FuncionesRepetidas {
             e.printStackTrace();
         }
         return false;
+    }
+    
+    public static List<Alergeno> obtenerUsuarioAlergenos(int idUsuario) {
+        List<Alergeno> alergias = new ArrayList<>();
+        String sql = "SELECT a.* FROM Alergeno a " +
+                     "INNER JOIN UsuarioAlergeno ua ON a.id_alergeno = ua.id_alergeno " +
+                     "WHERE ua.id_usuario = ?";
+
+        try (Connection conn = iniciarConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idUsuario);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Alergeno alergeno = new Alergeno();
+                alergeno.setId_alergeno(rs.getInt("id_alergeno"));
+                alergeno.setNombre_alergeno(rs.getString("nombre_alergeno"));
+                alergeno.setImagen_alergeno(rs.getString("imagen_alergeno"));
+                alergeno.setTipo_alergeno(rs.getString("tipo_alergeno"));
+                alergias.add(alergeno);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al obtener alergias del usuario: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return alergias;
     }
     
     
@@ -863,25 +905,77 @@ public class FuncionesRepetidas {
     }
     
     public static boolean insertarUsuarioCodigo(Usuario usuario, String codigoBarras) {
-        String query = "INSERT INTO UsuarioCodigo (id_usuario, id_codigo) " +
-                      "SELECT ?, id_codigo FROM Codigo WHERE codigo_barras = ?";
+        String queryVerificar = "SELECT COUNT(*) FROM UsuarioCodigo uc " +
+                           "JOIN Codigo c ON uc.id_codigo = c.id_codigo " +
+                           "WHERE uc.id_usuario = ? AND c.codigo_barras = ?";
 
         try (Connection conexion = iniciarConexion();
-             PreparedStatement ps = conexion.prepareStatement(query)) {
+            PreparedStatement ps = conexion.prepareStatement(queryVerificar)) {
 
             ps.setInt(1, usuario.getId_usuario());
             ps.setString(2, codigoBarras);
+            ResultSet rs = ps.executeQuery();
 
-            return ps.executeUpdate() > 0;
+            if (rs.next() && rs.getInt(1) > 0) {
+                return false;
+            }
+
+            String queryInsert = "INSERT INTO UsuarioCodigo (id_usuario, id_codigo, id_ingrediente, fecha_escaneo) " +
+                               "SELECT ?, c.id_codigo, c.id_ingrediente, ? FROM Codigo c WHERE c.codigo_barras = ?";
+
+            try (PreparedStatement psInsert = conexion.prepareStatement(queryInsert)) {
+                psInsert.setInt(1, usuario.getId_usuario());
+                psInsert.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                psInsert.setString(3, codigoBarras);
+
+                return psInsert.executeUpdate() > 0;
+            }
 
         } catch (SQLException e) {
-            System.err.println("Error insertando UsuarioCodigo: " + e.getMessage());
+            System.err.println("Error en insertarUsuarioCodigo: " + e.getMessage());
             return false;
         }
     }
+   
     
     
     // Funciones con update:
+    public static void actualizarUsuarioDatos(int idUsuario, String nombre, String email, String contraseña, String ciudad) {
+        try (Connection conn = iniciarConexion()) {
+            String sql = "UPDATE Usuario SET nombre_usuario = ?, email_usuario = ?, contraseña_usuario = ?, ciudad_usuario = ? WHERE id_usuario = ?";
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, nombre);
+            stmt.setString(2, email);
+            stmt.setString(3, contraseña);
+            stmt.setString(4, ciudad);
+            stmt.setInt(5, idUsuario);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar usuario: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    public static void actualizarUsuarioPuntos(Usuario usuario) {
+        try (Connection conn = iniciarConexion()) {
+            String sql = "UPDATE Usuario SET nivel_usuario = ?, puntos_usuario = ?, juego_completado_usuario = ? WHERE id_usuario = ?";
+            
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, usuario.getNivel_usuario());
+            stmt.setInt(2, usuario.getPuntos_usuario());
+            stmt.setInt(3, usuario.getJuego_completado_usuario());
+            stmt.setInt(4, usuario.getId_usuario());
+            
+            stmt.executeUpdate();
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public static boolean actualizarValoracion(HBox contenedor, Valoracion nuevaVal) {
         Valoracion actual = obtenerValoracionUsuarioEnObjeto(
             nuevaVal.getId_usuario(),
@@ -990,7 +1084,28 @@ public class FuncionesRepetidas {
         }
     }
  
-    
+    public static void guardarAlergenosUsuario(int idUsuario, List<Alergeno> alergenos) {
+        try (Connection conn = iniciarConexion()) {
+            
+            String deleteSql = "DELETE FROM UsuarioAlergeno WHERE id_usuario = ?";
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+                deleteStmt.setInt(1, idUsuario);
+                deleteStmt.executeUpdate();
+            }
+
+            String insertSql = "INSERT INTO UsuarioAlergeno (id_usuario, id_alergeno) VALUES (?, ?)";
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                for (Alergeno alergeno : alergenos) {
+                    insertStmt.setInt(1, idUsuario);
+                    insertStmt.setInt(2, alergeno.getId_alergeno());
+                    insertStmt.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al guardar alergenos del usuario: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
     
     
     
@@ -1305,7 +1420,7 @@ public class FuncionesRepetidas {
         }
     }
     
-    public static VBox crearCardRestaurante(Usuario usuario,Restaurante restau) {
+    public static VBox crearCardRestaurante(Usuario usuario, Restaurante restau) {
         try {            
             FXMLLoader loader = new FXMLLoader(FuncionesRepetidas.class.getResource("/vistas/Card.fxml"));
             VBox card = loader.load();
@@ -1469,19 +1584,18 @@ public class FuncionesRepetidas {
 
     
     // correo:
-    /*
-     public static void enviarCorreoSoporte(String mensaje) {
+    public static void enviarCorreoSoporte(String mensaje, String asunto, String tipoMensaje, Usuario usu) {
         try {
-            Map<String, String> cacheData = leerSesionCache();
-            String emailUsuario = cacheData.get("Email");
-            String idUsuario = cacheData.get("Id");
-            String nombreUsuario = cacheData.get("Nombre");
-            
             if (mensaje == null || mensaje.trim().isEmpty()) {
                 mostrarAlerta(Alert.AlertType.ERROR, "Error", "Por favor, escribe un mensaje");
                 return;
             }
-            
+
+            if (asunto == null || asunto.trim().isEmpty()) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "Por favor, escribe un asunto");
+                return;
+            }
+
             Properties props = new Properties();
             props.put("mail.smtp.auth", "true");
             props.put("mail.smtp.starttls.enable", "true");
@@ -1491,31 +1605,59 @@ public class FuncionesRepetidas {
             Session session = Session.getInstance(props, new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(EMAIL_FROM, EMAIL_PASSWORD);
+                    return new PasswordAuthentication(usu.getEmail_usuario(), usu.getContraseña_usuario());
                 }
             });
 
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(EMAIL_FROM));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(EMAIL_FROM));
-            message.setSubject("Contactar con Soporte. Nº Id Usuario: " + idUsuario + ". Nombre usuario: " + nombreUsuario);
-            message.setText("Mensaje de: " + emailUsuario + "\n\n" + mensaje);
+            message.setFrom(new InternetAddress(usu.getEmail_usuario()));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(usu.getEmail_usuario()));
 
-            Transport transport = session.getTransport("smtp");
-            transport.connect("smtp.gmail.com", EMAIL_FROM, EMAIL_PASSWORD);
-            transport.sendMessage(message, message.getAllRecipients());
-            transport.close();
-            
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Correo enviado correctamente");
+            String subjectPrefix = tipoMensaje.equals("contactar") ? "Contacto soporte" : "Reporte incidencia";
+            message.setSubject(subjectPrefix + ", Id: " + usu.getId_usuario() + ", nombre de usuario: " + usu.getNombre_usuario() + ". Asunto: " + asunto);
 
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Correo enviado correctamente");
+            message.setText("Mensaje de: " + usu.getEmail_usuario() + "\n\n" + mensaje);
+
+            try {
+                Transport transport = session.getTransport("smtp");
+                transport.connect("smtp.gmail.com", usu.getEmail_usuario(), usu.getContraseña_usuario());
+                transport.sendMessage(message, message.getAllRecipients());
+                transport.close();
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Correo enviado correctamente");
+            } catch (Exception e) {
+                System.err.println("Error al enviar por SMTP, intentando con correo de soporte: " + e.getMessage());
+
+                try {
+                    Session sessionSoporte = Session.getInstance(props, new Authenticator() {
+                        @Override
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                            return new PasswordAuthentication("soporteboiledegg@gmail.com", "rsol wphx urmr vgye");
+                        }
+                    });
+
+                    Message messageSoporte = new MimeMessage(sessionSoporte);
+                    messageSoporte.setFrom(new InternetAddress("soporteboiledegg@gmail.com"));
+                    messageSoporte.setRecipients(Message.RecipientType.TO, InternetAddress.parse("soporteboiledegg@gmail.com"));
+                    messageSoporte.setSubject(subjectPrefix + ", Id: " + usu.getId_usuario() + ", nombre de usuario: " + usu.getNombre_usuario() + ". Asunto: " + asunto);
+                    messageSoporte.setText("Mensaje de: " + usu.getEmail_usuario() + "\n\n" + mensaje);
+
+                    Transport transportSoporte = sessionSoporte.getTransport("smtp");
+                    transportSoporte.connect("smtp.gmail.com", "soporteboiledegg@gmail.com", "rsol wphx urmr vgye");
+                    transportSoporte.sendMessage(messageSoporte, messageSoporte.getAllRecipients());
+                    transportSoporte.close();
+
+                    mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Correo enviado correctamente desde soporte");
+                } catch (Exception ex) {
+                    System.err.println("Error al enviar con correo de soporte: " + ex.getMessage());
+                    mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo enviar el correo. Por favor, inténtalo de nuevo.");
+                }
+            }
         } catch (Exception e) {
             System.err.println("Error al enviar el correo: " + e.getMessage());
             e.printStackTrace();
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo enviar el correo. Por favor, inténtalo de nuevo.");
         }
     }
-*/
 
     
     

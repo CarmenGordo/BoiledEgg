@@ -1,4 +1,3 @@
-
 .root {
     -fx-fondo: #f5f5f5;
     -fx-blanco: #fff;
@@ -7,7 +6,7 @@
     -fx-verde: #bed600;
     -fx-azul: #4bbde8;
     -fx-morado: #7e89ee;
-    -fx-grisClaro: #888;
+    -fx-grisClaro: #A0A7AC;
     -fx-grisOscuro: #333;
     -fx-negro: #000;
     -fx-sombraRelive: inset 2px 2px 4px #f58e04;
@@ -15,6 +14,9 @@
 
 
 
+.texto{
+    -fx-text-fill: -fx-blanco;
+}
 
 
 .fondo{
@@ -25,19 +27,59 @@
     -fx-background-color: -fx-grisOscuro;
 }
 
+.cajaResalte{
+    -fx-background-color: -fx-blanco;
+    -fx-background-radius: 20;
+}
+
+.cajaResalteBlanco{
+    -fx-background-color: -fx-blanco;
+    -fx-background-radius: 10px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+}
+
+.iconoSvg {
+    -fx-fill: -fx-blanco;
+}
+
+
+.cajaResalteMorado{
+    -fx-background-color: -fx-morado;
+    -fx-background-radius: 10px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+}
+
+.fondoCaja{
+    -fx-background-color: -fx-grisClaro;
+}
+
+.checkBox .box{
+    -fx-background-color: white;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 3px;
+}
+
+.checkBox:selected .box, .checkBox:hover .box, .checkBox:pressed .box {
+    -fx-background-color: -fx-azul;
+    -fx-border-color: -fx-azul;
+    -fx-border-radius: 3px;
+}
+
+
+
+
+
 
 .h1{
     -fx-font-size: 30px;
 }
-
-
 
 .p{
     -fx-font-size: 16px;
 }
 
 .labelEditText{
-    -fx-font-size: 20px;
+    -fx-font-size: 16px;
 }
 
 .editText{
@@ -59,10 +101,22 @@
 }
 
 
+.cajaResalte {
+    -fx-background-color: -fx-grisClaro;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
+.bordesRedondos{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border: 1px;
+    -fx-border-color: -fx-grisClaro;
+}
 
 .btn{
     -fx-text-fill: -fx-blanco;
-    -fx-font-size: 16px;
+    -fx-font-weight: bold;
     -fx-padding: 5px 20px;
     -fx-border: none;
     -fx-border-radius: 10px;
@@ -95,12 +149,8 @@
 
 .topMenu{
     -fx-background-radius: 10px;
-    -fx-background-color: -fx-azul;
+    -fx-background-color: -fx-verde;
     -fx-padding: 5px;
-}
-
-.iconoSvg {
-    -fx-fill: -fx-blanco;
 }
 
 .btnSinNada{
@@ -112,8 +162,8 @@
 .cajaBuscador {
     -fx-background-color: -fx-blanco;
     -fx-padding: 5px;
-    -fx-background-radius: 20;
-    -fx-border-radius: 20;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
     -fx-border-color: transparent;
 }
 
@@ -132,6 +182,81 @@
 }
 
 .botonTema {
-    -fx-background-color: transparent;
+    -fx-background-color: -fx-grisOscuro;
     -fx-padding: 6px;
+}
+
+.fillEstrella {
+    -fx-fill: gold;
+}
+
+.svgSoloBordes{
+    -fx-fill: transparent;
+    -fx-stroke: -fx-grisClaro;
+    -fx-stroke-width: 2px;
+}
+
+.fillFav{
+    -fx-stroke: -fx-rosa;
+    -fx-stroke-width: 2px;
+    -fx-fill: -fx-rosa;
+}
+
+
+.card {
+    -fx-background-color: -fx-blanco;
+    -fx-padding: 12px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0.5, 0, 2);
+}
+
+.cardRecetaUsuario{
+    -fx-background-color: -fx-morado;
+    -fx-padding: 6px;
+    -fx-border-radius: 20;
+    -fx-text-fill: -fx-blanco;
+}
+
+.tituloReceta {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.tituloSeccion {
+    -fx-font-size: 12px;
+    -fx-text-fill: #333;
+}
+
+
+
+.progressBar {
+    -fx-background-radius: 30px;
+    -fx-border-radius: 50px;
+    -fx-padding: 2px;
+}
+
+.progressBar > .bar {
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+}
+
+
+
+
+
+
+
+
+.btn-primary:hover {
+    -fx-background-color: #45a049;
+}
+
+.scrollPane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.scrollPane > .viewport {
+    -fx-background-color: transparent;
 }

@@ -12,12 +12,13 @@ public class Usuario {
     private int nivel_usuario;
     private int puntos_usuario;
     private int icono_perfil_id;
+    private String ciudad_usuario;
     private int juego_completado_usuario;
 
     public Usuario() {
     }
 
-    public Usuario(int id_usuario, String nombre_usuario, String email_usuario, String contraseña_usuario, int nivel_usuario, int puntos_usuario, int icono_perfil_id, int juego_completado_usuario) {
+    public Usuario(int id_usuario, String nombre_usuario, String email_usuario, String contraseña_usuario, int nivel_usuario, int puntos_usuario, int icono_perfil_id, String ciudad_usuario, int juego_completado_usuario) {
         this.id_usuario = id_usuario;
         this.nombre_usuario = nombre_usuario;
         this.email_usuario = email_usuario;
@@ -25,6 +26,7 @@ public class Usuario {
         this.nivel_usuario = nivel_usuario;
         this.puntos_usuario = puntos_usuario;
         this.icono_perfil_id = icono_perfil_id;
+        this.ciudad_usuario = ciudad_usuario;
         this.juego_completado_usuario = juego_completado_usuario;
     }
 
@@ -84,6 +86,14 @@ public class Usuario {
         this.icono_perfil_id = icono_perfil_id;
     }
 
+    public String getCiudad_usuario() {
+        return ciudad_usuario;
+    }
+
+    public void setCiudad_usuario(String ciudad_usuario) {
+        this.ciudad_usuario = ciudad_usuario;
+    }
+    
     public int getJuego_completado_usuario() {
         return juego_completado_usuario;
     }

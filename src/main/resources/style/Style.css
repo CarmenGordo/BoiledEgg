@@ -1,6 +1,5 @@
-
 .root {
-    -fx-fondo: #f2f2f2;
+    -fx-fondo: #f5f5f5;
     -fx-blanco: #fff;
     -fx-naranja: #f58e04;
     -fx-rosa: #f2629c;
@@ -11,9 +10,9 @@
     -fx-grisOscuro: #333;
     -fx-negro: #000;
     -fx-sombraRelive: inset 2px 2px 4px #f58e04;
+   
+
 }
-
-
 
 
 
@@ -26,6 +25,28 @@
 }
 
 
+.texto{
+    -fx-text-fill: -fx-negro;
+}
+
+.checkBox .box{
+    -fx-background-color: white;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 3px;
+}
+
+.checkBox:selected .box, .checkBox:hover .box, .checkBox:pressed .box {
+    -fx-background-color: -fx-azul;
+    -fx-border-color: -fx-azul;
+    -fx-border-radius: 3px;
+}
+
+
+
+
+
+
+
 .h1{
     -fx-font-size: 30px;
 }
@@ -35,7 +56,7 @@
 }
 
 .labelEditText{
-    -fx-font-size: 20px;
+    -fx-font-size: 16px;
 }
 
 .editText{
@@ -57,16 +78,45 @@
 }
 
 .cajaResalteBlanco {
-    -fx-background-color: #f5f5f5;
-    -fx-background-radius: 10;
+    -fx-background-color: -fx-blanco;
+    -fx-background-radius: 10px;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
 }
 
-.cajaResalte {
-    -fx-background-radius: 10;
+.cajaResalte{
+    -fx-background-color: -fx-blanco;
+    -fx-background-radius: 10px;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
 }
 
+.cajaResalteMorado{
+    -fx-background-color: -fx-morado;
+    -fx-background-radius: 10px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+    -fx-border-color: transparent;
+}
+
+.fondoCaja{
+    -fx-background-color: -fx-blanco;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+.bordesRedondos{
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border: 1px;
+    -fx-border-color: -fx-grisClaro;
+}
 
 .btn{
     -fx-text-fill: -fx-blanco;
@@ -74,6 +124,7 @@
     -fx-padding: 5px 20px;
     -fx-border: none;
     -fx-border-radius: 10px;
+    -fx-font-size: 16px;
 }
 
 .btnRedondo{
@@ -103,12 +154,12 @@
 
 .topMenu{
     -fx-background-radius: 10px;
-    -fx-background-color: -fx-azul;
+    -fx-background-color: -fx-verde;
     -fx-padding: 5px;
 }
 
 .iconoSvg {
-    -fx-fill: -fx-blanco;
+    -fx-fill: -fx-negro;
 }
 
 .btnSinNada{
@@ -140,7 +191,7 @@
 }
 
 .botonTema {
-    -fx-background-color: transparent;
+    -fx-background-color: -fx-fondo;
     -fx-padding: 6px;
 }
 
@@ -162,7 +213,7 @@
 
 
 .card {
-    -fx-background-color: #fff;
+    -fx-background-color: -fx-blanco;
     -fx-padding: 12px;
     -fx-border-radius: 10px;
     -fx-background-radius: 10px;
@@ -186,6 +237,19 @@
     -fx-text-fill: #333;
 }
 
+
+
+
+.progressBar {
+    -fx-background-radius: 30px;
+    -fx-border-radius: 50px;
+    -fx-padding: 2px;
+}
+
+.progressBar > .bar {
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+}
 
 
 

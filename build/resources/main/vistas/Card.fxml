@@ -8,6 +8,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
 
 <VBox fx:id="card" alignment="TOP_CENTER" maxWidth="200.0" minWidth="-Infinity" prefHeight="213.0" prefWidth="184.0" spacing="8" styleClass="card" stylesheets="@../style/Style.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
    <StackPane alignment="TOP_CENTER" prefHeight="135.0" prefWidth="188.0" stylesheets="@../style/Style.css">
@@ -21,12 +22,15 @@
                      <SVGPath fx:id="svgAñadirCardFav" content="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" scaleX="1" scaleY="1" />
                   </graphic>
                </Button>
-               <Label fx:id="lblNombreUsuarioCard" layoutX="156.0" layoutY="93.0" prefHeight="29.0" prefWidth="27.0" styleClass="cardRecetaUsuario" text="Label" wrapText="true" />
+               <Label fx:id="lblNombreUsuarioCard" layoutX="125.0" layoutY="93.0" prefHeight="29.0" prefWidth="58.0" styleClass="cardRecetaUsuario" text="Label" wrapText="true" />
             </children>
          </AnchorPane>
       </children>
    </StackPane>
-    <Label fx:id="lblNombreCard" prefHeight="17.0" styleClass="titulo-receta" text="Nombre receta" wrapText="true" VBox.vgrow="ALWAYS" />
+    <Label fx:id="lblNombreCard" prefHeight="17.0" styleClass="titulo-receta" text="Nombre receta" wrapText="true" VBox.vgrow="ALWAYS">
+      <font>
+         <Font name="System Bold" size="16.0" />
+      </font></Label>
     <HBox alignment="CENTER" prefHeight="45.0" prefWidth="183.0" spacing="10">
         <VBox alignment="CENTER_LEFT">
             <Label fx:id="lblTipoCard" prefHeight="15.0" prefWidth="73.0" styleClass="lblTipoCard" text="Tipo:" />

@@ -68,12 +68,16 @@ import com.google.zxing.MultiFormatReader;
 import com.google.zxing.Result;
 import java.io.ByteArrayInputStream;
 import java.util.Base64;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -93,6 +97,19 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import modelos.UsuarioCodigo;
+import eu.hansolo.tilesfx.Section;
+import eu.hansolo.tilesfx.Tile;
+import eu.hansolo.tilesfx.TileBuilder;
+import eu.hansolo.tilesfx.skins.DonutChartTileSkin;
+import javafx.animation.TranslateTransition;
+import javafx.concurrent.Worker;
+import javafx.fxml.FXML;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 /**
  *
@@ -107,7 +124,7 @@ public class ControladorHomeAppPage implements Initializable {
     @FXML private ImageView btnPerfil;
     @FXML private VBox vboxTipoFiltrar, vboxTipoReceta, vboxAlergenos, vboxDificultad, vboxValoraciones, vboxTipoCoccion;
     @FXML private AnchorPane homePane, buscadorPane, infoCardPane, escanearPane, subirRecetaPane, perfilPane, ajustesPane;
-    @FXML private Button btnBuscar;
+    @FXML private Button btnBuscar, btnVerFavoritos;
     @FXML private HBox btnHome, btnEscanear, btnSubirReceta, btnAjustes, cajaBuscar;
     @FXML private TextField inputBuscar;
     @FXML public FlowPane flowRecetas;
@@ -123,17 +140,18 @@ public class ControladorHomeAppPage implements Initializable {
     
     // FXML de infoCardPane:
     @FXML private ImageView infoCardRecetaImagen, infoCardIngreImagen, infoCardRestauImagen;
-    @FXML private Label infoCardRecetaNombre, infoCardRecetaDificultad, infoCardRecetaCocion, infoCardRecetaTiempo, infoCardRecetaValoracion, infoCardRecetaPasos, infoCardRecetaConsejos, infoCardIngreNombre, infoCardIngreTipo, infoCardRestauNombre, infoCardRestauTipo, infoCardRestauUrl, infoCardRestauCiudad, infoCardRestauDireccion;
-    @FXML private HBox infoCardRecetaCajaTipo, infoCardRecetaCajaAlergenos, infoCardIngreCajaAlergenos, infoCardRecetaRestaurantes, infoCardRecetaValoracionCaja, infoCardRecetaTodasValoracionCaja, infoCardIngreRecetas, infoCardRestauRecetas;
-    @FXML private VBox infoCardRecetaIngredientes, infoCardRecetaPane, infoCardIngredientePane, infoCardRestaurantePane;
+    @FXML private Label infoCardRecetaNombre, infoCardRecetaDificultad, infoCardRecetaCocion, infoCardRecetaTiempo, infoCardRecetaValoracion, infoCardRecetaConsejos, infoCardIngreNombre, infoCardIngreTipo, infoCardRestauNombre, infoCardRestauTipo, infoCardRestauUrl, infoCardRestauCiudad, infoCardRestauDireccion;
+    @FXML private HBox infoCardRecetaCajaTipo, infoCardRecetaCajaAlergenos, infoCardIngreCajaAlergenos, infoCardRecetaRestaurantes, infoCardRecetaValoracionCaja, infoCardIngreRecetas, infoCardRestauRecetas;
+    @FXML private VBox infoCardRecetaTodasValoracionCaja, infoCardRecetaIngredientes, infoCardRecetaPane, infoCardIngredientePane, infoCardRestaurantePane;
     @FXML private Button btnAñadirFavReceta, btnAñadirValoracionReceta, btnAñadirFavIngre, btnAñadirFavRestau, btnAtrasInfoCardReceta,  btnAtrasInfoCardIngre, btnAtrasInfoCardRestau;
     @FXML private TextField inputAñadirValoracionReceta;
     @FXML private SVGPath svgAñadirFavReceta, svgAñadirFavIngre, svgAñadirFavRestau;
+    @FXML private TextArea infoCardRecetaPasos;
 
     
     // FXML de escanearPane:
-    @FXML private HBox btnCamaraCodigoEscanearPane, btnSubirCodigoEscanearPane, todosCodigosInfoCodigo, infoCodigoEscanearPane, recomendarRecetasInfoCodigo, btnSubidaCodigoEscanearPane;
-    @FXML private VBox codigoEscanearPane, inicioEscanearPane, camaraCodigoEscanearPane, subirCodigoEscanearPane, infoCardCodigoEscanearPane;
+    @FXML private HBox btnSubirCodigoEscanearPane, todosCodigosInfoCodigo, infoCodigoEscanearPane, recomendarRecetasInfoCodigo, btnSubidaCodigoEscanearPane;
+    @FXML private VBox codigoEscanearPane, inicioEscanearPane, subirCodigoEscanearPane, infoCardCodigoEscanearPane, hbInfoCardCodigoEscanearPane;
     @FXML private ImageView imgInfoCardCodigo, imgSubirCodigoEscanearPane;
     @FXML private Label nombreInfoCardCodigo, codigoInfoCardCodigo, tiendaInfoCardCodigo, marcaInfoCardCodigo, origenInfoCardCodigo;
     @FXML private ScrollPane scrollPaneInfoCardCodigo;
@@ -153,12 +171,30 @@ public class ControladorHomeAppPage implements Initializable {
     
     // FXML ajustesPane:
     @FXML private Label lblReestablecerPreferenias, lblCerrarSesion, lblBorrarPerfil, lblAjustesJuego, lblManualPdf, lblVolverFundidoPage, lblContactarSoporte, lblReportar, lblCreditos, lblTerminosyCondiciones, lblPoliticayPrivacidad;
-    @FXML private VBox inicioAjustesPane,condicionesPane, ajustesJuegoPane, correoSoportePane, informacionAppSoportePane;
+    @FXML private VBox inicioAjustesPane,condicionesPane, ajustesJuegoPane, correoSoportePane, manualPane, informacionAppSoportePane;
     @FXML private Label lblCondiciones, lvlTextoDescriptivo, lblTextoDescripcion, lblAyudaTexto, lblAyudaTextoInfo;
-    @FXML private Button btnAceptarCondiciones, btnCancelarCondiciones, btnReproducirAjustesJuego, btnSonidoAjustesJuego;
+    @FXML private Button btnAceptarCondiciones, btnCancelarCondiciones, btnReproducirAjustesJuego, btnSonidoAjustesJuego, btnEnviarCorreoSoportePane;
     @FXML private SVGPath svgSonidoAjustesJuego;
     @FXML private ProgressBar volumenProgressBar;
+    @FXML private TextField asuntoCorreoSoportePane;
     @FXML private TextArea mensajeCorreoSoportePane;
+    @FXML private WebView webViewManual;
+    
+    
+    
+    // FXML perfilPane:
+    @FXML private HBox inicioPerfilPane, misFavPerfilPane, cajaGuardarEditarPerfilPane, cajaVariosFavPerfilPane; 
+    @FXML private VBox misAlergiasCajaPerfilPane, vboxTipoFiltrarFav, vboxTipoDietaFiltrarFav, vboxAlergenosFiltrarFav;
+    @FXML private Label nombrePerfilPane, correoPerfilPane, contraseñaPerfilPane, ciudadPerfilPane, btnVerFavoPerfilPane;
+    @FXML private Button btnEditarPerfilPane, btnGuardarPerfilPane, btnCancelarPerfilPane, btnVolverPerfilPane;
+    @FXML private ChoiceBox selectCiudadPerfilPane; 
+    @FXML private Label lblInputNombrePerfilPane, lblInputCorreoPerfilPane, lblInputContraseñaPerfilPane, lblSelectCiudadPerfilPane, lblPuntosUsuarioPerfil, lblNivelUsuarioPerfil, lblProximoNivelPerfil;
+    @FXML private ListView<Alergeno> editarMisAlergiasPerfilPane;
+    @FXML private TextField inputNombrePerfilPane, inputCorreoPerfilPane, inputContraseñaPerfilPane;
+    @FXML private ImageView imgPerfilPane;
+    @FXML public FlowPane flowRecetasFavoritosPerfilPane;
+    @FXML private AnchorPane graficoCajaPerfilPane;
+    @FXML private ProgressBar progresoNivelPerfil;
     
     
             
@@ -200,12 +236,12 @@ public class ControladorHomeAppPage implements Initializable {
         // Por defecto:
         mostrarPane(homePane);
         infoCodigoEscanearPane.setVisible(false);
-        camaraCodigoEscanearPane.setVisible(false);
         subirCodigoEscanearPane.setVisible(false);
         inicioEscanearPane.setVisible(false);
         subirRecetaPane.setVisible(false);
         perfilPane.setVisible(false);
         ajustesPane.setVisible(false);
+        perfilPane.setVisible(false);
 
 
         try {
@@ -219,7 +255,6 @@ public class ControladorHomeAppPage implements Initializable {
             System.out.println("--noconexion a bd");
         }   
         
-        // Leer y poner le tema de sesionCache
         Map<String, String> cache = FuncionesRepetidas.leerSesionCache();
         String temaGuardado = cache.getOrDefault("tema", "claro");
 
@@ -253,11 +288,13 @@ public class ControladorHomeAppPage implements Initializable {
         });
         btnHome.setOnMouseClicked(event -> mostrarPane(homePane));
         
-        cargarDatosUsuario();
-        cargarRecetasRecomendadas();
-        cargarRestaurantesRecomendados();
-        cargarValoracionesRecientes();
-        btnExplorarRecetas.setOnMouseClicked(event-> mostrarPane(buscadorPane));
+        Platform.runLater(() -> {
+            cargarDatosUsuario();
+            cargarRecetasRecomendadas();
+            cargarRestaurantesRecomendados();
+            cargarValoracionesUsuario();
+        });
+        btnExplorarRecetas.setOnMouseClicked(event-> verBuscadorPane());
         
         //Filtros: 
         cargarFiltrosTipo(ObservableListas.listaFiltrar);
@@ -316,22 +353,14 @@ public class ControladorHomeAppPage implements Initializable {
         tiempoSubirReceta.textProperty().addListener((obs, oldVal, newVal) -> rellenarInfoSubirReceta());
         pasosSubirReceta.textProperty().addListener((obs, oldVal, newVal) -> rellenarInfoSubirReceta());
         rellenarInfoSubirReceta();
-    
-        btnCamaraCodigoEscanearPane.setOnMouseClicked(event-> {
-            
-            inicioEscanearPane.setVisible(false);
-            infoCodigoEscanearPane.setVisible(true);
-            camaraCodigoEscanearPane.setVisible(true);
-            subirCodigoEscanearPane.setVisible(false);
-        });
         
         btnSubirCodigoEscanearPane.setOnMouseClicked(event-> {
             inicioEscanearPane.setVisible(false);
             infoCodigoEscanearPane.setVisible(true);
-            camaraCodigoEscanearPane.setVisible(false);
             subirCodigoEscanearPane.setVisible(true);
         });
         
+        hbInfoCardCodigoEscanearPane.setVisible(false);
         
         btnSubidaCodigoEscanearPane.setOnMouseClicked(event -> {
             FileChooser fileChooser = new FileChooser();
@@ -390,9 +419,6 @@ public class ControladorHomeAppPage implements Initializable {
         
         // Validadores
         configurarValidacionesSubirReceta();
-        
-        
-        btnPerfil.setOnMouseClicked(event -> mostrarPane(perfilPane));
      
         // AjustesPage
         btnAjustes.setOnMouseClicked(event -> {
@@ -455,6 +481,40 @@ public class ControladorHomeAppPage implements Initializable {
             lblTextoDescripcion.setText("¿Quieres contactar con nosotros? Puedes hacerlo a traves del correo: soporteboiledegg@gmial.com o simplemente escribiendonos en el apartado de acontinuación. Recuerda que si usas este método, ");
         });
         
+        lblReportar.setOnMouseClicked(event -> {
+            mostrarAjustesPane(correoSoportePane);
+            accionActualCorreo = "reportar";
+            lblTextoDescripcion.setText("¿Ha sucedido alguna incidencia? Por favor, descríbela detalladamente para poder ayudarte lo antes posible.");
+        });
+        
+        btnEnviarCorreoSoportePane.setOnAction(event -> enviarCorreo());
+        
+        lblManualPdf.setOnMouseClicked(event -> {
+            mostrarAjustesPane(manualPane);
+            
+            WebEngine webEngine = webViewManual.getEngine();
+    
+            URL urlManual = getClass().getResource("/manual/ManualBoiledEgg.html");
+            System.out.println("urlManual del recurso: " + (urlManual != null ? urlManual.toExternalForm() : "null"));
+
+            if (urlManual != null) {
+                webEngine.load(urlManual.toExternalForm());
+            } else {
+                try {
+                    File file = new File("src/main/resources/manual/ManualBoiledEgg.html");
+                    System.out.println("Buscando archivo en: " + file.getAbsolutePath());
+
+                    if (file.exists()) {
+                        System.out.println("Archivo encontrado!");
+                        webEngine.load(file.toURI().toURL().toExternalForm());
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error al cargar el archivo: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
+        
         lblCreditos.setOnMouseClicked(event ->{
             mostrarAjustesPane(informacionAppSoportePane);
             lblAyudaTexto.setText("Créditos");
@@ -502,6 +562,113 @@ public class ControladorHomeAppPage implements Initializable {
                             "6. Cambios en la Política\n\n" +
                             "Nos reservamos el derecho de actualizar esta política de privacidad en cualquier momento.");
         });
+        
+        
+        // perfilPage
+        inputNombrePerfilPane.setVisible(false);
+        inputCorreoPerfilPane.setVisible(false);
+        inputContraseñaPerfilPane.setVisible(false);
+        selectCiudadPerfilPane.setVisible(false);
+        cajaGuardarEditarPerfilPane.setVisible(false);
+        selectCiudadPerfilPane.setItems(ObservableListas.listaCiudades);
+    
+        btnPerfil.setOnMouseClicked(event -> {
+            mostrarPane(perfilPane);
+            mostrarPerfilPane(inicioPerfilPane);
+            nombrePerfilPane.setText(usuario.getNombre_usuario());
+            correoPerfilPane.setText(usuario.getEmail_usuario());
+            cargarFavoritosPerfil(); 
+            
+            List<Alergeno> alergiasUsuario = FuncionesRepetidas.obtenerUsuarioAlergenos(usuario.getId_usuario());
+            misAlergiasCajaPerfilPane.getChildren().clear();
+
+            if (alergiasUsuario.isEmpty()) {
+                Label lblNoAlergias = new Label("Aún no has añadido tus alergias");
+                misAlergiasCajaPerfilPane.getChildren().add(lblNoAlergias);
+            } else {
+                for (Alergeno alergeno : alergiasUsuario) {
+                    HBox alergenosBox = new HBox(10);
+                    alergenosBox.setAlignment(Pos.CENTER_LEFT);
+                    alergenosBox.setPadding(new Insets(5));
+
+                    ImageView imgAlergeno = new ImageView(new Image(getClass().getResource(alergeno.getImagen_alergeno()).toExternalForm()));
+                    imgAlergeno.setFitHeight(30);
+                    imgAlergeno.setFitWidth(30);
+
+                    Label lblAlergeno = new Label(alergeno.getNombre_alergeno());
+                    lblAlergeno.setAlignment(Pos.CENTER_LEFT);
+
+                    alergenosBox.getChildren().addAll(imgAlergeno, lblAlergeno);
+
+                    misAlergiasCajaPerfilPane.getChildren().add(alergenosBox);
+                }
+            }
+                        
+            mostrarDonutFavoritos();
+        });
+        
+        btnVerFavoritos.setOnMouseClicked(event -> {
+            mostrarPane(perfilPane);
+            mostrarPerfilPane(misFavPerfilPane);
+            cargarFiltrosFavoritos();
+            actualizarCardsFavoritos();
+        });
+        
+        btnVerFavoPerfilPane.setOnMouseClicked(event -> {
+            mostrarPane(perfilPane);
+            mostrarPerfilPane(misFavPerfilPane);
+            cargarFiltrosFavoritos();
+            actualizarCardsFavoritos();
+        });
+        
+        btnVolverPerfilPane.setOnMouseClicked(event -> {
+            mostrarPane(perfilPane);
+            mostrarPerfilPane(inicioPerfilPane);
+            
+            nombrePerfilPane.setText(usuario.getNombre_usuario());
+            correoPerfilPane.setText(usuario.getEmail_usuario());
+            cargarFavoritosPerfil(); 
+            
+            List<Alergeno> alergiasUsuario = FuncionesRepetidas.obtenerUsuarioAlergenos(usuario.getId_usuario());
+            misAlergiasCajaPerfilPane.getChildren().clear();
+
+            if (alergiasUsuario.isEmpty()) {
+                Label lblNoAlergias = new Label("Aún no has añadido tus alergias");
+                misAlergiasCajaPerfilPane.getChildren().add(lblNoAlergias);
+            } else {
+                for (Alergeno alergeno : alergiasUsuario) {
+                    HBox alergenosBox = new HBox(10);
+                    alergenosBox.setAlignment(Pos.CENTER_LEFT);
+                    alergenosBox.setPadding(new Insets(5));
+
+                    ImageView imgAlergeno = new ImageView(new Image(getClass().getResource(alergeno.getImagen_alergeno()).toExternalForm()));
+                    imgAlergeno.setFitHeight(30);
+                    imgAlergeno.setFitWidth(30);
+
+                    Label lblAlergeno = new Label(alergeno.getNombre_alergeno());
+                    lblAlergeno.setAlignment(Pos.CENTER_LEFT);
+
+                    alergenosBox.getChildren().addAll(imgAlergeno, lblAlergeno);
+
+                    misAlergiasCajaPerfilPane.getChildren().add(alergenosBox);
+                }
+            }
+        });
+        
+        btnEditarPerfilPane.setOnMouseClicked(event -> toggleEdicionPerfil());
+        configurarEdicionAlergias();
+        
+        ingredientesSeleccionadosSubirReceta.setPrefHeight(Region.USE_COMPUTED_SIZE);
+        ingredientesSeleccionadosSubirReceta.setMinHeight(Region.USE_COMPUTED_SIZE);
+        ingredientesSeleccionadosSubirReceta.setMaxHeight(Region.USE_COMPUTED_SIZE);
+        
+        ingredientesSeleccionadosSubirReceta.getChildren().addListener((ListChangeListener<Node>) change -> {
+            while (change.next()) {
+                if (change.wasAdded() || change.wasRemoved()) {
+                    ingredientesSeleccionadosSubirReceta.requestLayout();
+                }
+            }
+        });
     }
     
     private void cargarEstiloInicial() {
@@ -530,8 +697,15 @@ public class ControladorHomeAppPage implements Initializable {
         }
     }
     
+    private void animarIconoTema(double destinoX) {
+        TranslateTransition transition = new TranslateTransition(Duration.millis(300), iconoTema);
+        transition.setToX(destinoX);
+        transition.play();
+    }
+    
     private void aplicarTemaClaro() {
         iconoTema.setContent(svgTemaClaro);
+        animarIconoTema(-20);
         Scene scene = btnTema.getScene();
         if (scene != null) {
             scene.getStylesheets().clear();
@@ -541,6 +715,7 @@ public class ControladorHomeAppPage implements Initializable {
 
     private void aplicarTemaOscuro() {
         iconoTema.setContent(svgTemaOscuro);
+        animarIconoTema(20);
         Scene scene = btnTema.getScene();
         if (scene != null) {
             scene.getStylesheets().clear();
@@ -561,45 +736,91 @@ public class ControladorHomeAppPage implements Initializable {
         if (is != null) {
             Image img = new Image(is);
             btnPerfil.setImage(img);
+            imgPerfilPane.setImage(img);
         } else {
             System.err.println("No se pudo cargar el icono desde: " + rutaIcono);
         }
+        
         
         actualizarListaIngredientesEscaneados(usuario);
     }
    
    
     // HOME PANE:
-    private void cargarDatosUsuario() {
+    private void comprobarNivelUsuario() {
         if (usuario != null) {
-            lblNivelUsuario.setText(String.valueOf(usuario.getNivel_usuario()));
-            lblPuntosUsuario.setText(String.valueOf(usuario.getPuntos_usuario()));
-
-            // Calcular progreso al siguiente nivel
             int puntosActuales = usuario.getPuntos_usuario();
-            int puntosSiguienteNivel = calcularPuntosSiguienteNivel(usuario.getNivel_usuario());
-            double progreso = (double) puntosActuales / puntosSiguienteNivel;
-            progresoNivel.setProgress(progreso);
+            int nivelActual = usuario.getNivel_usuario();
+            int nuevoNivel = nivelActual;
 
-            // Mostrar puntos necesarios para siguiente nivel
-            int puntosFaltantes = puntosSiguienteNivel - puntosActuales;
-            lblProximoNivel.setText("Siguiente nivel: " + puntosFaltantes + " puntos");
+            if (puntosActuales >= 10 && nivelActual == 1) {
+                nuevoNivel = 2;
+            } else if (puntosActuales >= 25 && nivelActual == 2) {
+                nuevoNivel = 3;
+            } else if (puntosActuales >= 50 && nivelActual == 3) {
+                nuevoNivel = 4;
+            } else if (puntosActuales >= 75 && nivelActual == 4) {
+                nuevoNivel = 5;
+            } else if (puntosActuales >= 100 && nivelActual == 5) {
+                nuevoNivel = 6;
+            } else if (puntosActuales >= 125 && nivelActual == 6) {
+                nuevoNivel = 7;
+            } else if (puntosActuales >= 150 && nivelActual == 7) {
+                nuevoNivel = 8;
+            } else if (puntosActuales >= 175 && nivelActual == 8) {
+                nuevoNivel = 9;
+            } else if (puntosActuales >= 200 && nivelActual == 9) {
+                nuevoNivel = 10;
+            }
+
+            if (nuevoNivel != nivelActual) {
+                usuario.setNivel_usuario(nuevoNivel);
+                FuncionesRepetidas.actualizarUsuarioPuntos(usuario);
+                cargarDatosUsuario();
+            }
         }
     }
 
-    private int calcularPuntosSiguienteNivel(int nivelActual) {
-        return nivelActual * 100;
+    private void cargarDatosUsuario() {
+        if (usuario != null) {
+            lblNivelUsuario.setText(" " + String.valueOf(usuario.getNivel_usuario()));
+            lblPuntosUsuario.setText(" " + String.valueOf(usuario.getPuntos_usuario()));
+            
+            lblNivelUsuarioPerfil.setText(" " + String.valueOf(usuario.getNivel_usuario()));
+            lblPuntosUsuarioPerfil.setText(" " + String.valueOf(usuario.getPuntos_usuario()));
+
+            int puntosActuales = usuario.getPuntos_usuario();
+            int nivelActual = usuario.getNivel_usuario();
+
+            int puntosParaSiguienteNivel = 10;
+            if (nivelActual > 1) {
+                puntosParaSiguienteNivel += (nivelActual - 1) * 25;
+            }
+
+            int puntosParaNivelActual = 0;
+            if (nivelActual > 1) {
+                puntosParaNivelActual = 10 + (nivelActual - 2) * 25;
+            }
+
+            double progreso = (double) (puntosActuales - puntosParaNivelActual) / (puntosParaSiguienteNivel - puntosParaNivelActual);
+            progresoNivel.setProgress(progreso);
+            progresoNivelPerfil.setProgress(progreso);
+
+            int puntosFaltantes = puntosParaSiguienteNivel - puntosActuales;
+            String textoProximo = "Siguiente nivel en: " + (puntosFaltantes > 0 ? puntosFaltantes : 0) + " puntos";
+            lblProximoNivel.setText(textoProximo);
+            lblProximoNivelPerfil.setText(textoProximo);
+        }
     }
     
     private void cargarRecetasRecomendadas() {
         recetasRecomendadasCaja.getChildren().clear();
 
-        // Obtener todos los favoritos del usuario
         ObservableList<Favoritos> favoritos = FuncionesRepetidas.obtenerFavoritosUsuario(usuario.getId_usuario());
         ObservableList<Receta> todasLasRecetas = FuncionesRepetidas.obtenerListaRecetas();
         ObservableList<Receta> recetasFavoritas = FXCollections.observableArrayList();
+        ObservableList<Receta> recetasRecomendadas = FXCollections.observableArrayList();
 
-        // Filtrar solo las recetas favoritas
         for (Favoritos fav : favoritos) {
             if (fav.getTipo_objeto() == Favoritos.TipoObjeto.RECETA) {
                 for (Receta receta : todasLasRecetas) {
@@ -611,39 +832,107 @@ public class ControladorHomeAppPage implements Initializable {
             }
         }
 
-        // Si no hay favoritas, obtener recetas aleatorias
-        if (recetasFavoritas.isEmpty()) {
-            List<Receta> listaRecetas = new ArrayList<>(todasLasRecetas);
+        for (int i = 0; i < 8 && i < recetasFavoritas.size(); i++) {
+            recetasRecomendadas.add(recetasFavoritas.get(i));
+        }
 
-            // Seleccionar 8 recetas aleatorias
-            for (int i = 0; i < 8 && i < listaRecetas.size(); i++) {
-                int indiceAleatorio = (int) (Math.random() * listaRecetas.size());
-                Receta receta = listaRecetas.get(indiceAleatorio);
-                listaRecetas.remove(indiceAleatorio);
-
-                VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
-                if (card != null) {
-                    card.setOnMouseClicked(event -> {
-                        infoCardRecetaSelec = receta;
-                        mostrarInfoCardReceta();
-                        mostrarPane(infoCardPane);
-                    });
-                    recetasRecomendadasCaja.getChildren().add(card);
+        if (recetasRecomendadas.size() < 8) {
+            Set<String> alergenosFavoritos = new HashSet<>();
+            for (Receta favorita : recetasFavoritas) {
+                ObservableList<Alergeno> alergenos = FuncionesRepetidas.obtenerRecetaAlergenos(favorita.getId_receta());
+                for (Alergeno alergeno : alergenos) {
+                    alergenosFavoritos.add(alergeno.getNombre_alergeno());
                 }
             }
-        } else {
-            // Mostrar hasta 8 recetas favoritas
-            for (int i = 0; i < 8 && i < recetasFavoritas.size(); i++) {
-                Receta receta = recetasFavoritas.get(i);
-                VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
-                if (card != null) {
-                    card.setOnMouseClicked(event -> {
-                        infoCardRecetaSelec = receta;
-                        mostrarInfoCardReceta();
-                        mostrarPane(infoCardPane);
-                    });
-                    recetasRecomendadasCaja.getChildren().add(card);
+
+            List<Receta> recetasDisponibles = new ArrayList<>();
+            for (Receta receta : todasLasRecetas) {
+                boolean esFavorita = false;
+                for (Receta favorita : recetasFavoritas) {
+                    if (receta.getId_receta() == favorita.getId_receta()) {
+                        esFavorita = true;
+                        break;
+                    }
                 }
+                if (!esFavorita) {
+                    recetasDisponibles.add(receta);
+                }
+            }
+
+            for (int i = 0; i < recetasDisponibles.size(); i++) {
+                for (int j = i + 1; j < recetasDisponibles.size(); j++) {
+                    Receta r1 = recetasDisponibles.get(i);
+                    Receta r2 = recetasDisponibles.get(j);
+                    int coincidencias1 = 0;
+                    int coincidencias2 = 0;
+
+                    ObservableList<Alergeno> alergenos1 = FuncionesRepetidas.obtenerRecetaAlergenos(r1.getId_receta());
+                    ObservableList<Alergeno> alergenos2 = FuncionesRepetidas.obtenerRecetaAlergenos(r2.getId_receta());
+
+                    for (Alergeno alergeno : alergenos1) {
+                        if (alergenosFavoritos.contains(alergeno.getNombre_alergeno())) {
+                            coincidencias1++;
+                        }
+                    }
+
+                    for (Alergeno alergeno : alergenos2) {
+                        if (alergenosFavoritos.contains(alergeno.getNombre_alergeno())) {
+                            coincidencias2++;
+                        }
+                    }
+
+                    if (coincidencias2 > coincidencias1) {
+                        Receta temp = recetasDisponibles.get(i);
+                        recetasDisponibles.set(i, recetasDisponibles.get(j));
+                        recetasDisponibles.set(j, temp);
+                    }
+                }
+            }
+
+            for (Receta receta : recetasDisponibles) {
+                if (recetasRecomendadas.size() >= 8) break;
+                recetasRecomendadas.add(receta);
+            }
+
+            if (recetasRecomendadas.size() < 8) {
+                List<Receta> recetasRestantes = new ArrayList<>();
+                for (Receta receta : recetasDisponibles) {
+                    boolean yaRecomendada = false;
+                    for (Receta recomendada : recetasRecomendadas) {
+                        if (receta.getId_receta() == recomendada.getId_receta()) {
+                            yaRecomendada = true;
+                            break;
+                        }
+                    }
+                    if (!yaRecomendada) {
+                        recetasRestantes.add(receta);
+                    }
+                }
+
+                while (recetasRecomendadas.size() < 8 && !recetasRestantes.isEmpty()) {
+                    int indiceAleatorio = (int) (Math.random() * recetasRestantes.size());
+                    recetasRecomendadas.add(recetasRestantes.get(indiceAleatorio));
+                    recetasRestantes.remove(indiceAleatorio);
+                }
+            }
+        }
+
+        for (Receta receta : recetasRecomendadas) {
+            VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
+            if (card != null) {
+                card.setOnMouseClicked(event -> {
+                    infoCardRecetaSelec = receta;
+                    
+                    mostrarPane(infoCardPane);
+                    infoCardRecetaPane.setVisible(true);
+                    infoCardIngredientePane.setVisible(false);
+                    infoCardRestaurantePane.setVisible(false);
+
+                    infoCardRecetaSelec = receta;
+                    mostrarInfoCardReceta();
+                });
+
+                recetasRecomendadasCaja.getChildren().add(card);
             }
         }
     }
@@ -651,12 +940,10 @@ public class ControladorHomeAppPage implements Initializable {
     private void cargarRestaurantesRecomendados() {
         restaurantesCaja.getChildren().clear();
 
-        // Obtener todos los favoritos del usuario
         ObservableList<Favoritos> favoritos = FuncionesRepetidas.obtenerFavoritosUsuario(usuario.getId_usuario());
         ObservableList<Restaurante> todosRestaurantes = FuncionesRepetidas.obtenerListaRestaurantes();
         ObservableList<Restaurante> restaurantesFavoritos = FXCollections.observableArrayList();
 
-        // Filtrar solo los restaurantes favoritos
         for (Favoritos fav : favoritos) {
             if (fav.getTipo_objeto() == Favoritos.TipoObjeto.RESTAURANTE) {
                 for (Restaurante restaurante : todosRestaurantes) {
@@ -668,11 +955,9 @@ public class ControladorHomeAppPage implements Initializable {
             }
         }
 
-        // Si no hay favoritos, obtener restaurantes aleatorios
         if (restaurantesFavoritos.isEmpty()) {
             List<Restaurante> listaRestaurantes = new ArrayList<>(todosRestaurantes);
 
-            // Seleccionar 8 restaurantes aleatorios
             for (int i = 0; i < 8 && i < listaRestaurantes.size(); i++) {
                 int indiceAleatorio = (int) (Math.random() * listaRestaurantes.size());
                 Restaurante restaurante = listaRestaurantes.get(indiceAleatorio);
@@ -689,7 +974,6 @@ public class ControladorHomeAppPage implements Initializable {
                 }
             }
         } else {
-            // Mostrar hasta 8 restaurantes favoritos
             for (int i = 0; i < 8 && i < restaurantesFavoritos.size(); i++) {
                 Restaurante restaurante = restaurantesFavoritos.get(i);
                 VBox card = FuncionesRepetidas.crearCardRestaurante(usuario, restaurante);
@@ -705,41 +989,27 @@ public class ControladorHomeAppPage implements Initializable {
         }
     }
     
-    private void cargarValoracionesRecientes() {
+    public void cargarValoracionesUsuario() {
         valoracionesCaja.getChildren().clear();
 
-        // Obtener valoraciones de recetas
-        ObservableList<Valoracion> valoracionesRecetas = FuncionesRepetidas.obtenerListaValoraciones(
-            Valoracion.TipoObjeto.RECETA.getValor(), 
-            0  // 0 para obtener todas
-        );
-
-        ObservableList<Valoracion> valoracionesRestaurantes = FuncionesRepetidas.obtenerListaValoraciones(Valoracion.TipoObjeto.RESTAURANTE.getValor(), 0);
-
-        ObservableList<Valoracion> todasValoraciones = FXCollections.observableArrayList();
-        todasValoraciones.addAll(valoracionesRecetas);
-        todasValoraciones.addAll(valoracionesRestaurantes);
-
-        ObservableList<Valoracion> valoracionesRecientes = FXCollections.observableArrayList();
-        while (!todasValoraciones.isEmpty() && valoracionesRecientes.size() < 12) {
-            Valoracion masReciente = todasValoraciones.get(0);
-            int indiceMasReciente = 0;
-
-            for (int i = 1; i < todasValoraciones.size(); i++) {
-                if (todasValoraciones.get(i).getFecha_valoracion().after(masReciente.getFecha_valoracion())) {
-                    masReciente = todasValoraciones.get(i);
-                    indiceMasReciente = i;
-                }
-            }
-
-            valoracionesRecientes.add(masReciente);
-            todasValoraciones.remove(indiceMasReciente);
+        ObservableList<Valoracion> valoracionesUsuario = FuncionesRepetidas.obtenerListaValoraciones("Receta", usuario.getId_usuario());
+        Set<Integer> recetasComentadasPorUsuario = new HashSet<>();
+        for (Valoracion val : valoracionesUsuario) {
+            recetasComentadasPorUsuario.add(val.getId_objeto());
         }
 
-        for (Valoracion valoracion : valoracionesRecientes) {
-            HBox cardValoracion = FuncionesRepetidas.crearCardValoraciones(valoracion);
-            if (cardValoracion != null) {
-                valoracionesCaja.getChildren().add(cardValoracion);
+        List<Valoracion> valoracionesDeRecetas = new ArrayList<>();
+        for (Integer idReceta : recetasComentadasPorUsuario) {
+            ObservableList<Valoracion> valoracionesReceta = FuncionesRepetidas.obtenerListaValoraciones("Receta", idReceta);
+            valoracionesDeRecetas.addAll(valoracionesReceta);
+        }
+
+        valoracionesDeRecetas.sort((v1, v2) -> v2.getFecha_valoracion().compareTo(v1.getFecha_valoracion()));
+
+        for (Valoracion val : valoracionesDeRecetas) {
+            HBox card = FuncionesRepetidas.crearCardValoraciones(val);
+            if (card != null) {
+                valoracionesCaja.getChildren().add(card);
             }
         }
     }
@@ -750,6 +1020,7 @@ public class ControladorHomeAppPage implements Initializable {
     public void cargarFiltros(ObservableList<String> opciones, VBox destino) {
         for (String nombre : opciones) {
             CheckBox check = new CheckBox(nombre);
+            check.getStyleClass().add("checkBox");
             check.setOnAction(e -> actualizarCards());
             destino.getChildren().add(check);
         }
@@ -758,6 +1029,7 @@ public class ControladorHomeAppPage implements Initializable {
     public void cargarFiltrosNumericos(ObservableList<Integer> opciones, VBox destino) {
         for (Integer val : opciones) {
             CheckBox check = new CheckBox(String.valueOf(val));
+            check.getStyleClass().add("checkBox");
             check.setOnAction(e ->  actualizarCards());
             destino.getChildren().add(check);
         }
@@ -767,6 +1039,7 @@ public class ControladorHomeAppPage implements Initializable {
     public void cargarFiltrosTipo(List<String> opciones) {
         for (String texto : opciones) {
             CheckBox cb = new CheckBox(texto);
+            cb.getStyleClass().add("checkBox");
             cb.setOnAction(e -> actualizarCards());
             listaCheckTipo.add(cb);
             vboxTipoFiltrar.getChildren().add(cb);
@@ -787,6 +1060,7 @@ public class ControladorHomeAppPage implements Initializable {
         subirRecetaPane.setVisible(false);
         perfilPane.setVisible(false);
         ajustesPane.setVisible(false);
+        perfilPane.setVisible(false);
         
         paneMostrar.setVisible(true);
     } 
@@ -947,16 +1221,20 @@ public class ControladorHomeAppPage implements Initializable {
     public void mostrarInfoCardReceta() {
 
         if (infoCardRecetaSelec == null) return;
-
         String rutaImagen = infoCardRecetaSelec.getImagen_receta();
         infoCardRecetaImagen.setImage(FuncionesRepetidas.cargarImagenReceta(rutaImagen));
 
         infoCardRecetaNombre.setText(infoCardRecetaSelec.getNombre_receta());
 
         infoCardRecetaCajaTipo.getChildren().clear();
-        ImageView imgTipo = FuncionesRepetidas.crearIconoDesdeRuta(infoCardRecetaSelec.getTipo_receta());
+        ImageView imgTipo = FuncionesRepetidas.crearIconoDesdeRuta("/assets/img_tipo_receta/" + infoCardRecetaSelec.getTipo_receta() + ".png");
         if (imgTipo != null) {
-            infoCardRecetaCajaTipo.getChildren().add(imgTipo);
+            infoCardRecetaCajaTipo.getChildren().addAll(
+                imgTipo,
+                new Label(infoCardRecetaSelec.getTipo_receta())
+            );
+        } else {
+            infoCardRecetaCajaTipo.getChildren().add(new Label(infoCardRecetaSelec.getTipo_receta()));
         }
 
         infoCardRecetaDificultad.setText(infoCardRecetaSelec.getDificultad_receta());
@@ -974,6 +1252,24 @@ public class ControladorHomeAppPage implements Initializable {
                 infoCardRecetaCajaAlergenos.getChildren().add(icono);
             }
         }
+        
+        String pasos = infoCardRecetaSelec.getPasos_receta().replace("\\n", "\n");
+        infoCardRecetaPasos.setText(pasos);
+        infoCardRecetaPasos.setEditable(false);
+        infoCardRecetaPasos.setWrapText(true);
+        infoCardRecetaPasos.setPrefRowCount(1);
+        infoCardRecetaPasos.textProperty().addListener((obs, oldText, newText) -> {
+            int numLines = newText.split("\n").length;
+            infoCardRecetaPasos.setPrefRowCount(numLines);
+        });
+        
+        if (infoCardRecetaSelec.getConsejos_receta() == null || infoCardRecetaSelec.getConsejos_receta().trim().isEmpty()) {
+            infoCardRecetaConsejos.setText("Huevin no tiene consejos sobre esta receta");
+            infoCardRecetaConsejos.setAlignment(Pos.CENTER);
+        }else{
+            infoCardRecetaConsejos.setText(infoCardRecetaSelec.getConsejos_receta());
+        }
+        
 
         double valoracion = FuncionesRepetidas.obtenerValoracionMedia(infoCardRecetaSelec.getId_receta());
         infoCardRecetaValoracion.setText(String.format("%.1f ★", valoracion));
@@ -1329,29 +1625,33 @@ public class ControladorHomeAppPage implements Initializable {
             Label noEscaneados = new Label("Aún no has escaneado ningún código");
             todosCodigosInfoCodigo.getChildren().add(noEscaneados);
             todosCodigosInfoCodigo.setAlignment(Pos.CENTER); 
-            
+
             mostrarRecetasAleatorias(usuario);
         } else {
+            todosCodigosInfoCodigo.setAlignment(Pos.CENTER_LEFT);
+            ObservableList<Ingrediente> listaIngredientes = FuncionesRepetidas.obtenerListaIngredientes();
+
             for (UsuarioCodigo uc : listaUsuarioCodigo) {
-
-                ObservableList<Codigo> listaCodigos = FuncionesRepetidas.obtenerCodigoDeImagen(ultimoCodigoEscaneado);
-                if (!listaCodigos.isEmpty()) {
-                    Codigo codigo = listaCodigos.get(0);
-                    ObservableList<Ingrediente> listaIngredientes = FuncionesRepetidas.obtenerListaIngredientes();
-
-                    for (Ingrediente ing : listaIngredientes) {
-                        if (ing.getId_ingrediente() == codigo.getId_ingrediente()) {
-                            VBox card = FuncionesRepetidas.crearCardIngrediente(usuario, ing);
-                            todosCodigosInfoCodigo.getChildren().add(card);
-                            break;
-                        }
+                for (Ingrediente ing : listaIngredientes) {
+                    if (ing.getId_ingrediente() == uc.getId_ingrediente()) {
+                        VBox card = FuncionesRepetidas.crearCardIngrediente(usuario, ing);
+                        card.setOnMouseClicked(event -> {
+                            infoCardIngredienteSelec = ing;
+                            escanearPane.setVisible(false);
+                            infoCardPane.setVisible(true);
+                            infoCardIngredientePane.setVisible(true);
+                            mostrarInfoCardIngrediente();
+                        });
+                        
+                        todosCodigosInfoCodigo.getChildren().add(card);
+                        break;
                     }
                 }
             }
-            
+
             mostrarRecetasConIngredientesEscaneados(usuario, listaUsuarioCodigo);
         }
-    }
+    } 
     
     public void mostrarRecetasAleatorias(Usuario usuario) {
         ObservableList<Receta> todasLasRecetas = FuncionesRepetidas.obtenerListaRecetas();
@@ -1366,6 +1666,13 @@ public class ControladorHomeAppPage implements Initializable {
                 Receta receta = listaRecetas.get(indiceAleatorio);
 
                 VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
+                card.setOnMouseClicked(event -> {
+                    infoCardRecetaSelec = receta;
+                    escanearPane.setVisible(false);
+                    infoCardPane.setVisible(true);
+                    infoCardIngredientePane.setVisible(true);
+                    mostrarInfoCardReceta();
+                });
                 recomendarRecetasInfoCodigo.getChildren().add(card);
 
                 contador++;
@@ -1384,15 +1691,10 @@ public class ControladorHomeAppPage implements Initializable {
             boolean contieneIngredienteEscaneado = false;
 
             for (UsuarioCodigo uc : listaUsuarioCodigo) {
-                ObservableList<Codigo> codigos = FuncionesRepetidas.obtenerCodigoDeImagen(ultimoCodigoEscaneado);
-                if (!codigos.isEmpty()) {
-                    int idIngredienteEscaneado = codigos.get(0).getId_ingrediente();
-
-                    for (Ingrediente ing : ingredientesReceta) {
-                        if (ing.getId_ingrediente() == idIngredienteEscaneado) {
-                            contieneIngredienteEscaneado = true;
-                            break;
-                        }
+                for (Ingrediente ing : ingredientesReceta) {
+                    if (ing.getId_ingrediente() == uc.getId_ingrediente()) {
+                        contieneIngredienteEscaneado = true;
+                        break;
                     }
                 }
                 if (contieneIngredienteEscaneado) break;
@@ -1407,13 +1709,21 @@ public class ControladorHomeAppPage implements Initializable {
         for (Receta receta : recetasConIngredientes) {
             if (contador < 3) {
                 VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
+                card.setOnMouseClicked(event -> {
+                    infoCardRecetaSelec = receta;
+                    escanearPane.setVisible(false);
+                    infoCardPane.setVisible(true);
+                    infoCardIngredientePane.setVisible(true);
+                    mostrarInfoCardReceta();
+                });
+                
                 recomendarRecetasInfoCodigo.getChildren().add(card);
                 contador++;
             } else {
                 break;
             }
         }
-    }
+    } 
     
     public String leerCodigoBarrasDesdeImagen(File imagenArchivo) {
         try {
@@ -1435,12 +1745,17 @@ public class ControladorHomeAppPage implements Initializable {
         ObservableList<Codigo> listaCodigos = FuncionesRepetidas.obtenerCodigoDeImagen(codigoLeido);
 
         infoCardCodigoEscanearPane.getChildren().clear();
+        hbInfoCardCodigoEscanearPane.setVisible(true);
 
         if (listaCodigos.isEmpty()) {
             Label noEncontrado = new Label("No se ha encontrado ninguna referencia");
             infoCardCodigoEscanearPane.getChildren().add(noEncontrado);
         } else {
             Codigo cod = listaCodigos.get(0);
+
+            if (FuncionesRepetidas.insertarUsuarioCodigo(usuario, codigoLeido)) {
+                actualizarListaIngredientesEscaneados(usuario);
+            }
 
             codigoInfoCardCodigo.setText(cod.getCodigo_barras());
             tiendaInfoCardCodigo.setText(cod.getNombre_tienda());
@@ -1456,7 +1771,7 @@ public class ControladorHomeAppPage implements Initializable {
                     rutaImagen = ing.getImagen_ingrediente();
                     nombreIngrediente = ing.getNombre_ingrediente();
                     ingredienteEncontrado = ing;
-                    break;
+                    break; 
                 }
             }
 
@@ -1483,7 +1798,6 @@ public class ControladorHomeAppPage implements Initializable {
     @FXML public void volverAtrasSubirImagen() {
         inicioEscanearPane.setVisible(true);
         infoCodigoEscanearPane.setVisible(false);
-        camaraCodigoEscanearPane.setVisible(false);
         subirCodigoEscanearPane.setVisible(false);
     }
     
@@ -1504,7 +1818,6 @@ public class ControladorHomeAppPage implements Initializable {
             modalStage.setScene(scene);
             controlador.setStage(modalStage);
 
-            // Centrar el modal en la pantalla
             modalStage.centerOnScreen();
             modalStage.show();
 
@@ -1651,15 +1964,8 @@ public class ControladorHomeAppPage implements Initializable {
                 imagen.setImage(img);
             }
         } catch (Exception e) {
-            
-            try {
-                Image img = new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png"));
-                imagen.setImage(img);
-            } catch (Exception ex) {
-                Rectangle rect = new Rectangle(30, 30);
-                rect.setFill(Color.PLUM);
-                ingredienteBox.getChildren().add(rect);
-            }
+            Image img = new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png"));
+            imagen.setImage(img);
         }
 
         if (imagen.getImage() != null) {
@@ -1712,9 +2018,8 @@ public class ControladorHomeAppPage implements Initializable {
                     imagen.setImage(img);
                 }
             } catch (Exception e) {
-                Rectangle rect = new Rectangle(30, 30);
-                rect.setFill(Color.PLUM);
-                seleccionadoBox.getChildren().add(rect);
+                Image img = new Image(getClass().getResourceAsStream("/assets/img_otros/noImagen.png"));
+                imagen.setImage(img);
             }
 
             if (imagen.getImage() != null) {
@@ -1888,7 +2193,6 @@ public class ControladorHomeAppPage implements Initializable {
         if (FuncionesRepetidas.insertarSubirReceta(receta)) {
             int idReceta = FuncionesRepetidas.obtenerUltimoIdReceta();
 
-            // Insertamos los alérgenos
             for (var item : alergenosSeleccionadosSubirReceta.getItems()) {
                 Alergeno alergeno = (Alergeno) item;
                 if (!FuncionesRepetidas.insertarRecetaAlergeno(idReceta, alergeno.getId_alergeno())) {
@@ -1898,23 +2202,20 @@ public class ControladorHomeAppPage implements Initializable {
                 }
             }
 
-            // Insertamos los ingredientes con sus cantidades
             for (int i = 0; i < ingredientesSeleccionadosList.size(); i++) {
                 Ingrediente ingrediente = ingredientesSeleccionadosList.get(i);
                 HBox hbox = (HBox) ingredientesSeleccionadosSubirReceta.getChildren().get(i);
                 
-                // Imprimir la estructura del HBox
                 System.out.println("HBox " + i + " contiene:");
                 for (int j = 0; j < hbox.getChildren().size(); j++) {
                     System.out.println("  Elemento " + j + ": " + hbox.getChildren().get(j).getClass().getSimpleName());
                 }
                 
-                // Buscar el Label de cantidad
-                String cantidad = "1"; // valor por defecto
+                String cantidad = "1";
                 for (Node node : hbox.getChildren()) {
                     if (node instanceof Label) {
                         Label label = (Label) node;
-                        if (label.getText().matches("\\d+")) { // si es un número
+                        if (label.getText().matches("\\d+")) {
                             cantidad = label.getText();
                             break;
                         }
@@ -1959,6 +2260,11 @@ public class ControladorHomeAppPage implements Initializable {
         etiqTipoCoccionSubirReceta.setTooltip(new Tooltip("Selecciona el tipo de cocción"));
         etiqTiempoSubirReceta.setTooltip(new Tooltip("Introduce el tiempo de preparación en minutos"));
         etiqPasosSubirReceta.setTooltip(new Tooltip("Describe los pasos a seguir"));
+        
+        lblInputNombrePerfilPane.setTooltip(new Tooltip("No puede contener caracteres especiales"));
+        lblInputCorreoPerfilPane.setTooltip(new Tooltip("Tiene que ser un correo válido"));
+        lblInputContraseñaPerfilPane.setTooltip(new Tooltip("Tiene que tener un mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo"));
+        lblSelectCiudadPerfilPane.setTooltip(new Tooltip("Añade tu ciudad"));
     }
     
     // Validadores
@@ -2142,6 +2448,7 @@ public class ControladorHomeAppPage implements Initializable {
         ajustesJuegoPane.setVisible(false);
         correoSoportePane.setVisible(false);
         informacionAppSoportePane.setVisible(false);
+        manualPane.setVisible(false);
         
         paneMostrar.setVisible(true);
     } 
@@ -2323,6 +2630,683 @@ public class ControladorHomeAppPage implements Initializable {
         pararMusica();
     }
     
+    private void enviarCorreo() {
+        String mensaje = mensajeCorreoSoportePane.getText();
+        String asunto = asuntoCorreoSoportePane.getText();
+
+        if (mensaje == null || mensaje.trim().isEmpty()) {
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error", "Por favor, escribe un mensaje");
+            return;
+        }
+
+        if (asunto == null || asunto.trim().isEmpty()) {
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error", "Por favor, escribe un asunto");
+            return;
+        }
+
+        FuncionesRepetidas.enviarCorreoSoporte(mensaje, asunto, accionActualCorreo, usuario);
+    }
+    
+    
+    // PERFIL PANE:
+    private void mostrarPerfilPane(HBox paneHbox){
+        inicioPerfilPane.setVisible(false);
+        misFavPerfilPane.setVisible(false);
+
+        paneHbox.setVisible(true);
+    }
+    
+    private void toggleEdicionPerfil() {
+        inputNombrePerfilPane.clear();
+        inputCorreoPerfilPane.clear();
+        inputContraseñaPerfilPane.clear();
+        
+        boolean modoEdicion = !inputNombrePerfilPane.isVisible();
+
+        inputNombrePerfilPane.setVisible(modoEdicion);
+        inputNombrePerfilPane.setManaged(modoEdicion);
+        lblInputNombrePerfilPane.setVisible(modoEdicion);
+        lblInputNombrePerfilPane.setManaged(modoEdicion);
+ 
+        inputCorreoPerfilPane.setVisible(modoEdicion);
+        inputCorreoPerfilPane.setManaged(modoEdicion);
+        lblInputCorreoPerfilPane.setVisible(modoEdicion);
+        lblInputCorreoPerfilPane.setVisible(modoEdicion);
+        
+        inputContraseñaPerfilPane.setVisible(modoEdicion);
+        inputContraseñaPerfilPane.setManaged(modoEdicion);
+        lblInputContraseñaPerfilPane.setVisible(modoEdicion);
+        lblInputContraseñaPerfilPane.setManaged(modoEdicion);
+        
+        selectCiudadPerfilPane.setVisible(modoEdicion);
+        selectCiudadPerfilPane.setManaged(modoEdicion);
+        lblSelectCiudadPerfilPane.setVisible(modoEdicion);
+        lblSelectCiudadPerfilPane.setManaged(modoEdicion);
+        
+        cajaGuardarEditarPerfilPane.setVisible(modoEdicion);
+        cajaGuardarEditarPerfilPane.setManaged(modoEdicion);
+        
+        editarMisAlergiasPerfilPane.setVisible(modoEdicion);
+        editarMisAlergiasPerfilPane.setManaged(modoEdicion);
+    
+        nombrePerfilPane.setVisible(!modoEdicion);
+        nombrePerfilPane.setManaged(!modoEdicion);
+        correoPerfilPane.setVisible(!modoEdicion);
+        correoPerfilPane.setManaged(!modoEdicion);
+        contraseñaPerfilPane.setVisible(!modoEdicion);
+        contraseñaPerfilPane.setManaged(!modoEdicion);
+        ciudadPerfilPane.setVisible(!modoEdicion);
+        ciudadPerfilPane.setManaged(!modoEdicion);
+
+        if (modoEdicion) {
+            inputNombrePerfilPane.setText(nombrePerfilPane.getText());
+            inputCorreoPerfilPane.setText(correoPerfilPane.getText());
+            selectCiudadPerfilPane.setValue(ciudadPerfilPane.getText());
+            
+            editarMisAlergiasPerfilPane.setPrefHeight(200);
+            editarMisAlergiasPerfilPane.setMinHeight(200);
+            editarMisAlergiasPerfilPane.setMaxHeight(200);
+            
+            configuracionesValicionesEditarPerfil();
+            
+            List<Alergeno> alergiasUsuario = FuncionesRepetidas.obtenerUsuarioAlergenos(usuario.getId_usuario());
+            misAlergiasCajaPerfilPane.getChildren().clear();
+            if (alergiasUsuario.isEmpty()) {
+                Label lblNoAlergias = new Label("Aún no has añadido tus alergias");
+                misAlergiasCajaPerfilPane.getChildren().add(lblNoAlergias);
+            } else {
+                for (Alergeno alergeno : alergiasUsuario) {
+                    HBox alergenosBox = new HBox(10);
+                    alergenosBox.setAlignment(Pos.CENTER_LEFT);
+                    alergenosBox.setPadding(new Insets(5));
+
+                    ImageView imgAlergeno = new ImageView(new Image(getClass().getResource(alergeno.getImagen_alergeno()).toExternalForm()));
+                    imgAlergeno.setFitHeight(30);
+                    imgAlergeno.setFitWidth(30);
+
+                    Label lblAlergeno = new Label(alergeno.getNombre_alergeno());
+                    lblAlergeno.setAlignment(Pos.CENTER_LEFT);
+
+                    alergenosBox.getChildren().addAll(imgAlergeno, lblAlergeno);
+                    misAlergiasCajaPerfilPane.getChildren().add(alergenosBox);
+                }
+            }
+        }
+    }
+    
+    private void configuracionesValicionesEditarPerfil() {
+        String nombreActual = nombrePerfilPane.getText();
+        String correoActual = correoPerfilPane.getText();
+        String ciudadActual = ciudadPerfilPane.getText();
+
+        if (nombreActual.isEmpty() || (!nombreActual.contains(" ") && nombreActual.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9_]+"))) {
+            lblInputNombrePerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+        } else {
+            lblInputNombrePerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        }
+
+        if (correoActual.isEmpty() || correoActual.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+            lblInputCorreoPerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+        } else {
+            lblInputCorreoPerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+        }
+
+        lblSelectCiudadPerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+
+        lblInputContraseñaPerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+
+        inputNombrePerfilPane.textProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                if (newVal.isEmpty() || (!newVal.contains(" ") && newVal.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9_]+"))) {
+                    lblInputNombrePerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    lblInputNombrePerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                }
+                comprobarValidacionesEditarPerfil();
+            });
+        });
+
+        inputCorreoPerfilPane.textProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                if (newVal.isEmpty() || newVal.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+                    lblInputCorreoPerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    lblInputCorreoPerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                }
+                comprobarValidacionesEditarPerfil();
+            });
+        });
+
+        inputContraseñaPerfilPane.textProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                if (newVal.isEmpty() || FuncionesRepetidas.validarContraseña(newVal)) {
+                    lblInputContraseñaPerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                } else {
+                    lblInputContraseñaPerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoError.getImage()));
+                }
+                comprobarValidacionesEditarPerfil();
+            });
+        });
+
+        selectCiudadPerfilPane.valueProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                lblSelectCiudadPerfilPane.setGraphic(FuncionesRepetidas.clonarIcono(iconoOk.getImage()));
+                comprobarValidacionesEditarPerfil();
+            });
+        });
+    }
+    
+    private boolean comprobarValidacionesEditarPerfil() {
+        boolean nombreOk = lblInputNombrePerfilPane.getGraphic() != null && 
+                          ((ImageView)lblInputNombrePerfilPane.getGraphic()).getImage().equals(iconoOk.getImage());
+        boolean correoOk = lblInputCorreoPerfilPane.getGraphic() != null && 
+                          ((ImageView)lblInputCorreoPerfilPane.getGraphic()).getImage().equals(iconoOk.getImage());
+        boolean contraseñaOk = lblInputContraseñaPerfilPane.getGraphic() != null && 
+                              ((ImageView)lblInputContraseñaPerfilPane.getGraphic()).getImage().equals(iconoOk.getImage());
+        boolean ciudadOk = lblSelectCiudadPerfilPane.getGraphic() != null && 
+                          ((ImageView)lblSelectCiudadPerfilPane.getGraphic()).getImage().equals(iconoOk.getImage());
+
+
+        return (nombreOk && correoOk && contraseñaOk && ciudadOk);
+    }
+    
+
+    private void configurarEdicionAlergias() {
+        ObservableList<Alergeno> listaAlergenos = FuncionesRepetidas.obtenerListaAlergenos();
+        editarMisAlergiasPerfilPane.setItems(listaAlergenos);
+        editarMisAlergiasPerfilPane.setCellFactory(param -> crearCeldaAlergeno());
+
+        editarMisAlergiasPerfilPane.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                Platform.runLater(() -> {
+                    if (misAlergiasCajaPerfilPane.getChildren().size() == 1 && 
+                        misAlergiasCajaPerfilPane.getChildren().get(0) instanceof Label) {
+                        misAlergiasCajaPerfilPane.getChildren().clear();
+                    }
+                    
+                    boolean yaSeleccionado = false;
+                    for (int i = 0; i < misAlergiasCajaPerfilPane.getChildren().size(); i++) {
+                        HBox hbox = (HBox) misAlergiasCajaPerfilPane.getChildren().get(i);
+                        Label lbl = (Label) hbox.getChildren().get(1);
+                        if (lbl.getText().equals(newVal.getNombre_alergeno())) {
+                            misAlergiasCajaPerfilPane.getChildren().remove(hbox);
+                            yaSeleccionado = true;
+                            break;
+                        }
+                    }
+
+                    if (!yaSeleccionado) {
+                        HBox alergenosBox = new HBox(10);
+                        alergenosBox.setAlignment(Pos.CENTER_LEFT);
+                        alergenosBox.setPadding(new Insets(5));
+
+                        ImageView imgAlergeno = new ImageView(new Image(getClass().getResource(newVal.getImagen_alergeno()).toExternalForm()));
+                        imgAlergeno.setFitHeight(30);
+                        imgAlergeno.setFitWidth(30);
+
+                        Label lblAlergeno = new Label(newVal.getNombre_alergeno());
+                        lblAlergeno.setAlignment(Pos.CENTER_LEFT);
+
+                        alergenosBox.getChildren().addAll(imgAlergeno, lblAlergeno);
+
+                        misAlergiasCajaPerfilPane.getChildren().add(alergenosBox);
+                    }
+                    
+                    if (misAlergiasCajaPerfilPane.getChildren().isEmpty()) {
+                        Label lblNoAlergias = new Label("Aún no has añadido tus alergias");
+                        misAlergiasCajaPerfilPane.getChildren().add(lblNoAlergias);
+                    }
+                    
+                    editarMisAlergiasPerfilPane.getSelectionModel().clearSelection();
+                });
+            }
+        });
+    }
+    
+    private ListCell<Alergeno> crearCeldaAlergeno() {
+        return new ListCell<Alergeno>() {
+            @Override
+            protected void updateItem(Alergeno alergeno, boolean empty) {
+                super.updateItem(alergeno, empty);
+                if (empty || alergeno == null) {
+                    setGraphic(null);
+                } else {
+                    VBox alergenoBox = new VBox(5);
+                    alergenoBox.setAlignment(Pos.CENTER);
+                    alergenoBox.setPadding(new Insets(5));
+
+                    HBox alergenosBox = new HBox(10);
+                    alergenosBox.setAlignment(Pos.CENTER_LEFT);
+                    alergenosBox.setPadding(new Insets(5));
+
+                    ImageView imgAlergeno = new ImageView(new Image(getClass().getResource(alergeno.getImagen_alergeno()).toExternalForm()));
+                    imgAlergeno.setFitHeight(30);
+                    imgAlergeno.setFitWidth(30);
+
+                    Label lblAlergeno = new Label(alergeno.getNombre_alergeno());
+                    lblAlergeno.setAlignment(Pos.CENTER_LEFT);
+
+                    alergenosBox.getChildren().addAll(imgAlergeno, lblAlergeno);
+                    alergenoBox.getChildren().add(alergenosBox);
+
+                    setGraphic(alergenoBox);
+                }
+            }
+        };
+    }
+    
+    @FXML  private void btnGuardarPerfilPane() {
+        if (comprobarValidacionesEditarPerfil()) {
+            boolean hayCambios = false;
+            StringBuilder camposModificados = new StringBuilder();
+
+            String nombreActual = nombrePerfilPane.getText();
+            String emailActual = correoPerfilPane.getText();
+            String contraseñaActual = usuario.getContraseña_usuario();
+            String ciudadActual = ciudadPerfilPane.getText();
+
+            if (!inputNombrePerfilPane.getText().equals(nombreActual)) {
+                nombreActual = inputNombrePerfilPane.getText();
+                nombrePerfilPane.setText(nombreActual);
+                hayCambios = true;
+                camposModificados.append("- Nombre\n");
+            }
+        
+            if (!inputCorreoPerfilPane.getText().equals(emailActual)) {
+                emailActual = inputCorreoPerfilPane.getText();
+                correoPerfilPane.setText(emailActual);
+                hayCambios = true;
+                camposModificados.append("- Correo\n");
+            }
+
+            if (!inputContraseñaPerfilPane.getText().isEmpty()) {
+                contraseñaActual = inputContraseñaPerfilPane.getText();
+                hayCambios = true;
+                camposModificados.append("- Contraseña\n");
+            }
+        
+            String nuevaCiudad = selectCiudadPerfilPane.getValue() != null ? 
+                               selectCiudadPerfilPane.getValue().toString() : null;
+            if (!nuevaCiudad.equals(ciudadActual)) {
+                ciudadActual = nuevaCiudad;
+                ciudadPerfilPane.setText(ciudadActual != null ? ciudadActual : "-");
+                hayCambios = true;
+                camposModificados.append("- Ciudad\n");
+            }
+
+            if (editarMisAlergiasPerfilPane.isVisible()) {
+                List<Alergeno> alergenosSeleccionados = new ArrayList<>();
+                for (int i = 0; i < misAlergiasCajaPerfilPane.getChildren().size(); i++) {
+                    HBox hbox = (HBox) misAlergiasCajaPerfilPane.getChildren().get(i);
+                    Label lbl = (Label) hbox.getChildren().get(1);
+                    for (Alergeno a : editarMisAlergiasPerfilPane.getItems()) {
+                        if (a.getNombre_alergeno().equals(lbl.getText())) {
+                            alergenosSeleccionados.add(a);
+                            break;
+                        }
+                    }
+                }
+
+                FuncionesRepetidas.guardarAlergenosUsuario(usuario.getId_usuario(), alergenosSeleccionados);
+                hayCambios = true;
+                camposModificados.append("- Alergias\n");
+            }
+
+            
+            if (hayCambios) {
+                FuncionesRepetidas.actualizarUsuarioDatos(usuario.getId_usuario(), nombreActual, emailActual, contraseñaActual, ciudadActual);
+
+                FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "Cambios guardados", "Se han guardado los siguientes cambios:\n"+camposModificados.toString());
+                toggleEdicionPerfil();
+                
+            } else {
+                inputNombrePerfilPane.setText(nombrePerfilPane.getText());
+                inputCorreoPerfilPane.setText(correoPerfilPane.getText());
+                inputContraseñaPerfilPane.setText("");
+                selectCiudadPerfilPane.setValue(null);
+                toggleEdicionPerfil();
+            }
+        }
+    }
+    
+    @FXML  private void btnCancelarPerfilPane() {
+        inputNombrePerfilPane.setText(nombrePerfilPane.getText());
+        inputCorreoPerfilPane.setText(correoPerfilPane.getText());
+        inputContraseñaPerfilPane.setText("");
+        selectCiudadPerfilPane.setValue(ciudadPerfilPane.getText());
+        
+        if (editarMisAlergiasPerfilPane.isVisible()) {
+            misAlergiasCajaPerfilPane.getChildren().clear();
+
+            editarMisAlergiasPerfilPane.setVisible(false);
+
+            List<Alergeno> alergiasUsuario = FuncionesRepetidas.obtenerUsuarioAlergenos(usuario.getId_usuario());
+            for (Alergeno alergeno : alergiasUsuario) {
+                HBox alergenoBox = new HBox(5);
+                ImageView imgAlergeno = new ImageView(new Image(getClass().getResource(alergeno.getImagen_alergeno()).toExternalForm()));
+                imgAlergeno.setFitHeight(20);
+                imgAlergeno.setFitWidth(20);
+                Label lblAlergeno = new Label(alergeno.getNombre_alergeno());
+                alergenoBox.getChildren().addAll(imgAlergeno, lblAlergeno);
+                misAlergiasCajaPerfilPane.getChildren().add(alergenoBox);
+            }
+        }
+
+        toggleEdicionPerfil();
+    }
+    
+    private void cargarFavoritosPerfil() {
+        ObservableList<Favoritos> favoritos = FuncionesRepetidas.obtenerFavoritosUsuario(usuario.getId_usuario());
+        HBox contenedorFavoritos = (HBox) ((ScrollPane)cajaVariosFavPerfilPane.getChildren().get(0)).getContent();
+        contenedorFavoritos.getChildren().clear();
+
+        if (favoritos.isEmpty()) {
+            Label lblNoFavoritos = new Label("Aún no tienes favoritos");
+            contenedorFavoritos.getChildren().add(lblNoFavoritos);
+            return;
+        }
+
+        ObservableList<Receta> todasRecetas = FuncionesRepetidas.obtenerListaRecetas();
+        ObservableList<Ingrediente> todosIngredientes = FuncionesRepetidas.obtenerListaIngredientes();
+        ObservableList<Restaurante> todosRestaurantes = FuncionesRepetidas.obtenerListaRestaurantes();
+
+        int contador = 0;
+        for (Favoritos favorito : favoritos) {
+            if (contador >= 8) break;
+
+            switch (favorito.getTipo_objeto()) {
+                case RECETA:
+                    for (Receta receta : todasRecetas) {
+                        if (receta.getId_receta() == favorito.getId_objeto()) {
+                            VBox cardReceta = FuncionesRepetidas.crearCardReceta(usuario, receta);
+                            contenedorFavoritos.getChildren().add(cardReceta);
+                            contador++;
+                            break;
+                        }
+                    }
+                    break;
+                case INGREDIENTE:
+                    for (Ingrediente ingrediente : todosIngredientes) {
+                        if (ingrediente.getId_ingrediente() == favorito.getId_objeto()) {
+                            VBox cardIngrediente = FuncionesRepetidas.crearCardIngrediente(usuario, ingrediente);
+                            contenedorFavoritos.getChildren().add(cardIngrediente);
+                            contador++;
+                            break;
+                        }
+                    }
+                    break;
+                case RESTAURANTE:
+                    for (Restaurante restaurante : todosRestaurantes) {
+                        if (restaurante.getId_restaurante() == favorito.getId_objeto()) {
+                            VBox cardRestaurante = FuncionesRepetidas.crearCardRestaurante(usuario, restaurante);
+                            contenedorFavoritos.getChildren().add(cardRestaurante);
+                            contador++;
+                            break;
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+    
+    private List<CheckBox> listaCheckTipoFav = new ArrayList<>(); 
+    public void cargarFiltrosTipoFav(List<String> opciones) {
+        for (String texto : opciones) {
+            CheckBox cb = new CheckBox(texto);
+            cb.setOnAction(e -> actualizarCardsFavoritos());
+            listaCheckTipoFav.add(cb);
+            vboxTipoFiltrarFav.getChildren().add(cb);
+        }
+    }
+    
+    private void cargarFiltrosFavoritos() {
+        vboxTipoFiltrarFav.getChildren().clear();
+        vboxTipoDietaFiltrarFav.getChildren().clear();
+        vboxAlergenosFiltrarFav.getChildren().clear();
+        listaCheckTipoFav.clear();
+        
+        for (String texto : ObservableListas.listaFiltrar) {
+            CheckBox cb = new CheckBox(texto);
+            cb.getStyleClass().add("checkBox");
+            cb.setOnAction(e -> actualizarCardsFavoritos());
+            listaCheckTipoFav.add(cb);
+            vboxTipoFiltrarFav.getChildren().add(cb);
+        }
+
+        cargarFiltros(ObservableListas.listaTiposRecetas, vboxTipoDietaFiltrarFav);
+        cargarFiltros(ObservableListas.listaAlergenos, vboxAlergenosFiltrarFav);
+
+        for (CheckBox cb : getChecksFromVBox(vboxTipoDietaFiltrarFav)) {
+            cb.setOnAction(e -> actualizarCardsFavoritos());
+        }
+        for (CheckBox cb : getChecksFromVBox(vboxAlergenosFiltrarFav)) {
+            cb.setOnAction(e -> actualizarCardsFavoritos());
+        }
+    }
+    
+    public String getTipoSeleccionadoFav() {
+        for (CheckBox cb : listaCheckTipoFav) {
+            if (cb.isSelected()) {
+                return cb.getText();
+            }
+        }
+        return "";
+    }
+    
+    private List<CheckBox> getChecksFromVBox(VBox vbox) {
+        List<CheckBox> checks = new ArrayList<>();
+        for (Object child : vbox.getChildren()) {
+            if (child instanceof CheckBox) {
+                checks.add((CheckBox) child);
+            }
+        }
+        return checks;
+    }
+    
+    public void actualizarCardsFavoritos() {
+        flowRecetasFavoritosPerfilPane.getChildren().clear();
+
+        String tipoSeleccionado = getTipoSeleccionadoFav();
+        List<String> tiposDietaSeleccionados = getChecksSeleccionados(vboxTipoDietaFiltrarFav);
+        List<String> alergenosSeleccionados = getChecksSeleccionados(vboxAlergenosFiltrarFav);
+
+        boolean buscarRecetas = tipoSeleccionado.equals("Receta") || tipoSeleccionado.isEmpty();
+        boolean buscarIngredientes = tipoSeleccionado.equals("Ingrediente") || tipoSeleccionado.isEmpty();
+        boolean buscarRestaurantes = tipoSeleccionado.equals("Restaurante") || tipoSeleccionado.isEmpty();
+
+        ObservableList<Favoritos> favoritos = FuncionesRepetidas.obtenerFavoritosUsuario(usuario.getId_usuario());
+        ObservableList<Receta> todasRecetas = FuncionesRepetidas.obtenerListaRecetas();
+        ObservableList<Ingrediente> todosIngredientes = FuncionesRepetidas.obtenerListaIngredientes();
+        ObservableList<Restaurante> todosRestaurantes = FuncionesRepetidas.obtenerListaRestaurantes();
+        
+        for (Favoritos favorito : favoritos) {
+        switch (favorito.getTipo_objeto()) {
+            case RECETA:
+                if (buscarRecetas) {
+                    for (Receta receta : todasRecetas) {
+                        if (receta.getId_receta() == favorito.getId_objeto()) {
+                            boolean pasaAlergenos = recetaNoTieneAlergenos(receta, alergenosSeleccionados);
+                            boolean pasaTipoReceta = tiposDietaSeleccionados.isEmpty() || 
+                                tiposDietaSeleccionados.contains(receta.getTipo_receta());
+
+                            if (pasaAlergenos && pasaTipoReceta) {
+                                VBox card = FuncionesRepetidas.crearCardReceta(usuario, receta);
+                                if (card != null) {
+                                    card.setOnMouseClicked(event -> {
+                                        mostrarPane(infoCardPane);
+                                        infoCardRecetaPane.setVisible(true);
+                                        infoCardIngredientePane.setVisible(false);
+                                        infoCardRestaurantePane.setVisible(false);
+
+                                        infoCardRecetaSelec = receta;
+                                        mostrarInfoCardReceta();
+                                    });
+                                    flowRecetasFavoritosPerfilPane.getChildren().add(card);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                break;
+
+                case INGREDIENTE:
+                if (buscarIngredientes) {
+                    for (Ingrediente ingrediente : todosIngredientes) {
+                        if (ingrediente.getId_ingrediente() == favorito.getId_objeto()) {
+                            boolean noTipoReceta = tiposDietaSeleccionados.isEmpty();
+                            boolean pasaAlergenos = true;
+
+                            if (!alergenosSeleccionados.isEmpty()) {
+                                for (String alergNombre : alergenosSeleccionados) {
+                                    String tipoAlergeno = ingrediente.getTipo_alergeno_ingrediente();
+                                    if (tipoAlergeno != null && !tipoAlergeno.isEmpty() && 
+                                        tipoAlergeno.equalsIgnoreCase(alergNombre)) {
+                                        pasaAlergenos = false;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (pasaAlergenos && noTipoReceta) {
+                                VBox card = FuncionesRepetidas.crearCardIngrediente(usuario, ingrediente);
+                                if (card != null) {
+                                    card.setOnMouseClicked(event -> {
+                                        mostrarPane(infoCardPane);
+                                        infoCardIngredientePane.setVisible(true);
+                                        infoCardRecetaPane.setVisible(false);
+                                        infoCardRestaurantePane.setVisible(false);
+
+                                        infoCardIngredienteSelec = ingrediente;
+                                        mostrarInfoCardIngrediente();
+                                    });
+                                    flowRecetasFavoritosPerfilPane.getChildren().add(card);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                break;
+                case RESTAURANTE:
+                if (buscarRestaurantes) {
+                    for (Restaurante restaurante : todosRestaurantes) {
+                        if (restaurante.getId_restaurante() == favorito.getId_objeto()) {
+                            boolean noDieta = tiposDietaSeleccionados.isEmpty();
+                            boolean noAlergenos = alergenosSeleccionados.isEmpty();
+
+                            if (noDieta && noAlergenos) {
+                                VBox card = FuncionesRepetidas.crearCardRestaurante(usuario, restaurante);
+                                if (card != null) {
+                                    card.setOnMouseClicked(event -> {
+                                        mostrarPane(infoCardPane);
+                                        infoCardRestaurantePane.setVisible(true);
+                                        infoCardRecetaPane.setVisible(false);
+                                        infoCardIngredientePane.setVisible(false);
+
+                                        infoCardRestauranteSelec = restaurante;
+                                        mostrarInfoCardRestaurante();
+                                    });
+                                    flowRecetasFavoritosPerfilPane.getChildren().add(card);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    public void mostrarDonutFavoritos() {
+        ObservableList<Favoritos> favoritos = FuncionesRepetidas.obtenerFavoritosUsuario(usuario.getId_usuario());
+        ObservableList<Receta> todasRecetas = FuncionesRepetidas.obtenerListaRecetas();
+
+        Map<String, Integer> datos = new HashMap<>();
+        int total = 0;
+
+        for (Favoritos favorito : favoritos) {
+            if (favorito.getTipo_objeto() == Favoritos.TipoObjeto.RECETA) {
+                for (Receta receta : todasRecetas) {
+                    if (receta.getId_receta() == favorito.getId_objeto()) {
+                        String tipo = receta.getTipo_receta();
+                        if (tipo == null || tipo.isEmpty()) tipo = "Sin tipo";
+                        datos.put(tipo, datos.getOrDefault(tipo, 0) + 1);
+                        total++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        graficoCajaPerfilPane.getChildren().removeIf(node -> node instanceof Canvas || node instanceof HBox);
+
+        if (total == 0) {
+            return;
+        }
+
+        double donutSize = 160;
+        double width = graficoCajaPerfilPane.getWidth() > 0 ? graficoCajaPerfilPane.getWidth() : 200;
+
+        double labelHeight = 0;
+        if (!graficoCajaPerfilPane.getChildren().isEmpty() && graficoCajaPerfilPane.getChildren().get(0) instanceof Label) {
+            Label label = (Label) graficoCajaPerfilPane.getChildren().get(0);
+            labelHeight = label.getHeight() > 0 ? label.getHeight() : 30;
+        }
+
+        double centerX = width / 2;
+        double centerY = labelHeight + 20 + donutSize / 2;
+
+        double radius = donutSize / 2;
+        double innerRadius = radius * 0.7;
+
+        Canvas canvas = new Canvas(width, donutSize + 80 + labelHeight);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        double startAngle = 90;
+        Color[] colores = { Color.MEDIUMPURPLE, Color.ORANGE, Color.LIGHTGREEN, Color.CORNFLOWERBLUE, Color.PINK, Color.DARKCYAN, Color.GOLD, Color.BROWN, Color.DARKRED, Color.DARKMAGENTA };
+
+        int idx = 0;
+        for (Map.Entry<String, Integer> entry : datos.entrySet()) {
+            double porcentaje = (entry.getValue() * 360.0) / total;
+            gc.setFill(colores[idx % colores.length]);
+            gc.fillArc(centerX - radius, centerY - radius, radius * 2, radius * 2, startAngle, -porcentaje, javafx.scene.shape.ArcType.ROUND);
+            startAngle -= porcentaje;
+            idx++;
+        }
+
+        gc.setFill(Color.WHITE);
+        gc.fillOval(centerX - innerRadius, centerY - innerRadius, innerRadius * 2, innerRadius * 2);
+
+        gc.setFill(Color.GRAY);
+        gc.setFont(javafx.scene.text.Font.font("Arial", radius * 0.4));
+        String totalStr = String.valueOf(total);
+        double textWidth = totalStr.length() * radius * 0.4 * 0.6;
+        gc.fillText(totalStr, centerX - textWidth / 2, centerY + 10);
+
+        graficoCajaPerfilPane.getChildren().add(canvas);
+
+        HBox leyenda = new HBox(15);
+        leyenda.setLayoutY(centerY + radius + 10);
+        leyenda.setLayoutX(centerX - (datos.size() * 60) / 2.0);
+
+        idx = 0;
+        for (String tipo : datos.keySet()) {
+            HBox item = new HBox(5);
+            Circle punto = new Circle(7, colores[idx % colores.length]);
+            Label lbl = new Label(tipo);
+            lbl.setStyle("-fx-font-size: 13px; -fx-text-fill: #444;");
+            item.getChildren().addAll(punto, lbl);
+            leyenda.getChildren().add(item);
+            idx++;
+        }
+        graficoCajaPerfilPane.getChildren().add(leyenda);
+    }
+    
+    
+    
+    
     
     
     
@@ -2330,7 +3314,6 @@ public class ControladorHomeAppPage implements Initializable {
     public void setStage(Stage stage) {
         this.stage = stage;
     }
-    
     
     
 }

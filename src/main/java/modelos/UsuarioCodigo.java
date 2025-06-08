@@ -10,18 +10,18 @@ public class UsuarioCodigo {
     private int id_escaneo;
     private int id_usuario;
     private int id_codigo;
+    private int id_ingrediente;
     private Timestamp fecha_escaneo;
-    private int cantidad;
 
     public UsuarioCodigo() {
     }
 
-    public UsuarioCodigo(int id_escaneo, int id_usuario, int id_codigo, Timestamp fecha_escaneo, int cantidad) {
+    public UsuarioCodigo(int id_escaneo, int id_usuario, int id_codigo, int id_ingrediente, Timestamp fecha_escaneo) {
         this.id_escaneo = id_escaneo;
         this.id_usuario = id_usuario;
         this.id_codigo = id_codigo;
+        this.id_ingrediente = id_ingrediente;
         this.fecha_escaneo = fecha_escaneo;
-        this.cantidad = cantidad;
     }
 
     public int getId_escaneo() {
@@ -48,6 +48,14 @@ public class UsuarioCodigo {
         this.id_codigo = id_codigo;
     }
 
+    public int getId_ingrediente() {
+        return id_ingrediente;
+    }
+
+    public void setId_ingrediente(int id_ingrediente) {
+        this.id_ingrediente = id_ingrediente;
+    }
+    
     public Timestamp getFecha_escaneo() {
         return fecha_escaneo;
     }
@@ -56,13 +64,4 @@ public class UsuarioCodigo {
         this.fecha_escaneo = fecha_escaneo;
     }
 
-    public int getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
-    }
-    
-    
 }

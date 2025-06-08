@@ -60,7 +60,7 @@ public class ControladorLoginPage implements Initializable {
     @FXML private ImageView iconoPerfil, iconoVerContraseña, iconoVerContraseñaRestaurante, imgPez, imgDefecto, imgColiflor, imgUva, imgSandwich, imgAlmendra;
     @FXML private TextField nombreInput, emailInput, contraseñaInput, textoVisibleInput, repetirContraseñaInput, nombreInputLogin, contraseñaInputLogin, nombreRestauranteInput,emailRestauranteInput, contraseñaRestauranteInput, repetirContraseñaRestauranteInput;
     @FXML private ComboBox tipoRestauranteSelect, ciudadRestaurante;
-    @FXML private Button btnRegistro, btnLogin, btnConfirmarCambiarIcono;
+    @FXML private Button btnRegistro, btnLogin, btnConfirmarCambiarIcono, btnVolverSinIcono;
     @FXML private VBox iconoPez, iconoDefecto, iconoColiflor, iconoUva, iconoSandwich, iconoAlmendra;
     
 
@@ -104,6 +104,8 @@ public class ControladorLoginPage implements Initializable {
         registroRestaurantePage.setVisible(false);
         inputsPane.setVisible(true);
         cambiarIconoPane.setVisible(false);
+        btnVolverSinIcono.setVisible(false);
+        btnRegistro.setVisible(true);
         
 
         // Cambio de pane para mostrar la pagina de Registro o la de Login
@@ -136,10 +138,11 @@ public class ControladorLoginPage implements Initializable {
         
         cargarIconos();
         
-        // Hacer clic en el icono de perfil = mostrar panel de cambio
         iconoPerfil.setOnMouseClicked(event -> {
             cambiarIconoPane.setVisible(true);
             inputsPane.setVisible(false);
+            btnVolverSinIcono.setVisible(true);
+            btnRegistro.setVisible(false);
         }); 
         
         
@@ -196,7 +199,7 @@ public class ControladorLoginPage implements Initializable {
         }
     }
 
-    // Indicar que icono se ha elegido
+    // Icono que se ha elegido
     private void configurarSeleccion(VBox contenedor, IconoPerfil icono) {
         contenedor.setOnMouseClicked(event -> {
             Image img = new Image(getClass().getResource(icono.getImagen_icono()).toExternalForm());
@@ -224,6 +227,8 @@ public class ControladorLoginPage implements Initializable {
             iconoPerfil.setImage(imagenSeleccionada);
             System.out.println("Icono seleccionado: " + imagenSeleccionada.getUrl());
         }
+        btnVolverSinIcono.setVisible(false);
+        btnRegistro.setVisible(true);
         cambiarIconoPane.setVisible(false);
         inputsPane.setVisible(true);
     }
@@ -234,7 +239,7 @@ public class ControladorLoginPage implements Initializable {
         Tooltip.install(iconoPerfil, tooltip);
         etiqIconoNombre.setTooltip(new Tooltip("Solo puede tener letras, numeros y '_', y no puede estar vacío"));
         etiqIconoEmail.setTooltip(new Tooltip("No puede tener caracteres especiales o estar vacío"));
-        etiqIconoContraseña.setTooltip(new Tooltip("Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo"));
+        etiqIconoContraseña.setTooltip(new Tooltip("Tiene que tener un mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo"));
         etiqIconoRepContraseña.setTooltip(new Tooltip("Debe de coincidir con la contraseña"));
         
         etiqIconoNombreRestaurante.setTooltip(new Tooltip("Introduce el nombre del restaurante"));
@@ -549,14 +554,14 @@ public class ControladorLoginPage implements Initializable {
         Usuario usuario = loginComoUsuario(nombre, contraseña);
         if (usuario != null) {
             FuncionesRepetidas.guardarSesionCache("Usuario", usuario.getNombre_usuario());
-            abrirVentanaApp("/vistas/HomeAppPage.fxml", "Inicio - Home", usuario, null);
+            FuncionesRepetidas.guardarSesionCache("UsuarioId", String.valueOf(usuario.getId_usuario()));
+            abrirVentanaApp("/vistas/HomeAppPage.fxml", "Inicio - Home", usuario);
             return;
         }
 
         Restaurante restaurante = loginComoRestaurante(nombre, contraseña);
         if (restaurante != null) {
-            FuncionesRepetidas.guardarSesionCache("Restau", restaurante.getEmail_restaurante());
-            abrirVentanaApp("/vistas/HomeAppRestaurantePage.fxml", "Inicio - Home Restaurante", null,restaurante);
+            FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION,"Registro exitoso", "Su registro ha sido exitoso. El servicio técnico se pondrá en contacto lo antes posible para confirmar que este restaurante es correcto y que quiere darse de alta en nuestra base de datos. Por favor, esté pendiente al correo electrónico");
             return;
         }
 
@@ -620,8 +625,7 @@ public class ControladorLoginPage implements Initializable {
 
 
 
-    //Si el registro o el login va bien, se abre directamente la ventana HomePage.fxml
-    private void abrirVentanaApp(String rutaFXML, String tituloVentana, Usuario usuario, Restaurante restaurante) {
+    private void abrirVentanaApp(String rutaFXML, String tituloVentana, Usuario usuario) {
         URL fxml = getClass().getResource(rutaFXML);
             System.out.println("FXML path resolved to: " + fxml);
         try {
@@ -634,13 +638,10 @@ public class ControladorLoginPage implements Initializable {
                 ControladorHomeAppPage controlador = loader.getController();
                 controlador.inicializarUsuario(usuario);
             }
-            
-            if (restaurante != null) {
-                ControladorHomeAppRestaurantePage controlador = loader.getController();
-                controlador.inicializarRestaurante(restaurante);
-            }
 
             Stage nuevaVentana = new Stage();
+            establecerIconoStage(nuevaVentana);
+           
             nuevaVentana.setScene(new Scene(root));
             nuevaVentana.setTitle(tituloVentana);
             nuevaVentana.show();
@@ -654,6 +655,16 @@ public class ControladorLoginPage implements Initializable {
     }
     
     
-
+    @FXML private void btnVolverSinIcono(){
+        btnVolverSinIcono.setVisible(false);
+        cambiarIconoPane.setVisible(false);
+        inputsPane.setVisible(true);
+        btnRegistro.setVisible(true);
+    }
     
+
+    private void establecerIconoStage(Stage stage) {
+        Image icon = new Image(getClass().getResource("/assets/iconos_perfil/huevin.png").toExternalForm());
+        stage.getIcons().add(icon);
+    }
 }
