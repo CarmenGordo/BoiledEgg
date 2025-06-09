@@ -405,7 +405,7 @@ public class ControladorLoginPage implements Initializable {
             }
             
             int icono = (iconoSeleccionado != null) ? iconoSeleccionado.getId_icono(): getIdPorNombre("Huevín");
-            String query = "INSERT INTO Usuario (nombre_usuario, email_usuario, contraseña_usuario, nivel_usuario, "+"                                            puntos_usuario, icono_perfil_id) VALUES (?, ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO Usuario (nombre_usuario, email_usuario, contraseña_usuario, nivel_usuario, "+"                                            puntos_usuario, icono_perfil_id, ciudad_usuario, juego_completado_usuario, baja_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             try {
                 PreparedStatement ps = conexion.prepareStatement(query);
@@ -413,15 +413,21 @@ public class ControladorLoginPage implements Initializable {
                 ps.setString(1, nombre);
                 ps.setString(2, email);
                 ps.setString(3, contraseña);
-                ps.setInt(4, 1);
+                ps.setInt(4, 0);
                 ps.setInt(5, 0);
                 ps.setInt(6, icono);
+                ps.setInt(7, 0);
+                ps.setInt(8, 0);
+                ps.setInt(9, 0);
 
                 int rowsInserted = ps.executeUpdate();
 
                 if (rowsInserted > 0) {
                     System.out.println("Usuario registrado con exito");
                     FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "¡Perfecto!", "Te has registrado con éxito");
+                    registroUsuarioPage.setVisible(false);
+                    registroRestaurantePage.setVisible(false);
+                    loginPage.setVisible(true);
                 } else {
                     System.err.println("No se ha registrado el usuario.");
                     FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se ha podido registrar el usuario");
@@ -429,7 +435,7 @@ public class ControladorLoginPage implements Initializable {
 
             } catch (SQLException e) {
                 System.err.println("-----------------error registrar usuario: " + e.getMessage());
-                FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error al registrar usuario, por favor compruba los campos");
+                FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error al registrar usuario, por favor comprueba los campos");
             }
 
         } else {
@@ -496,7 +502,7 @@ public class ControladorLoginPage implements Initializable {
 
                 if (rowsInserted > 0) {
                     System.out.println("Restaurante registrado con éxito");
-                    FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "¡Perfecto!", "Te has registrado con éxito");
+                    FuncionesRepetidas.mostrarAlerta(Alert.AlertType.INFORMATION, "¡Perfecto!", "Te has registrado con éxito. El soporte técnico confirmará que este restaurante existe. Una vez confrimado, nos pondremos en contacto contigo para registrarte en nuestra base de datos. Por favor estate atento al correo");
                 } else {
                     FuncionesRepetidas.mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se ha podido registrar el restaurante");
                 }

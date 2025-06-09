@@ -1148,7 +1148,7 @@
                   </StackPane>
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="subirRecetaPane" visible="false">
+            <AnchorPane fx:id="subirRecetaPane">
                <HBox minHeight="421.0" minWidth="624.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                   <children>
                     <VBox maxWidth="Infinity" minWidth="300" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
@@ -1221,7 +1221,7 @@
                                           </font></Label>
                                  <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
                                     <children>
-                                             <ComboBox fx:id="tipoSubirReceta" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="34.0" prefWidth="130.0" promptText="Selecciona" HBox.hgrow="ALWAYS">
+                                             <ComboBox fx:id="tipoSubirReceta" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="34.0" prefWidth="130.0" promptText="Selecciona" style="-fx-background-color: white;" HBox.hgrow="ALWAYS">
                                           <HBox.margin>
                                              <Insets right="5.0" />
                                           </HBox.margin>
@@ -1244,7 +1244,7 @@
                                           </font></Label>
                                  <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
                                     <children>
-                                             <ComboBox fx:id="dificultadSubirReceta" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="34.0" prefWidth="130.0" promptText="Selecciona" HBox.hgrow="ALWAYS">
+                                             <ComboBox fx:id="dificultadSubirReceta" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="34.0" prefWidth="130.0" promptText="Selecciona" style="-fx-background-color: white;" HBox.hgrow="ALWAYS">
                                           <HBox.margin>
                                              <Insets right="5.0" />
                                           </HBox.margin>
@@ -1323,7 +1323,7 @@
                                        </font></Label>
                               <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="100.0" prefWidth="130.0" VBox.vgrow="ALWAYS">
                                  <children>
-                                          <ComboBox fx:id="tipoCoccionSubirReceta" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="34.0" prefWidth="130.0" promptText="Selecciona" HBox.hgrow="ALWAYS">
+                                          <ComboBox fx:id="tipoCoccionSubirReceta" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="34.0" prefWidth="130.0" promptText="Selecciona" style="-fx-background-color: white;" HBox.hgrow="ALWAYS">
                                        <HBox.margin>
                                           <Insets right="5.0" />
                                        </HBox.margin>
@@ -1997,7 +1997,7 @@
                   </StackPane>
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="ajustesPane">
+            <AnchorPane fx:id="ajustesPane" visible="false">
                <children>
                   <HBox minHeight="421.0" minWidth="624.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                      <children>
